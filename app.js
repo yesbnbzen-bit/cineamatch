@@ -61,7 +61,8 @@ function getQuestions() {
 // ─────────────────────────────────────────────────────────────────
 //  Score de match décroissant selon le nombre de rerolls
 // ─────────────────────────────────────────────────────────────────
-const REROLL_MAX_SCORES = [95, 87, 79, 71, 64, 58];
+const REROLL_MAX_SCORES  = [95, 87, 79, 71, 64, 58];
+const REROLL_FREE_LIMIT  = 3;   // 3 rerolls gratuits, ensuite paywall
 
 function getMaxScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount, REROLL_MAX_SCORES.length - 1)];
@@ -1949,40 +1950,64 @@ const App = {
 
         document.getElementById('share-btn').onclick = () => this.shareResults(movies);
 
-        // ── Bouton reroll avec % décroissant ──
-        const nextPct    = getNextScore(store.rerollCount);
-        const isLastRoll = store.rerollCount >= REROLL_MAX_SCORES.length - 1;
+        // ── Bouton reroll avec % décroissant + limite free ──
+        const nextPct      = getNextScore(store.rerollCount);
+        const isLastRoll   = store.rerollCount >= REROLL_MAX_SCORES.length - 1;
+        const isPremium    = store.currentUser?.user_metadata?.is_premium === true;
+        const rerollsLeft  = isPremium ? Infinity : Math.max(0, REROLL_FREE_LIMIT - store.rerollCount);
+        const hitLimit     = !isPremium && store.rerollCount >= REROLL_FREE_LIMIT;
 
         const rerollContainer = document.createElement('div');
         rerollContainer.style.cssText = 'text-align:center;width:100%;margin-top:1.5rem;margin-bottom:2.5rem;display:flex;flex-direction:column;align-items:center;gap:14px;';
-        rerollContainer.innerHTML = `
-            ${store.rerollCount > 0 ? `
+
+        if (hitLimit) {
+            // Montrer un bouton "verrouillé" qui ouvre le paywall
+            rerollContainer.innerHTML = `
                 <p style="font-size:0.73rem;color:#9ca3af;margin:0;">
                     <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
-                        background:#f5c518;margin-right:6px;vertical-align:middle;"></span>
-                    ${isLastRoll
-                        ? t('results.limit')
-                        : t('results.nexttrio').replace('${pct}', nextPct)}
-                </p>` : ''}
-            ${!isLastRoll
-                ? `<button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
-                    ${t('results.reroll')} ${store.rerollCount > 0 ? `(${store.rerollCount}×)` : ''}
-                   </button>
-                   ${store.rerollCount === 0
-                    ? `<div class="reroll-hint-badge">
-                        <span class="reroll-hint-icon">✦</span>
-                        <span class="reroll-hint-text">${t('results.reroll.hint')}</span>
-                       </div>`
-                    : ''}`
-                : `<button class="btn-secondary" style="margin:0 auto;" onclick="App.startFlow()">
-                    ${t('results.redo')}
-                   </button>`
-            }`;
+                        background:#E50914;margin-right:6px;vertical-align:middle;"></span>
+                    ${t('results.reroll.limit.msg')}
+                </p>
+                <button class="btn-secondary btn-reroll-main btn-reroll-locked" id="reroll-btn" style="margin:0 auto;">
+                    🔒 ${t('results.reroll.unlock')}
+                </button>`;
+        } else {
+            rerollContainer.innerHTML = `
+                ${store.rerollCount > 0 ? `
+                    <p style="font-size:0.73rem;color:#9ca3af;margin:0;">
+                        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
+                            background:#f5c518;margin-right:6px;vertical-align:middle;"></span>
+                        ${isLastRoll
+                            ? t('results.limit')
+                            : t('results.nexttrio').replace('${pct}', nextPct)}
+                    </p>` : ''}
+                ${!isLastRoll
+                    ? `<button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
+                        ${t('results.reroll')}${!isPremium && rerollsLeft <= REROLL_FREE_LIMIT
+                            ? ` <span class="reroll-counter">${rerollsLeft} restant${rerollsLeft > 1 ? 's' : ''}</span>`
+                            : (store.rerollCount > 0 ? ` (${store.rerollCount}×)` : '')}
+                       </button>
+                       ${store.rerollCount === 0
+                        ? `<div class="reroll-hint-badge">
+                            <span class="reroll-hint-icon">✦</span>
+                            <span class="reroll-hint-text">${t('results.reroll.hint')}</span>
+                           </div>`
+                        : ''}`
+                    : `<button class="btn-secondary" style="margin:0 auto;" onclick="App.startFlow()">
+                        ${t('results.redo')}
+                       </button>`
+                }`;
+        }
 
         ui.dom.moviesGrid.appendChild(rerollContainer);
 
-        if (!isLastRoll) {
-            document.getElementById('reroll-btn').onclick = () => this.processResults(true);
+        const rerollBtn = document.getElementById('reroll-btn');
+        if (rerollBtn) {
+            if (hitLimit) {
+                rerollBtn.onclick = () => App.showPaywallModal();
+            } else if (!isLastRoll) {
+                rerollBtn.onclick = () => this.processResults(true);
+            }
         }
 
         // Force scroll top après rendu complet — triple approche pour Safari mobile
@@ -2754,6 +2779,43 @@ const App = {
             const main = document.getElementById('main-container');
             if (main) main.scrollTop = 0;
         });
+    },
+
+    // ══════════════════════════════════════════
+    //  PAYWALL — Modale limite rerolls
+    // ══════════════════════════════════════════
+    showPaywallModal() {
+        const modal = document.getElementById('paywall-modal-overlay');
+        if (!modal) return;
+        const isLoggedIn = !!store.currentUser;
+
+        // Adapter le contenu selon l'état de connexion
+        const title   = document.getElementById('paywall-title');
+        const sub     = document.getElementById('paywall-sub');
+        const ctaPrim = document.getElementById('paywall-cta-primary');
+        const ctaSec  = document.getElementById('paywall-cta-secondary');
+
+        if (!isLoggedIn) {
+            if (title)   title.textContent   = '🎬 Encore plus de suggestions';
+            if (sub)     sub.textContent     = 'Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.';
+            if (ctaPrim) { ctaPrim.textContent = 'Créer un compte gratuit'; ctaPrim.onclick = () => { this.hidePaywallModal(); document.getElementById('auth-btn')?.click(); }; }
+            if (ctaSec)  { ctaSec.style.display = 'block'; ctaSec.textContent = 'Me connecter'; ctaSec.onclick = () => { this.hidePaywallModal(); document.getElementById('auth-btn')?.click(); }; }
+        } else {
+            if (title)   title.textContent   = '⚡ Rerolls illimités avec Premium';
+            if (sub)     sub.textContent     = 'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite, personnalisées par l\'IA.';
+            if (ctaPrim) { ctaPrim.textContent = 'Passer Premium — 4,99€/mois'; ctaPrim.onclick = () => { this.hidePaywallModal(); /* TODO: open pricing page */ }; }
+            if (ctaSec)  ctaSec.style.display = 'none';
+        }
+
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('visible'), 10);
+    },
+
+    hidePaywallModal() {
+        const modal = document.getElementById('paywall-modal-overlay');
+        if (!modal) return;
+        modal.classList.remove('visible');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
     }
 };
 
