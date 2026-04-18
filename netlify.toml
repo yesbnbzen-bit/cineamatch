@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────────────────────────
+#  CineMatch IA — Configuration Netlify
+#  Ce fichier est OBLIGATOIRE pour déployer les fonctions serverless
+# ─────────────────────────────────────────────────────────────────
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# ── Cache : forcer le rechargement des assets JS/CSS/HTML ──
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+# ── CORS pour les fonctions serverless ──
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"

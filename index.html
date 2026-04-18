@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>CineaMatch IA - Trouve le film parfait en 30 secondes</title>
+    <link rel="stylesheet" href="style.css?v=341">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+    <style>
+    /* ── Mobile ≤ 600px ── */
+    @media (max-width: 600px) {
+        /* Titre : serré, sans écart entre les 2 lignes */
+        #hero.active .hero-content h1 {
+            font-size: clamp(1.75rem, 8vw, 2.2rem) !important;
+            line-height: 1.1 !important;
+            letter-spacing: -0.5px !important;
+            white-space: normal !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        /* Masquer la ligne "Assis-toi," sur mobile */
+        #hero.active .hero-content .hero-title-intro,
+        #hero.active .hero-content .hero-title-intro + br {
+            display: none !important;
+        }
+        /* display:inline — pas de block pour éviter l'écart parasite */
+        #hero.active .hero-content .hero-title-line1 {
+            font-weight: 500 !important;
+            display: inline !important;
+        }
+        /* Le <br> entre les 2 lignes suffit — pas de display:block */
+        #hero.active .hero-content .hero-title-red {
+            font-weight: 900 !important;
+            letter-spacing: -1px !important;
+            display: inline !important;
+        }
+        /* Sous-titre : 2 lignes propres */
+        #hero.active .hero-content .subtitle {
+            font-size: 0.84rem !important;
+            line-height: 1.5 !important;
+            max-width: 300px !important;
+            margin: 12px auto 20px !important;
+            color: rgba(255,255,255,0.4) !important;
+            font-weight: 400 !important;
+        }
+        /* Boutons : centrés, compacts */
+        #hero.active .hero-content .hero-btns {
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 10px !important;
+            max-width: 240px !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+        }
+        #hero.active .hero-content .btn-hero-cta {
+            width: auto !important;
+            min-width: 185px !important;
+            padding: 12px 28px !important;
+            font-size: 0.9rem !important;
+            font-weight: 800 !important;
+            border-radius: 12px !important;
+        }
+        #hero.active .hero-content .btn-duo-subtle {
+            width: auto !important;
+            min-width: 145px !important;
+            padding: 9px 22px !important;
+            font-size: 0.8rem !important;
+            border-radius: 10px !important;
+        }
+        /* Badges mobile — plus petits que desktop */
+        #hero.active .hero-content .hero-features {
+            margin-top: 8px !important;
+            margin-bottom: 32px !important;
+            gap: 5px !important;
+            opacity: 0.7 !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+        }
+        #hero.active .hero-content .hero-feature {
+            font-size: 0.68rem !important;
+            color: rgba(255,255,255,0.75) !important;
+            white-space: nowrap !important;
+        }
+        #hero.active .hero-content .hero-feature-sep {
+            opacity: 0.5 !important;
+        }
+    }
+    /* ── Tablette 601–1024px ── */
+    @media (min-width: 601px) and (max-width: 1024px) {
+        #hero.active .hero-content .subtitle {
+            font-size: 0.92rem !important;
+            max-width: 340px !important;
+            margin: 14px auto 22px !important;
+            color: rgba(255,255,255,0.4) !important;
+        }
+        #hero.active .hero-content .hero-btns {
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 12px !important;
+            max-width: 280px !important;
+            margin: 0 auto !important;
+        }
+        #hero.active .hero-content .btn-hero-cta {
+            width: auto !important;
+            min-width: 210px !important;
+        }
+        #hero.active .hero-content .btn-duo-subtle {
+            width: auto !important;
+            min-width: 170px !important;
+        }
+        #hero.active .hero-content .hero-features {
+            margin-top: 8px !important;
+            opacity: 0.38 !important;
+            justify-content: center !important;
+        }
+    }
+    </style>
+</head>
+
+<body class="dark-theme">
+    <div id="app">
+        <header class="navbar">
+            <div class="logo" onclick="window.App?.goHome()" style="cursor:pointer">CINEAMATCH <span>IA</span></div>
+            <div class="nav-actions">
+                <!-- Switcher de langue — pill dropdown -->
+                <div class="lang-switcher" id="lang-switcher">
+                    <button class="lang-pill-btn" id="lang-pill-current" onclick="document.getElementById('lang-switcher').classList.toggle('open')">
+                        <span id="lang-pill-label">Français</span>
+                        <svg class="lang-chevron" width="10" height="7" viewBox="0 0 10 7" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </button>
+                    <div class="lang-dropdown">
+                        <button class="lang-option active" data-lang="fr" onclick="window._setLang('fr');document.getElementById('lang-switcher').classList.remove('open')">Français</button>
+                        <button class="lang-option" data-lang="en" onclick="window._setLang('en');document.getElementById('lang-switcher').classList.remove('open')">English</button>
+                    </div>
+                </div>
+                <button id="prefs-nav-btn" class="btn-config" style="display:none" title="Mon espace">⊞ <span class="btn-label" data-i18n="nav.prefs">MON ESPACE</span></button>
+                <button id="config-btn" class="btn-config" style="display:none">⚙ <span class="btn-label" data-i18n="nav.config">CONFIG</span></button>
+                <!-- Bouton connexion (visible si non connecté) -->
+                <button id="auth-btn" class="btn-config btn-auth">👤 <span class="btn-label" data-i18n="nav.connect">Se connecter</span></button>
+                <!-- Menu utilisateur (visible si connecté) -->
+                <div id="user-menu" class="user-menu" style="display:none;">
+                    <div class="user-avatar" id="user-avatar">??</div>
+                    <span class="user-name" id="user-name"></span>
+                    <div class="user-dropdown">
+                        <button class="btn-signout-drop"
+                            onclick="import('./modules/auth.js?v=14').then(m => m.authUI.handleSignOut())">
+                            <span data-i18n="nav.signout">↩ Se déconnecter</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ══ MODALE AUTH ══ -->
+        <div id="auth-modal-overlay" class="auth-overlay" style="display:none;">
+            <div class="auth-modal">
+                <button id="auth-modal-close" class="auth-close">✕</button>
+                <div class="auth-logo">CINEAMATCH <span>IA</span></div>
+
+                <!-- Google -->
+                <button id="btn-google" class="btn-google">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path fill="#4285F4"
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853"
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05"
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+                        <path fill="#EA4335"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    <span data-i18n="auth.google">Continuer avec Google</span>
+                </button>
+
+                <div class="auth-divider"><span data-i18n="auth.or">ou</span></div>
+
+                <!-- Tabs -->
+                <div class="auth-tabs">
+                    <button id="tab-signin" class="auth-tab active" data-i18n="auth.tab.login">Connexion</button>
+                    <button id="tab-signup" class="auth-tab" data-i18n="auth.tab.signup">Inscription</button>
+                </div>
+
+                <!-- Connexion -->
+                <form id="form-signin">
+                    <input type="email" id="signin-email" placeholder="Email" required autocomplete="email" data-i18n="auth.email" data-i18n-attr="placeholder">
+                    <div class="password-wrap">
+                        <input type="password" id="signin-password" placeholder="Mot de passe" required
+                            autocomplete="current-password" data-i18n="auth.password" data-i18n-attr="placeholder">
+                        <button type="button" class="toggle-password" onclick="
+                            const i=document.getElementById('signin-password');
+                            const shown=i.type==='text';
+                            i.type=shown?'password':'text';
+                            this.textContent=shown?'👁':'🙈';
+                        ">👁</button>
+                    </div>
+                    <p id="signin-error" class="auth-error" style="display:none;"></p>
+                    <button type="submit" id="btn-signin" class="btn-primary" style="width:100%;margin-top:0.5rem;" data-i18n="auth.login.btn">Se connecter</button>
+                </form>
+
+                <!-- Inscription -->
+                <form id="form-signup" class="hidden">
+                    <input type="text" id="signup-name" placeholder="Ton prénom" autocomplete="given-name" data-i18n="auth.firstname" data-i18n-attr="placeholder">
+                    <input type="email" id="signup-email" placeholder="Email" required autocomplete="email" data-i18n="auth.email" data-i18n-attr="placeholder">
+                    <div class="password-wrap">
+                        <input type="password" id="signup-password" placeholder="Mot de passe (6 car. min)" required
+                            autocomplete="new-password" data-i18n="auth.password.new" data-i18n-attr="placeholder">
+                        <button type="button" class="toggle-password" onclick="
+                            const i=document.getElementById('signup-password');
+                            const shown=i.type==='text';
+                            i.type=shown?'password':'text';
+                            this.textContent=shown?'👁':'🙈';
+                        ">👁</button>
+                    </div>
+                    <div class="dob-wrap">
+                        <label for="signup-dob" class="dob-label">🎂 Date de naissance</label>
+                        <input type="date" id="signup-dob" required autocomplete="bday"
+                            max="" style="width:100%;">
+                        <p class="dob-hint">Pour personnaliser tes recommandations selon ton âge · 13 ans minimum.</p>
+                    </div>
+                    <p id="signup-error" class="auth-error" style="display:none;"></p>
+                    <button type="submit" id="btn-signup" class="btn-primary"
+                        style="width:100%;margin-top:0.5rem;" data-i18n="auth.signup.btn">Créer mon compte</button>
+                </form>
+            </div>
+        </div>
+
+        <main id="main-container">
+            <!-- Content will be injected here by app.js -->
+            <section id="hero" class="view active">
+                <div class="hero-content">
+                    <!-- Toast reprise de session (rendu via JS) -->
+
+                    <!-- Greeting connecté (injecté par auth.js) -->
+                    <div class="hero-greeting" id="hero-greeting" style="display:none">
+                        <span class="greeting-wave" id="greeting-wave">👋</span>
+                        <span class="greeting-text"><span id="greeting-salut">Bonsoir</span>, <strong id="greeting-name"></strong></span>
+                    </div>
+                    <div class="hero-stats" id="hero-stats" style="display:none"></div>
+
+                    <h1>
+                        <span class="hero-title-intro" data-i18n="hero.line0">Assis-toi,</span><br>
+                        <span class="hero-title-line1" data-i18n="hero.line1">L'IA trouve ton film</span><br>
+                        <span class="hero-title-red" data-i18n="hero.line2">en 30 secondes</span>
+                    </h1>
+                    <p class="subtitle" id="hero-subtitle" data-i18n="hero.subtitle">Réponds à quelques questions… et découvre ton film parfait en quelques secondes.</p>
+                    <div class="hero-btns">
+                        <div class="hero-cta-wrapper">
+                            <button id="start-btn" class="btn-primary btn-hero-cta" data-i18n="hero.start">COMMENCER →</button>
+                        </div>
+                        <button id="duo-btn" class="btn-duo-subtle" data-i18n="hero.duo">👥 Mode Duo</button>
+                    </div>
+
+                    <!-- Feature badges -->
+                    <div class="hero-features">
+                        <span class="hero-feature"><span class="hero-feature-icon">⚡</span> <span data-i18n="hero.feat1">Rapide</span></span>
+                        <span class="hero-feature-sep">·</span>
+                        <span class="hero-feature"><span class="hero-feature-icon">✦</span> <span data-i18n="hero.feat2">100% personnalisé</span></span>
+                        <span class="hero-feature-sep">·</span>
+                        <span class="hero-feature"><span class="hero-feature-icon">🎬</span> <span data-i18n="hero.feat3">Recommandé par l'IA</span></span>
+                    </div>
+                </div>
+
+                <!-- Section tendances sous le hero -->
+                <div id="trending-section" class="trending-section" style="display:none;">
+                    <div class="trending-header">
+                        <div class="trending-title-block">
+                            <h2 class="trending-title" data-i18n="trending.title">🏆 Top Match du moment</h2>
+                            <p class="trending-subtitle-label" data-i18n="trending.sublabel">Les films les plus appréciés en streaming cette semaine</p>
+                        </div>
+                        <div class="trending-header-right">
+                            <button class="trending-nav-btn" id="trending-prev" aria-label="Précédent">‹</button>
+                            <button class="trending-nav-btn" id="trending-next" aria-label="Suivant">›</button>
+                        </div>
+                    </div>
+                    <div class="trending-row-wrap">
+                        <div id="trending-row" class="trending-row"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="questionnaire" class="view">
+                <div class="progress-bar" style="width:100%;align-self:stretch;">
+                    <div id="progress" class="progress"></div>
+                </div>
+                <div id="question-container" class="question-container">
+                    <!-- Questions injected here -->
+                </div>
+            </section>
+
+            <section id="loading" class="view">
+                <div class="loader-content">
+                    <div class="spinner"></div>
+                    <p id="loading-text">Analyse de tes goûts par notre IA...</p>
+                </div>
+            </section>
+
+            <section id="results" class="view">
+                <h2>Tes recommandations personnalisées</h2>
+                <div id="movies-grid" class="movies-grid">
+                    <!-- Movie cards injected here -->
+                </div>
+            </section>
+
+            <!-- ══ DUO START — Personne A entre son prénom avant de commencer ══ -->
+            <section id="duo-start" class="view">
+                <div class="duo-card animate-fade">
+                    <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
+                    <div class="duo-welcome-icon">🎬</div>
+                    <h2 class="duo-title" data-i18n="duo.start.title">C'est parti à deux !</h2>
+                    <p class="duo-subtitle" data-i18n="duo.start.sub">Entre ton prénom pour personnaliser l'expérience, puis réponds au questionnaire.</p>
+                    <div class="duo-name-field">
+                        <input type="text" id="duo-name-a-start" placeholder="Ton prénom..." data-i18n="duo.placeholder" data-i18n-attr="placeholder" maxlength="20" autocomplete="off">
+                    </div>
+                    <button id="duo-start-a-btn" class="btn-primary"
+                        style="margin-top:1.5rem;padding:1.1rem 3rem;font-size:1.1rem;" data-i18n="duo.start.btn">
+                        Mon questionnaire →
+                    </button>
+                </div>
+            </section>
+
+            <!-- ══ DUO SHARE — Personne A a terminé, partage le lien ══ -->
+            <section id="duo-share" class="view">
+                <div class="duo-card animate-fade">
+                    <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
+                    <h2 class="duo-title" data-i18n="duo.share.title">Ton profil est prêt !</h2>
+                    <p class="duo-subtitle" data-i18n="duo.share.sub">Envoie le lien à ton partenaire.</p>
+
+                    <!-- Lien + copier inline -->
+                    <div class="duo-link-row">
+                        <input type="text" id="duo-share-link" class="duo-link-input" readonly>
+                        <button id="duo-copy-btn" class="duo-copy-inline" data-i18n="duo.copy">📋 Copier</button>
+                    </div>
+                    <button id="duo-share-btn" class="duo-action-btn duo-action-dark" style="display:none;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                        <span data-i18n="duo.share.via">Partager via…</span>
+                    </button>
+
+                    <!-- Séparateur -->
+                    <div class="duo-together-sep"><span data-i18n="duo.sep">ou</span></div>
+
+                    <!-- Bouton "même écran" -->
+                    <button id="duo-together-btn" class="duo-action-btn duo-action-ghost" data-i18n="duo.together">
+                        🖥 Vous êtes ensemble ? Remplir ici →
+                    </button>
+
+                    <!-- Animation d'attente partenaire -->
+                    <div id="duo-waiting-anim" class="duo-waiting-anim">
+                        <div class="duo-wait-avatars">
+                            <div class="duo-wait-avatar duo-wait-avatar-a">
+                                <div class="duo-wait-avatar-icon">✓</div>
+                                <span id="duo-wait-name-a" class="duo-wait-name">Toi</span>
+                            </div>
+                            <div class="duo-wait-connector">
+                                <span class="duo-wait-dot"></span>
+                                <span class="duo-wait-dot"></span>
+                                <span class="duo-wait-dot"></span>
+                            </div>
+                            <div class="duo-wait-avatar duo-wait-avatar-b">
+                                <div class="duo-wait-avatar-icon" id="duo-wait-name-b">⏳</div>
+                                <span class="duo-wait-name" data-i18n="duo.wait.partner">Partenaire</span>
+                            </div>
+                        </div>
+                        <p id="duo-waiting-text" class="duo-waiting-text" data-i18n="duo.wait.text">En attente de ton partenaire…</p>
+                    </div>
+
+                    <!-- Notification partenaire prêt -->
+                    <div id="duo-partner-ready" class="duo-partner-ready" style="display:none;">
+                        <span data-i18n="duo.partner.ready">🎉 Ton partenaire a terminé !</span>
+                        <button id="duo-see-results-btn" data-i18n="duo.see.results">Voir les résultats →</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══ DUO WELCOME — Personne B ouvre le lien ══ -->
+            <section id="duo-welcome" class="view">
+                <div class="duo-card duo-welcome-card animate-fade">
+                    <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
+                    <div class="duo-welcome-icon">🎬</div>
+                    <h2 class="duo-title" id="duo-welcome-title" data-i18n="duo.welcome.title">Ton partenaire t'attend !</h2>
+                    <p class="duo-subtitle" data-i18n="duo.welcome.sub">Il a déjà répondu à ses questions. Réponds à ton tour pour trouver le film parfait pour vous deux.</p>
+                    <div class="duo-name-field">
+                        <input type="text" id="duo-name-b" placeholder="Ton prénom..." data-i18n="duo.placeholder" data-i18n-attr="placeholder" maxlength="20" autocomplete="off">
+                    </div>
+                    <button id="duo-start-b-btn" class="btn-primary"
+                        style="margin-top:1.5rem;padding:1.1rem 3rem;font-size:1.1rem;" data-i18n="duo.start.btn">
+                        Mon questionnaire →
+                    </button>
+                </div>
+            </section>
+
+            <section id="watchlist-view" class="view">
+                <div class="history-header">
+                    <div>
+                        <h2 class="history-title">Ma Liste</h2>
+                        <p class="history-subtitle" id="watchlist-subtitle">Tes films à regarder</p>
+                    </div>
+                    <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
+                </div>
+                <div id="watchlist-grid" class="history-grid"></div>
+            </section>
+
+            <!-- ══ HISTORIQUE ══ -->
+            <section id="history-view" class="view">
+                <div class="history-header">
+                    <div>
+                        <h2 class="history-title">Mes Films</h2>
+                        <p class="history-subtitle" id="history-subtitle">Films notés et déjà vus</p>
+                    </div>
+                    <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
+                </div>
+                <!-- Stats ADN cinéphile -->
+                <div class="dna-card" id="dna-card" style="display:none">
+                    <div class="dna-card-inner" id="dna-card-inner"></div>
+                </div>
+                <!-- Grille films -->
+                <div id="history-grid" class="history-grid"></div>
+                <div id="history-empty" class="history-empty" style="display:none">
+                    <div class="history-empty-icon">🎬</div>
+                    <p>Ton historique est vide pour l'instant.</p>
+                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;">Lance une première recommandation pour
+                        commencer !</p>
+                </div>
+            </section>
+        </main>
+
+        <div id="api-modal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h3>Configuration API</h3>
+                <p>Pour fonctionner, cette démo nécessite une clé TMDb.</p>
+                <div class="input-group">
+                    <label>Clé TMDb (<a href="https://www.themoviedb.org/settings/api" target="_blank"
+                            style="color: var(--primary-color);">Trouver ici</a>)</label>
+                    <input type="password" id="tmdb-key" placeholder="API Key ou v4 Token">
+                </div>
+                <input type="hidden" id="openai-key" value="server-managed">
+                <button id="save-api-btn" class="btn-primary" style="width: 100%; margin-top: 1.5rem;">Enregistrer et
+                    Continuer</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal Personnalisation (avec onglets) -->
+    <div id="preferences-modal" class="prefs-overlay" style="display:none;">
+        <div class="prefs-modal">
+
+            <!-- ══ ZONE 1 : En-tête fixe ══ -->
+            <div class="prefs-header">
+                <button id="prefs-modal-close" class="prefs-close">✕</button>
+                <h3 class="prefs-title" data-i18n="prefs.title">Mon Espace</h3>
+
+                <!-- Raccourcis navigation -->
+                <div class="prefs-nav-shortcuts">
+                    <button class="prefs-shortcut" id="prefs-goto-films">
+                        <span class="prefs-shortcut-icon">⭐</span>
+                        <span class="prefs-shortcut-label" data-i18n="nav.myfilms">Mes Films</span>
+                        <span class="prefs-shortcut-arrow">›</span>
+                    </button>
+                    <button class="prefs-shortcut" id="prefs-goto-liste">
+                        <span class="prefs-shortcut-icon">❤️</span>
+                        <span class="prefs-shortcut-label" data-i18n="nav.mylist">Ma Liste</span>
+                        <span class="prefs-shortcut-arrow">›</span>
+                    </button>
+                </div>
+
+                <!-- Séparateur -->
+                <div class="prefs-section-divider">
+                    <span data-i18n="prefs.settings.label">Préférences IA</span>
+                </div>
+
+                <div class="prefs-tabs">
+                    <button class="prefs-tab active" data-tab="platforms">📡 <span data-i18n="prefs.tab.platforms">Plateformes</span></button>
+                    <button class="prefs-tab" data-tab="gouts">✨ <span data-i18n="prefs.tab.gouts">Mes goûts</span></button>
+                    <button class="prefs-tab" data-tab="exclusions">🚫 <span data-i18n="prefs.tab.exclusions">Exclusions</span></button>
+                    <button class="prefs-tab" data-tab="profil">👤 Mon Profil</button>
+                </div>
+            </div>
+
+            <!-- ══ ZONE 2 : Corps scrollable ══ -->
+            <div class="prefs-body">
+
+                <!-- ── ONGLET 1 : Plateformes ── -->
+                <div class="prefs-tab-panel active" id="tab-platforms">
+                    <p class="prefs-tab-hint">Tes abonnements actifs. L'IA favorise automatiquement les films disponibles sur ces services.</p>
+                    <div class="platforms-grid">
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Netflix">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=netflix.com" alt="Netflix" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#E50914">N</span>
+                            </span>
+                            <span class="platform-name">Netflix</span>
+                        </label>
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Prime Video">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=primevideo.com" alt="Prime Video" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#00A8E1">P</span>
+                            </span>
+                            <span class="platform-name">Prime Video</span>
+                        </label>
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Apple TV+">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=tv.apple.com" alt="Apple TV+" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#1c1c1e;border:1px solid #555">TV+</span>
+                            </span>
+                            <span class="platform-name">Apple TV+</span>
+                        </label>
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Canal+">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=canalplus.com" alt="Canal+" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#000;color:#F400A1;border:1px solid #F400A1;font-weight:900">C+</span>
+                            </span>
+                            <span class="platform-name">Canal+</span>
+                        </label>
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Disney+">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=disneyplus.com" alt="Disney+" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#113CCF">D+</span>
+                            </span>
+                            <span class="platform-name">Disney+</span>
+                        </label>
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Max">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=max.com" alt="Max" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#002BE7;font-style:italic;font-weight:700">max</span>
+                            </span>
+                            <span class="platform-name">Max</span>
+                        </label>
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Paramount+">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=paramountplus.com" alt="Paramount+" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#0064FF">P+</span>
+                            </span>
+                            <span class="platform-name">Paramount+</span>
+                        </label>
+                        <label class="platform-chip">
+                            <input type="checkbox" value="Crunchyroll">
+                            <span class="platform-logo-wrap">
+                                <img class="platform-logo" src="https://www.google.com/s2/favicons?sz=128&domain=crunchyroll.com" alt="Crunchyroll" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                                <span class="platform-logo-fb" style="background:#F47521">CR</span>
+                            </span>
+                            <span class="platform-name">Crunchyroll</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ── ONGLET 2 : Mes goûts ── -->
+                <div class="prefs-tab-panel" id="tab-gouts">
+                    <p class="prefs-tab-hint">Tes préférences stables. Époque, pays d'origine — fixe ce qui ne change jamais pour toi.</p>
+
+                    <div class="prefs-section-label prefs-section-label--epoque">Époque préférée</div>
+                    <div class="pref-chips-grid" id="pref-epoque">
+                        <label class="pref-chip"><input type="checkbox" value="Récent (2010+)"><span>Récent (2010+)</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Années 90-2000"><span>Années 90–2000</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Classiques (avant 1990)"><span>Classiques</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Peu importe l'époque"><span>Peu importe</span></label>
+                    </div>
+
+                    <div class="prefs-section-label prefs-section-label--origine" style="margin-top:1.3rem;">Pays d'origine</div>
+                    <div class="pref-chips-grid" id="pref-origine">
+                        <label class="pref-chip"><input type="checkbox" value="Américain/Anglophone"><span>🇺🇸 États-Unis</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Britannique"><span>🇬🇧 Royaume-Uni</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Français"><span>🇫🇷 France</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Italien"><span>🇮🇹 Italie</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Espagnol"><span>🇪🇸 Espagne</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Allemand"><span>🇩🇪 Allemagne</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Scandinave"><span>🇸🇪 Scandinavie</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Coréen"><span>🇰🇷 Corée</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Japonais"><span>🇯🇵 Japon</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Indien"><span>🇮🇳 Inde</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Latino / Brésilien"><span>🌎 Amérique latine</span></label>
+                        <label class="pref-chip"><input type="checkbox" value="Monde entier"><span>🌍 Monde entier</span></label>
+                    </div>
+                </div>
+
+                <!-- ── ONGLET 3 : Exclusions ── -->
+                <div class="prefs-tab-panel" id="tab-exclusions">
+                    <p class="prefs-tab-hint">Tes lignes rouges. Ces contenus ne seront <strong>jamais</strong> suggérés, quoi qu'il arrive.</p>
+                    <div class="pref-chips-grid" id="pref-exclusions">
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Violence extrême"><span>🩸 Violence extrême</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Horreur"><span>💀 Horreur</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Sous-titres"><span>💬 Sous-titres</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Contenu adulte"><span>🔞 Contenu adulte</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Films trop longs (>2h30)"><span>⏱ Films trop longs</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Documentaires"><span>🎙 Documentaires</span></label>
+                    </div>
+                </div>
+
+                <!-- ── ONGLET 4 : Mon Profil ── -->
+                <div class="prefs-tab-panel" id="tab-profil">
+                    <p class="prefs-tab-hint">Tes informations personnelles et paramètres de sécurité.</p>
+
+                    <!-- Identifiants -->
+                    <div class="profil-section">
+                        <div class="profil-section-title">Mes informations</div>
+                        <div class="profil-info-grid">
+                            <div class="profil-info-row">
+                                <span class="profil-info-label">👤 Prénom</span>
+                                <span class="profil-info-value" id="profil-name">—</span>
+                            </div>
+                            <div class="profil-info-row">
+                                <span class="profil-info-label">📧 Email</span>
+                                <span class="profil-info-value" id="profil-email">—</span>
+                            </div>
+                            <div class="profil-info-row">
+                                <span class="profil-info-label">🎂 Date de naissance</span>
+                                <span class="profil-info-value" id="profil-dob">—</span>
+                            </div>
+                            <div class="profil-info-row">
+                                <span class="profil-info-label">🎯 Profil IA</span>
+                                <span class="profil-info-value profil-age-badge" id="profil-age-badge">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Changer le mot de passe -->
+                    <div class="profil-section" style="margin-top:1.5rem;">
+                        <div class="profil-section-title">Changer mon mot de passe</div>
+                        <div class="profil-pwd-form">
+                            <div class="password-wrap">
+                                <input type="password" id="profil-pwd-new" placeholder="Nouveau mot de passe (6 car. min)" autocomplete="new-password">
+                                <button type="button" class="toggle-password" onclick="
+                                    const i=document.getElementById('profil-pwd-new');
+                                    const shown=i.type==='text';
+                                    i.type=shown?'password':'text';
+                                    this.textContent=shown?'👁':'🙈';
+                                ">👁</button>
+                            </div>
+                            <div class="password-wrap" style="margin-top:0.6rem;">
+                                <input type="password" id="profil-pwd-confirm" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password">
+                                <button type="button" class="toggle-password" onclick="
+                                    const i=document.getElementById('profil-pwd-confirm');
+                                    const shown=i.type==='text';
+                                    i.type=shown?'password':'text';
+                                    this.textContent=shown?'👁':'🙈';
+                                ">👁</button>
+                            </div>
+                            <p id="profil-pwd-msg" style="font-size:0.8rem;margin-top:0.5rem;display:none;"></p>
+                            <button id="profil-pwd-btn" class="btn-primary" style="width:100%;margin-top:0.75rem;">
+                                🔒 Mettre à jour le mot de passe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.prefs-body -->
+
+            <!-- ══ ZONE 3 : Pied fixe ══ -->
+            <div class="prefs-footer">
+                <button id="prefs-save-btn" class="btn-primary" style="width:100%">Enregistrer</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Bande-Annonce -->
+    <div id="trailer-modal" class="trailer-modal"
+        onclick="this.style.display='none'; document.getElementById('trailer-frame').src=''">
+        <div class="trailer-modal-content" onclick="event.stopPropagation()">
+            <button class="close-trailer"
+                onclick="document.getElementById('trailer-modal').style.display='none'; document.getElementById('trailer-frame').src=''">&times;</button>
+            <iframe id="trailer-frame" frameborder="0" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
+    </div>
+
+    <!-- ══ ONBOARDING ══ -->
+    <div id="onboarding-overlay" style="display:none;">
+        <div id="onboarding-highlight"></div>
+        <!-- Flèche rebondissante entre le bouton et la carte -->
+        <div id="onboarding-bounce-arrow" class="onboarding-bounce-arrow">
+            <svg width="18" height="22" viewBox="0 0 18 22" fill="none">
+                <path d="M9 1 L9 17 M9 17 L3 11 M9 17 L15 11" stroke="#E50914" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <!-- Carte tooltip -->
+        <div id="onboarding-tooltip" class="onboarding-tooltip">
+            <div class="onboarding-header">
+                <span class="onboarding-step-pill" id="onboarding-step-pill">1 / 3</span>
+                <span class="onboarding-icon" id="onboarding-icon">🎬</span>
+            </div>
+            <h4 id="onboarding-title">Titre</h4>
+            <p id="onboarding-text">Texte</p>
+            <div class="onboarding-footer">
+                <div class="onboarding-dots" id="onboarding-dots">
+                    <span class="onboarding-dot active"></span>
+                    <span class="onboarding-dot"></span>
+                    <span class="onboarding-dot"></span>
+                </div>
+                <div class="onboarding-actions">
+                    <button id="onboarding-skip" class="onboarding-skip">Passer</button>
+                    <button id="onboarding-next" class="onboarding-next-btn">Suivant →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module" src="app.js?v=341"></script>
+    <script type="module">
+        import { authUI, getAgeProfile } from './modules/auth.js?v=15';
+        authUI.init();
+        // Exposer getAgeProfile globalement pour app.js (modules isolés)
+        window.getAgeProfile = getAgeProfile;
+
+        // Limiter la date max du champ DOB à aujourd'hui
+        const dobInput = document.getElementById('signup-dob');
+        if (dobInput) dobInput.max = new Date().toISOString().split('T')[0];
+    </script>
+
+    <!-- Toast reprise de session — fixed bottom, hors du flux -->
+    <div id="resume-banner" class="resume-banner" style="display:none;">
+        <span class="resume-banner-icon">🎬</span>
+        <div class="resume-banner-body">
+            <span class="resume-banner-text" data-i18n="resume.text">Tu avais une session en cours — reprendre là où tu t'es arrêté ?</span>
+            <div class="resume-banner-btns">
+                <button id="resume-yes-btn" class="btn-primary" data-i18n="resume.yes">Reprendre →</button>
+                <button id="resume-no-btn" class="resume-skip-btn" data-i18n="resume.no">Nouvelle session</button>
+            </div>
+        </div>
+        <button class="resume-banner-close" id="resume-close-btn" aria-label="Fermer">✕</button>
+    </div>
+</body>
+
+</html>
