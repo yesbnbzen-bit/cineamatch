@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <title>CineaMatch IA - Trouve le film parfait en 30 secondes</title>
-    <link rel="stylesheet" href="style.css?v=343">
+    <link rel="stylesheet" href="style.css?v=344">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -674,25 +674,31 @@
     <div id="paywall-modal-overlay" class="auth-overlay" style="display:none;z-index:1100;"
          onclick="if(event.target===this) App.hidePaywallModal()">
         <div class="paywall-modal" onclick="event.stopPropagation()">
-            <button class="auth-close" onclick="App.hidePaywallModal()">✕</button>
-            <div class="paywall-icon">🎬</div>
-            <h2 class="paywall-title" id="paywall-title">Rerolls illimités avec Premium</h2>
-            <p class="paywall-sub" id="paywall-sub">Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite.</p>
+            <!-- En-tête rouge -->
+            <div class="paywall-header">
+                <button class="auth-close" onclick="App.hidePaywallModal()">✕</button>
+                <div class="paywall-icon" id="paywall-icon">🎬</div>
+                <h2 class="paywall-title" id="paywall-title">Encore plus de films !</h2>
+            </div>
+            <!-- Corps -->
+            <div class="paywall-body">
+                <p class="paywall-sub" id="paywall-sub">Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.</p>
 
-            <ul class="paywall-perks">
-                <li>⟳ Suggestions illimitées à chaque recherche</li>
-                <li>✦ Recommandations ultra-personnalisées par l'IA</li>
-                <li>★ Notation & historique de films illimités</li>
-                <li>📺 Filtres streaming avancés</li>
-            </ul>
+                <ul class="paywall-perks">
+                    <li>Suggestions illimitées à chaque recherche</li>
+                    <li>Historique & notation de films</li>
+                    <li>Recommandations ultra-personnalisées par l'IA</li>
+                    <li>Filtres streaming avancés</li>
+                </ul>
 
-            <button class="btn-primary paywall-cta" id="paywall-cta-primary">
-                Passer Premium — 4,99€/mois
-            </button>
-            <button class="paywall-cta-secondary" id="paywall-cta-secondary" style="display:none;">
-                Me connecter
-            </button>
-            <p class="paywall-footnote">Sans engagement · Résiliable à tout moment</p>
+                <button class="btn-primary paywall-cta" id="paywall-cta-primary">
+                    Créer un compte gratuit
+                </button>
+                <button class="paywall-cta-secondary" id="paywall-cta-secondary" style="display:none;">
+                    J'ai déjà un compte
+                </button>
+                <p class="paywall-footnote">100% gratuit · Sans carte bancaire</p>
+            </div>
         </div>
     </div>
 
@@ -738,7 +744,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=343"></script>
+    <script type="module" src="app.js?v=344"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=15';
         authUI.init();

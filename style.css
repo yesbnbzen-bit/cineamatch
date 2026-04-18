@@ -2188,46 +2188,85 @@ input[type="text"]:focus {
    ══════════════════════════════════════════════════ */
 
 .paywall-modal {
-    background: #fafaf8;
-    border: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.07);
     border-radius: 24px;
-    padding: 2.5rem 2rem 2rem;
+    padding: 0 0 1.75rem;
     width: 100%;
-    max-width: 420px;
+    max-width: 400px;
     position: relative;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.35);
+    overflow: hidden;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.28);
     animation: scaleIn 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 0;
     text-align: center;
 }
 
-.paywall-modal .auth-close {
-    color: #555;
+/* Bande rouge en haut + icône centrée */
+.paywall-header {
+    width: 100%;
+    background: linear-gradient(135deg, #E50914 0%, #c40710 100%);
+    padding: 1.6rem 1.5rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    position: relative;
 }
-.paywall-modal .auth-close:hover {
-    color: #111;
-    background: rgba(0,0,0,0.06);
+
+.paywall-header .auth-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    color: rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+.paywall-header .auth-close:hover {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
 }
 
 .paywall-icon {
-    font-size: 2.5rem;
+    font-size: 2.4rem;
     line-height: 1;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
 }
 
 .paywall-title {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #111;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #fff;
     margin: 0;
-    line-height: 1.3;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+/* Corps de la modale */
+.paywall-body {
+    width: 100%;
+    padding: 1.4rem 1.6rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 .paywall-sub {
-    font-size: 0.88rem;
-    color: #666;
+    font-size: 0.87rem;
+    color: #555;
     margin: 0;
     line-height: 1.6;
 }
@@ -2235,49 +2274,63 @@ input[type="text"]:focus {
 .paywall-perks {
     list-style: none;
     padding: 0;
-    margin: 0.25rem 0;
+    margin: 0;
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     text-align: left;
 }
 
 .paywall-perks li {
-    font-size: 0.85rem;
-    color: #333;
-    padding: 8px 14px;
-    background: rgba(0,0,0,0.04);
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: #222;
+    padding: 9px 12px;
+    background: #f7f7f5;
     border-radius: 10px;
-    border: 1px solid rgba(0,0,0,0.07);
+    border: 1px solid #ebebea;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.paywall-perks li::before {
+    content: '✓';
+    color: #22c55e;
+    font-weight: 800;
+    font-size: 0.85rem;
+    flex-shrink: 0;
 }
 
 .paywall-cta {
     width: 100%;
-    padding: 0.9rem 1.5rem;
-    font-size: 0.95rem;
-    font-weight: 700;
+    padding: 0.95rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 800;
     border-radius: 14px;
     cursor: pointer;
     transition: all 0.2s;
+    letter-spacing: 0.01em;
 }
 
 .paywall-cta-secondary {
     background: none;
-    border: 1px solid rgba(0,0,0,0.15);
-    color: #666;
-    border-radius: 10px;
-    padding: 0.6rem 1.5rem;
-    font-size: 0.85rem;
+    border: none;
+    color: #888;
+    padding: 0.3rem 1rem;
+    font-size: 0.82rem;
     cursor: pointer;
     width: 100%;
-    transition: all 0.2s;
+    transition: color 0.15s;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
-.paywall-cta-secondary:hover { color: #111; border-color: rgba(0,0,0,0.3); }
+.paywall-cta-secondary:hover { color: #333; }
 
 .paywall-footnote {
-    font-size: 0.72rem;
-    color: #aaa;
+    font-size: 0.7rem;
+    color: #bbb;
     margin: 0;
 }
 

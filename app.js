@@ -2790,19 +2790,36 @@ const App = {
         const isLoggedIn = !!store.currentUser;
 
         // Adapter le contenu selon l'état de connexion
+        const icon    = document.getElementById('paywall-icon');
         const title   = document.getElementById('paywall-title');
         const sub     = document.getElementById('paywall-sub');
         const ctaPrim = document.getElementById('paywall-cta-primary');
         const ctaSec  = document.getElementById('paywall-cta-secondary');
 
+        // Helper : ouvrir auth modal sur un onglet précis
+        const openAuthTab = (tabId) => {
+            this.hidePaywallModal();
+            // Ouvrir la modale auth
+            const authOverlay = document.getElementById('auth-modal-overlay');
+            if (authOverlay) {
+                authOverlay.style.display = 'flex';
+                setTimeout(() => authOverlay.classList.add('visible'), 10);
+            }
+            // Activer le bon onglet
+            const tab = document.getElementById(tabId);
+            if (tab) tab.click();
+        };
+
         if (!isLoggedIn) {
-            if (title)   title.textContent   = '🎬 Encore plus de suggestions';
+            if (icon)    icon.textContent    = '🎬';
+            if (title)   title.textContent   = 'Encore plus de films !';
             if (sub)     sub.textContent     = 'Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.';
-            if (ctaPrim) { ctaPrim.textContent = 'Créer un compte gratuit'; ctaPrim.onclick = () => { this.hidePaywallModal(); document.getElementById('auth-btn')?.click(); }; }
-            if (ctaSec)  { ctaSec.style.display = 'block'; ctaSec.textContent = 'Me connecter'; ctaSec.onclick = () => { this.hidePaywallModal(); document.getElementById('auth-btn')?.click(); }; }
+            if (ctaPrim) { ctaPrim.textContent = 'Créer un compte gratuit'; ctaPrim.onclick = () => openAuthTab('tab-signup'); }
+            if (ctaSec)  { ctaSec.style.display = 'block'; ctaSec.textContent = 'J\'ai déjà un compte'; ctaSec.onclick = () => openAuthTab('tab-signin'); }
         } else {
-            if (title)   title.textContent   = '⚡ Rerolls illimités avec Premium';
-            if (sub)     sub.textContent     = 'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite, personnalisées par l\'IA.';
+            if (icon)    icon.textContent    = '⚡';
+            if (title)   title.textContent   = 'Rerolls illimités';
+            if (sub)     sub.textContent     = 'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite.';
             if (ctaPrim) { ctaPrim.textContent = 'Passer Premium — 4,99€/mois'; ctaPrim.onclick = () => { this.hidePaywallModal(); /* TODO: open pricing page */ }; }
             if (ctaSec)  ctaSec.style.display = 'none';
         }
