@@ -62,7 +62,7 @@ function getQuestions() {
 //  Score de match décroissant selon le nombre de rerolls
 // ─────────────────────────────────────────────────────────────────
 const REROLL_MAX_SCORES  = [95, 87, 79, 71, 64, 58];
-const REROLL_FREE_LIMIT  = 3;   // 3 rerolls gratuits, ensuite paywall
+const REROLL_FREE_LIMIT  = 2;   // 1ère reco + 2 rerolls = 3 suggestions au total, ensuite paywall
 
 function getMaxScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount, REROLL_MAX_SCORES.length - 1)];
