@@ -1,7 +1,7 @@
-// URL OpenAI : proxy Netlify en production, direct en local
+// URL OpenAI : proxy Cloudflare Pages en production, direct en local
 const OPENAI_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'https://api.openai.com/v1/chat/completions'
-    : '/.netlify/functions/openai';
+    : '/api/openai';
 
 // Clé de fallback dev — à remplacer par une clé valide si la clé localStorage est vide
 const _DEV_KEY = '';
