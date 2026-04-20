@@ -1,7 +1,7 @@
 import { tmdbService, openaiService } from './services/api.js?v=44';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
-import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=46';
+import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=47';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=7';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=340';
 
@@ -1086,12 +1086,12 @@ const App = {
             // ── Labels lisibles pour les prompts ──
             const contextMap  = { alone: "Seul", couple: "En couple", family: "En famille", friends: "Entre amis" };
             const moodMap     = {
-                "35,10751": "Besoin de légèreté (Feel-good/Comédie)",
-                "28,12":    "Besoin d'adrénaline (Action/Aventure)",
-                "53":       "Besoin de tension (Thriller/Suspense)",
-                "27":       "Envie de frissons (Horreur)",
-                "18,10749": "Ressentir quelque chose de fort (Drame/Romance)",
-                "878,9648": "Être surpris et réfléchir (SF/Mystère)"
+                "35,10751": "Rire / Comédie",
+                "28,12":    "Action / Aventure",
+                "53":       "Thriller / Suspense",
+                "27":       "Horreur",
+                "18,10749": "Romance / Drame",
+                "878,9648": "SF / Mystère"
             };
             const durationMap = { short: "Court (< 1h45)", any: "Peu importe", long: "Long format (2h+)" };
             const excludeItems = {
