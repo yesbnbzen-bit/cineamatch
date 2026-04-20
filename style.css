@@ -2361,6 +2361,104 @@ input[type="text"]:focus {
     margin: 0;
 }
 
+/* ══════════════════════════════════════════════════
+   SOUS-MOOD — Section optionnelle après sélection mood
+   ══════════════════════════════════════════════════ */
+
+.submood-section {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.5rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.submood-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.submood-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 0.85rem;
+}
+.submood-optional {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: rgba(255,255,255,0.3);
+}
+
+.submood-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.submood-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.18s;
+    width: 100%;
+}
+.submood-pill:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.15);
+}
+.submood-pill.selected {
+    background: rgba(229,9,20,0.12);
+    border-color: rgba(229,9,20,0.5);
+}
+
+.submood-pill-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.submood-pill-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+.submood-pill-text strong {
+    font-size: 0.87rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+.submood-pill-text em {
+    font-style: normal;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.3;
+}
+
+.submood-skip {
+    display: block;
+    margin: 0.9rem auto 0;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.35);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.3rem 0.75rem;
+    transition: color 0.15s;
+}
+.submood-skip:hover { color: rgba(255,255,255,0.65); }
+
 /* Card actions (trailer button area) */
 .card-actions {
     margin-top: 1rem;

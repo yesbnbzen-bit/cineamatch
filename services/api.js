@@ -429,7 +429,7 @@ export const openaiService = {
 PROFIL SPECTATEUR COMPLET
 ═══════════════════════════════════════════
 [CONTEXTE SOCIAL] : ${userAnswers.contextLabel}
-[ENERGIE / MOOD] : ${userAnswers.moodLabel}
+[ENERGIE / MOOD] : ${userAnswers.moodLabel}${userAnswers._subMoodLabel ? `\n[SOUS-MOOD PRÉCIS] : "${userAnswers._subMoodLabel}" — cherche en priorité des films de ce registre exact.` : ''}
 [BATTERIE MENTALE] : ${userAnswers.pace === 'easy' ? 'Cerveau débranché — rien de trop complexe' : userAnswers.pace === 'complex' ? 'Attentif — scénario bien construit bienvenu' : userAnswers.pace === 'mindblow' ? 'Mind-blow — intrigue dense et retournements exigés' : 'Peu importe'}
 [DUREE DISPONIBLE] : ${durationLabel}
 [LANGUE / ORIGINE] : ${(l => l && l !== 'any' ? ({fr:'Films français',en:'Films américains/anglais',ko:'Films asiatiques',es:'Films hispaniques',any:'Peu importe'}[l] || l) : 'Peu importe — toutes origines acceptées')(userAnswers.detectedLanguage || userAnswers.language)}
@@ -708,7 +708,7 @@ ${romanceWarning}${conflictWarning}
 PROFIL SPECTATEUR
 ═══════════════════════════════════════════
 👤 CONTEXTE : ${preferences.contextLabel}
-⚡ ÉNERGIE / MOOD : ${preferences.moodLabel}
+⚡ ÉNERGIE / MOOD : ${preferences.moodLabel}${preferences._subMoodLabel ? `\n🎯 SOUS-MOOD PRÉCIS : "${preferences._subMoodLabel}" — l'utilisateur a précisé qu'il veut spécifiquement ce registre. Priorise les films qui correspondent exactement à ce sous-mood.` : ''}
 🎭 GENRES EFFECTIFS (blend ADN + mood) : ${blendedNames || preferences.moodLabel}
 🧠 NIVEAU D'ATTENTION : ${preferences.pace === 'easy' ? 'Détendu (simplicité avant tout)' : preferences.pace === 'complex' ? 'Attentif (scénario construit)' : preferences.pace === 'mindblow' ? 'Mind-blow (complexité max)' : 'Peu importe'}
 ⏱️ DURÉE DISPONIBLE : ${durationLabel}

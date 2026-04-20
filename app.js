@@ -1,7 +1,7 @@
 import { tmdbService, openaiService } from './services/api.js?v=44';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
-import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=45';
+import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=46';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=7';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=340';
 
@@ -877,7 +877,52 @@ const App = {
                         if (c !== card) c.style.opacity = '0.4';
                         c.style.pointerEvents = 'none';
                     });
-                    setTimeout(() => this.nextStep(), 260);
+
+                    // ── Sous-mood optionnel (uniquement pour la question mood) ──
+                    if (q.key === 'mood' && opt.subMoods?.length) {
+                        // Effacer l'ancien sous-mood si l'utilisateur change d'avis
+                        store.answers.subMood      = null;
+                        store.answers.subMoodLabel = null;
+
+                        setTimeout(() => {
+                            // Supprimer une éventuelle section précédente
+                            document.getElementById('submood-section')?.remove();
+
+                            const section = document.createElement('div');
+                            section.id = 'submood-section';
+                            section.className = 'submood-section';
+                            section.innerHTML = `
+                                <p class="submood-label">Précise ton envie <span class="submood-optional">(optionnel)</span></p>
+                                <div class="submood-pills" id="submood-pills"></div>
+                                <button class="submood-skip" id="submood-skip">Passer →</button>`;
+
+                            ui.dom.questionContainer.appendChild(section);
+
+                            const pillsContainer = document.getElementById('submood-pills');
+                            opt.subMoods.forEach(sm => {
+                                const pill = document.createElement('button');
+                                pill.type = 'button';
+                                pill.className = 'submood-pill';
+                                pill.innerHTML = `<span class="submood-pill-icon">${sm.icon}</span><span class="submood-pill-text"><strong>${sm.label}</strong><em>${sm.hint}</em></span>`;
+                                pill.onclick = () => {
+                                    store.answers.subMood      = sm.id;
+                                    store.answers.subMoodLabel = sm.label;
+                                    pillsContainer.querySelectorAll('.submood-pill').forEach(p => p.classList.remove('selected'));
+                                    pill.classList.add('selected');
+                                    setTimeout(() => this.nextStep(), 220);
+                                };
+                                pillsContainer.appendChild(pill);
+                            });
+
+                            document.getElementById('submood-skip').onclick = () => this.nextStep();
+
+                            // Animation d'apparition
+                            void section.offsetWidth;
+                            section.classList.add('visible');
+                        }, 280);
+                    } else {
+                        setTimeout(() => this.nextStep(), 260);
+                    }
                 }
             };
             grid.appendChild(card);
@@ -1107,6 +1152,11 @@ const App = {
 
             const contextLabel  = contextMap[store.answers.context]  || "Standard";
             const durationLabel = durationMap[store.answers.duration] || "Peu importe";
+
+            // ── Sous-mood : injecter dans le moodLabel si sélectionné ──
+            if (store.answers.subMoodLabel) {
+                store.answers._subMoodLabel = store.answers.subMoodLabel;
+            }
 
             // ── En mode duo : construire un moodLabel qui reflète les 2 attentes ──
             let moodLabel = moodMap[store.answers.mood] || "Standard";

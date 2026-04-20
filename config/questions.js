@@ -26,12 +26,48 @@ export const QUESTIONS = [
         type: "options",
         key: "mood",
         options: [
-            { id: "35,10751", label: "Se vider la tête",              icon: "🎈", description: "Légèreté, humour et détente absolue." },
-            { id: "28,12",    label: "Passer un bon moment",         icon: "⚡", description: "Action, aventure et rythme soutenu." },
-            { id: "53",       label: "Être tenu en haleine",         icon: "🕵️", description: "Suspense, thriller et tension maximum." },
-            { id: "27",       label: "Frissonner / avoir peur",      icon: "🧟", description: "Horreur, épouvante et sensations fortes." },
-            { id: "18,10749", label: "Ressentir quelque chose de fort", icon: "🎭", description: "Drames profonds et histoires humaines intenses." },
-            { id: "878,9648", label: "Être surpris / réfléchir",     icon: "👽", description: "SF, mystère et réflexion stimulante." }
+            { id: "35,10751", label: "Se vider la tête",              icon: "🎈", description: "Légèreté, humour et détente absolue.",
+              subMoods: [
+                { id: "comedy",   label: "Comédie pure",     icon: "😂", hint: "Rires, gags, humour assumé" },
+                { id: "feelgood", label: "Feel-good / Warm", icon: "☀️", hint: "Bonne humeur, warmth, fin heureuse" },
+                { id: "absurd",   label: "Humour absurde",   icon: "🖤", hint: "Décalé, WTF, humour noir léger" }
+              ]
+            },
+            { id: "28,12",    label: "Passer un bon moment",         icon: "⚡", description: "Action, aventure et rythme soutenu.",
+              subMoods: [
+                { id: "action",    label: "Action pure",        icon: "💥", hint: "Bagarres, poursuites, adrénaline" },
+                { id: "adventure", label: "Aventure / Voyage",  icon: "🌍", hint: "Exploration, quête, dépaysement" },
+                { id: "heist",     label: "Braquage / Mission", icon: "🎯", hint: "Plans, équipes, twist final" }
+              ]
+            },
+            { id: "53",       label: "Être tenu en haleine",         icon: "🕵️", description: "Suspense, thriller et tension maximum.",
+              subMoods: [
+                { id: "psycho",   label: "Thriller psycho",  icon: "🧠", hint: "Manipulation, doute, tension mentale" },
+                { id: "polar",    label: "Polar / Enquête",  icon: "🔍", hint: "Crime, investigation, whodunit" },
+                { id: "tension",  label: "Suspense pur",     icon: "😰", hint: "Haletant, compte à rebours, adrénaline" }
+              ]
+            },
+            { id: "27",       label: "Frissonner / avoir peur",      icon: "🧟", description: "Horreur, épouvante et sensations fortes.",
+              subMoods: [
+                { id: "atmo",       label: "Horreur atmosphérique", icon: "🌫️", hint: "Ambiance, lenteur angoissante, terreur" },
+                { id: "supernatural", label: "Surnaturel",          icon: "👻", hint: "Fantômes, possession, démoniaque" },
+                { id: "psychohorror", label: "Horreur psychologique",icon: "🪞", hint: "Santé mentale, paranoïa, réalité floue" }
+              ]
+            },
+            { id: "18,10749", label: "Ressentir quelque chose de fort", icon: "🎭", description: "Drames profonds et histoires humaines intenses.",
+              subMoods: [
+                { id: "romance",  label: "Romance",           icon: "💕", hint: "Amour, passion, relation humaine" },
+                { id: "drama",    label: "Drame intense",     icon: "🎭", hint: "Émotions profondes, personnages forts" },
+                { id: "inspired", label: "Histoire vraie / Inspirant", icon: "🌟", hint: "Biopic, destin, dépassement de soi" }
+              ]
+            },
+            { id: "878,9648", label: "Être surpris / réfléchir",     icon: "👽", description: "SF, mystère et réflexion stimulante.",
+              subMoods: [
+                { id: "scifi",    label: "Science-Fiction",   icon: "🚀", hint: "Futur, espace, technologie, dystopie" },
+                { id: "mindbend", label: "Mind-bending",      icon: "🌀", hint: "Twists, réalité tordue, Inception-like" },
+                { id: "mystery",  label: "Mystère / Énigme",  icon: "🔮", hint: "Secrets, révélations, puzzle narratif" }
+              ]
+            }
         ]
     },
 
