@@ -1566,10 +1566,11 @@ const App = {
                 return true;
             });
 
-            // ── Normalisation des scores avec spread réel ──
-            // Objectif : #1 = maxAllowed, #2 et #3 reflètent l'écart réel d'avec le #1
-            // Ex : scores IA [88, 74, 61] → normalisés [95, 80, 67] avec écarts préservés
+            // ── Normalisation des scores avec spread contenu ──
+            // Objectif : #1 = maxAllowed, écart max entre #1 et #3 = 15 pts
+            // Ex : scores IA [88, 74, 61] → normalisés [95, 89, 83] — pas de 67% qui fait peur
             const maxAllowed = getMaxScore(store.rerollCount);
+            const SPREAD_MAX = 15; // écart maximum autorisé entre #1 et le dernier affiché
             const scores = rankedDeduped.map(r => r.match_score || 0);
             const topRaw = scores[0] || 100;
             const botRaw = Math.min(...scores.slice(0, Math.min(scores.length, 5)));
@@ -1577,10 +1578,9 @@ const App = {
 
             rankedDeduped.forEach(r => {
                 const raw = r.match_score || 0;
-                // Mapping linéaire : topRaw → maxAllowed, botRaw → (maxAllowed - 28)
-                // Ça crée un spread de ~28pts entre le #1 et le dernier du top5
-                const normalized = maxAllowed - ((topRaw - raw) / rawRange) * 28;
-                r.match_score = Math.round(Math.max(maxAllowed - 30, Math.min(maxAllowed, normalized)));
+                // Mapping linéaire compressé : topRaw → maxAllowed, botRaw → (maxAllowed - SPREAD_MAX)
+                const normalized = maxAllowed - ((topRaw - raw) / rawRange) * SPREAD_MAX;
+                r.match_score = Math.round(Math.max(maxAllowed - SPREAD_MAX, Math.min(maxAllowed, normalized)));
             });
 
             // ── Récupérer les détails complets des 3 meilleurs ──

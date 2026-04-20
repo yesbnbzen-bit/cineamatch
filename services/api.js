@@ -782,8 +782,11 @@ GARANTIE DE DIVERSITÉ (CRITIQUE)
 ═══════════════════════════════════════════
 Dans ton classement final, les 3 premiers films DOIVENT être diversifiés :
 → Pas 3 thrillers si des alternatives existent. Pas 3 films de la même décennie si évitable.
-→ Si le top 2 est du même sous-genre, le 3ème DOIT être d'un registre différent (même si score légèrement inférieur).
+→ Si le top 2 est du même sous-genre, le 3ème DOIT être d'un registre différent.
 → Objectif : 3 films qui se COMPLÈTENT (ex: un intime, un épique, un original) plutôt que 3 clones.
+⚠️ RÈGLE PLANCHER DE QUALITÉ : La diversité ne doit JAMAIS sacrifier la qualité.
+→ Si le candidat "diversité" a un score < 72 pts, ne l'impose PAS — prends plutôt le prochain film bien noté même s'il est similaire.
+→ Un film à 80 pts légèrement similaire vaut mieux qu'un film à 60 pts "différent".
 
 ═══════════════════════════════════════════
 MATCH REASONS — RÈGLES DE RÉDACTION
