@@ -877,52 +877,7 @@ const App = {
                         if (c !== card) c.style.opacity = '0.4';
                         c.style.pointerEvents = 'none';
                     });
-
-                    // ── Sous-mood optionnel (uniquement pour la question mood) ──
-                    if (q.key === 'mood' && opt.subMoods?.length) {
-                        // Effacer l'ancien sous-mood si l'utilisateur change d'avis
-                        store.answers.subMood      = null;
-                        store.answers.subMoodLabel = null;
-
-                        setTimeout(() => {
-                            // Supprimer une éventuelle section précédente
-                            document.getElementById('submood-section')?.remove();
-
-                            const section = document.createElement('div');
-                            section.id = 'submood-section';
-                            section.className = 'submood-section';
-                            section.innerHTML = `
-                                <p class="submood-label">Précise ton envie <span class="submood-optional">(optionnel)</span></p>
-                                <div class="submood-pills" id="submood-pills"></div>
-                                <button class="submood-skip" id="submood-skip">Passer →</button>`;
-
-                            ui.dom.questionContainer.appendChild(section);
-
-                            const pillsContainer = document.getElementById('submood-pills');
-                            opt.subMoods.forEach(sm => {
-                                const pill = document.createElement('button');
-                                pill.type = 'button';
-                                pill.className = 'submood-pill';
-                                pill.innerHTML = `<span class="submood-pill-icon">${sm.icon}</span><span class="submood-pill-text"><strong>${sm.label}</strong><em>${sm.hint}</em></span>`;
-                                pill.onclick = () => {
-                                    store.answers.subMood      = sm.id;
-                                    store.answers.subMoodLabel = sm.label;
-                                    pillsContainer.querySelectorAll('.submood-pill').forEach(p => p.classList.remove('selected'));
-                                    pill.classList.add('selected');
-                                    setTimeout(() => this.nextStep(), 220);
-                                };
-                                pillsContainer.appendChild(pill);
-                            });
-
-                            document.getElementById('submood-skip').onclick = () => this.nextStep();
-
-                            // Animation d'apparition
-                            void section.offsetWidth;
-                            section.classList.add('visible');
-                        }, 280);
-                    } else {
-                        setTimeout(() => this.nextStep(), 260);
-                    }
+                    setTimeout(() => this.nextStep(), 260);
                 }
             };
             grid.appendChild(card);
