@@ -1033,6 +1033,13 @@ const App = {
                 store.rerollCount       = 0;
             }
 
+            // ── Variante de reroll : chaque reroll explore un angle différent ──
+            // rerollCount=0 (1er reroll) → pépites méconnues
+            // rerollCount=1+ (2ème reroll) → registre/style/époque différent
+            store.answers.rerollVariant = isReroll
+                ? (store.rerollCount === 0 ? 'hidden_gem' : 'different_angle')
+                : '';
+
             // ── Personnalisation : charger l'historique utilisateur (premier appel uniquement) ──
             if (store.currentUser && !isReroll) {
                 try {

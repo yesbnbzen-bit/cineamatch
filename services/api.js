@@ -232,17 +232,23 @@ export const tmdbService = {
         else if (era === 'retro') url += `&primary_release_date.lte=1974-12-31`;
 
         // 7. Sort / Pivot Strategy
+        const rerollVariant = preferences?.rerollVariant || '';
         if (hasCastFilter) {
             url += `&sort_by=popularity.desc&vote_average.gte=4.5&vote_count.gte=10`;
+        } else if (isReroll && rerollVariant === 'hidden_gem') {
+            // Pépites : bien notées mais peu connues (évite les blockbusters vus partout)
+            url += `&sort_by=vote_average.desc&vote_count.gte=200&vote_count.lte=3000&vote_average.gte=7.2`;
+        } else if (isReroll && rerollVariant === 'different_angle') {
+            // Angle différent : ouvre le filtre de popularité, tri par date de sortie décroissante
+            url += `&sort_by=primary_release_date.desc&vote_average.gte=6.8&vote_count.gte=300`;
         } else if (isReroll) {
             url += `&sort_by=vote_average.desc&vote_count.lte=4000&vote_average.gte=7.0`;
         } else {
             // Seuil min 300 votes pour la qualité, pas de cap max
-            // L'exclusion des mega-blockbusters est gérée par le scoring IA (pénalités)
             url += `&sort_by=vote_average.desc&vote_count.gte=300`;
         }
 
-        const randomPage = isReroll ? Math.floor(Math.random() * 5) + 1 : 1;
+        const randomPage = isReroll ? Math.floor(Math.random() * 6) + 1 : 1;
         const finalUrl = url + `&page=${randomPage}&_=${Date.now()}`;
 
         let resp = await fetch(finalUrl, { cache: 'no-store' });
@@ -463,6 +469,19 @@ ${userAnswers.blendedGenreIds && userAnswers.blendedGenreIds !== userAnswers.moo
    - Même intensité émotionnelle que les films ADN
    - Variété de sous-genres et de pays
    ${seenTitles.length > 0 ? 'AUCUN des titres déjà vus.' : ''}
+${userAnswers.rerollVariant === 'hidden_gem' ? `
+🔄 VARIANTE RE-ROLL — PÉPITES MÉCONNUES :
+Tu dois proposer des films MOINS CONNUS mais de grande qualité.
+→ Évite les blockbusters (Marvel, Disney, films > 100M$ box-office) sauf s'ils correspondent parfaitement.
+→ Cherche des films entre 200k et 2M de spectateurs TMDB — des "films de cinéphile" qu'on découvre avec surprise.
+→ Pense : films indépendants, productions internationales méconnues, perles oubliées des années 90-2000.` : ''}
+${userAnswers.rerollVariant === 'different_angle' ? `
+🔄 VARIANTE RE-ROLL — ANGLE DIFFÉRENT :
+L'utilisateur a déjà vu des suggestions. Il veut explorer un REGISTRE DIFFÉRENT du même mood.
+→ Change l'époque : si les 1ères suggestions étaient récentes, propose du vintage ou inversement.
+→ Change le sous-genre : si les 1ères étaient des comédies romantiques, propose des comédies d'action ou dramatiques.
+→ Change la nationalité : si les 1ères étaient américaines, cherche européen ou asiatique.
+→ L'objectif : même émotion cible, chemin complètement différent.` : ''}
 
 ${userAnswers.context === 'family' ? '⛔ CONTRAINTE ABSOLUE : Contexte famille = ZÉRO contenu adulte/violent. Exclure genre_ids : 27 (horreur), 53 (thriller intense), 18 (drames lourds).' : ''}
 
@@ -568,8 +587,11 @@ Réponds UNIQUEMENT par ce JSON strict (pas de markdown, pas de texte autour) :
             : `Pas de films de référence fournis. Base tes raisons sur le mood et l'envie.`;
 
         // ── Contexte re-roll ──
+        const rerollVariant = preferences?.rerollVariant || '';
         const rerollContext = isReroll
-            ? `\n🔄 MODE RE-ROLL ACTIF : L'utilisateur veut de la NOUVEAUTÉ. IDs exclus : [${excludedIds.join(', ')}]. Favorise impérativement la diversité dans le top 3.`
+            ? `\n🔄 MODE RE-ROLL ACTIF : L'utilisateur veut de la NOUVEAUTÉ. IDs exclus : [${excludedIds.join(', ')}]. Favorise impérativement la diversité dans le top 3.
+${rerollVariant === 'hidden_gem' ? `💎 VARIANTE PÉPITES : L'utilisateur cherche des films moins connus mais excellents. Favorise les films avec peu de votes TMDB (< 100k) mais très bien notés. Pénalise les blockbusters ultra-populaires si des alternatives de qualité existent. Dans tes match_reasons, souligne que c'est une découverte rare.` : ''}
+${rerollVariant === 'different_angle' ? `🔀 VARIANTE ANGLE DIFFÉRENT : Assure-toi que le top 3 explore un registre/sous-genre/époque DIFFÉRENT des suggestions précédentes. Si les 1ères étaient des comédies romantiques américaines récentes, propose maintenant des films d'un autre style (comédie d'action, drame léger, film européen, vintage...). Même émotion cible, chemin différent.` : ''}`
             : '';
 
         // ── Personnalisation depuis l'historique CineaMatch IA ──
