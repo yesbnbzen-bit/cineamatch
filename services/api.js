@@ -692,6 +692,11 @@ Cherche des films à l'INTERSECTION des deux moods — par exemple :
             ? `\n⛔ ROMANCE EXCLUE DU BLEND : Le film de référence n'a pas de dimension romantique. NE PAS scorer favorablement les films romantiques/sentimentaux. Score = 0 pour tout film dont le genre principal est Romance (10749).`
             : '';
 
+        // Avertissement biopic/inspirant : pénalise les romances érotiques quand l'ADN est une histoire vraie
+        const inspiringBiopicWarning = preferences.mood === '18,10749' && preferences.lastLovedMovies?.length > 0
+            ? `\n🎯 MOOD "ÉMOUVANT / INSPIRANT" + FILM(S) DE RÉFÉRENCE FOURNI(S) : Ce mood couvre DEUX registres distincts — (A) biopics/histoires vraies/dépassement humain et (B) romances/drames sentimentaux. L'ADN calibre lequel l'utilisateur cherche. Si les films de référence sont des biopics ou histoires vraies (ex: La Méthode Williams, À la recherche du bonheur, Rocky, Judy...) → pénalise FORTEMENT les romances érotiques/sentimentales pures (ex: romans d'amour érotiques, histoires de séduction, soft erotica) : -45 pts. Au contraire, si les films de référence sont des romances (ex: The Notebook, Titanic) → ils sont bienvenus.`
+            : '';
+
         // Avertissement conflit ADN/mood (ex: légèreté + Get Out)
         const conflictWarning = preferences.adnConflictsWithMood
             ? `\n⚠️ CONFLIT ADN/MOOD DÉTECTÉ : Les films de référence appartiennent à un genre OPPOSÉ au mood choisi (ex: film d'horreur cité pour une soirée légère). Dans ce cas, le MOOD est prioritaire pour le genre — cherche des films du genre demandé (${blendedNames}) mais avec la SOPHISTICATION NARRATIVE et le niveau d'exigence du film de référence. Ne recommande PAS des films du genre du film de référence.`
@@ -702,7 +707,7 @@ Cherche des films à l'INTERSECTION des deux moods — par exemple :
 ⚠️ RÈGLE CRITIQUE — ADN CINÉPHILE :
 Les films de référence (ADN) calibrent le style narratif, le rythme et l'esthétique visuelle.
 L'ÉNERGIE/MOOD donne le registre émotionnel général. Les GENRES EFFECTIFS ci-dessous ont priorité sur le libellé du mood.
-${romanceWarning}${conflictWarning}
+${romanceWarning}${inspiringBiopicWarning}${conflictWarning}
 
 ═══════════════════════════════════════════
 PROFIL SPECTATEUR
