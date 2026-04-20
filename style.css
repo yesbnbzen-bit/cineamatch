@@ -4425,6 +4425,78 @@ body.duo-active {
     margin: 0.8rem auto 1.6rem;
 }
 
+/* ══ Header recap duo — avant les films ══ */
+.duo-recap-header {
+    text-align: center;
+    margin-bottom: 1.4rem;
+    animation: fadeIn 0.6s ease both;
+}
+
+.duo-recap-tag {
+    display: inline-block;
+    background: rgba(229, 9, 20, 0.12);
+    border: 1px solid rgba(229, 9, 20, 0.3);
+    color: #ff6b6b;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 0.75rem;
+}
+
+.duo-recap-title {
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    margin: 0 0 0.4rem;
+    line-height: 1.15;
+}
+
+.duo-recap-amp {
+    color: var(--primary-color);
+    margin: 0 0.3rem;
+}
+
+.duo-recap-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+}
+
+/* Pills de mood dans la summary card */
+.duo-mood-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 100px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin: 0.2rem 0;
+}
+
+.duo-mood-pill.red-pill {
+    background: rgba(229, 9, 20, 0.15);
+    border: 1px solid rgba(229, 9, 20, 0.35);
+    color: #ff8080;
+}
+
+.duo-mood-pill.green-pill {
+    background: rgba(70, 211, 105, 0.12);
+    border: 1px solid rgba(70, 211, 105, 0.3);
+    color: #46d369;
+}
+
+.duo-vs-text {
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.25);
+    margin: 0;
+}
+
 /* ══ Carte résumé profils duo (page résultats) ══ */
 .duo-summary-card {
     background: linear-gradient(135deg, rgba(229, 9, 20, 0.07) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(70, 211, 105, 0.05) 100%);
@@ -4505,7 +4577,7 @@ body.duo-active {
     font-size: 1.3rem;
 }
 
-.duo-summary-tonight {
+.duo-summary-tonight, .duo-vs-label {
     font-size: 0.52rem;
     font-weight: 700;
     letter-spacing: 1.5px;

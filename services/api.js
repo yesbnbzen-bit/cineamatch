@@ -206,8 +206,15 @@ export const tmdbService = {
         }
         // duration === 'any' → pas de filtre durée
 
-        // 4b. Language Filter — déduit des films de référence
-        if (preferences.detectedLanguage) {
+        // 4b. Language Filter — déduit des films de référence ou conflit duo
+        if (preferences._duoLangConflict && preferences._duoLangA && preferences._duoLangB) {
+            // Duo conflit : filtre OR (langA ou langB) pour ouvrir le pool aux deux cultures
+            const duoLangs = [preferences._duoLangA, preferences._duoLangB].filter(l => l && l !== 'any');
+            if (duoLangs.length > 0) {
+                url += `&with_original_language=${duoLangs.join('|')}`;
+                console.log(`🌍 Duo langue OR : ${duoLangs.join('|')}`);
+            }
+        } else if (preferences.detectedLanguage) {
             url += `&with_original_language=${preferences.detectedLanguage}`;
             console.log(`🌍 Langue détectée depuis ADN : ${preferences.detectedLanguage}`);
         }
@@ -658,11 +665,28 @@ ${rerollVariant === 'different_angle' ? `🔀 VARIANTE ANGLE DIFFÉRENT : Assure
   ⛔ Ne choisis PAS 3 films tous du même siècle.`
             : '';
 
+        // Exclusions duo : absolues vs souples
+        const duoHardEx  = preferences._duoHardExclude  || [];
+        const duoSoftExA = preferences._duoSoftExcludeA || [];
+        const duoSoftExB = preferences._duoSoftExcludeB || [];
+        const duoExclusionNote = preferences.isDuoMode && (duoHardEx.length || duoSoftExA.length || duoSoftExB.length)
+            ? `\n\n⛔ EXCLUSIONS DUO :${
+                duoHardEx.length  ? `\n  🔴 ABSOLUES (les deux refusent) → Score = 0 forcé : ${duoHardEx.join(', ')}` : ''}${
+                duoSoftExA.length ? `\n  🟡 Pénalité A seulement (-20 pts) : ${duoSoftExA.join(', ')} — accepté si c'est le meilleur compromis` : ''}${
+                duoSoftExB.length ? `\n  🟡 Pénalité B seulement (-20 pts) : ${duoSoftExB.join(', ')} — accepté si c'est le meilleur compromis` : ''}`
+            : '';
+
+        const PACE_LABELS = { easy: 'film simple/accessible', complex: 'film à scénario construit', mindblow: 'film mind-blow/complexe', any: 'indifférent' };
+        const duoPaceNote = preferences.isDuoMode && preferences._duoPaceConflict
+            ? `\n  ⚡ CONFLIT DE COMPLEXITÉ : A préfère un "${PACE_LABELS[preferences._duoPaceA] || preferences._duoPaceA}" vs B un "${PACE_LABELS[preferences._duoPaceB] || preferences._duoPaceB}"
+  → Cherche un film au scénario accessible mais avec une profondeur émotionnelle — simple à suivre mais avec de la substance. Évite les films trop cryptiques ET les films trop superficiels.`
+            : '';
+
         const duoContext = preferences.isDuoMode
             ? `\n\n👫 MODE DUO — RÈGLE ABSOLUE ET NON NÉGOCIABLE :
 Ces recommandations sont pour DEUX personnes avec des envies DIFFÉRENTES :
   → Personne A veut : ${preferences.duoMoodLabelA || '?'}
-  → Personne B veut : ${preferences.duoMoodLabelB || '?'}${langConflictNote}${eraConflictNote}
+  → Personne B veut : ${preferences.duoMoodLabelB || '?'}${langConflictNote}${eraConflictNote}${duoPaceNote}${duoExclusionNote}
 
 CHAQUE film du top 3 DOIT être un vrai compromis qui satisfait les DEUX simultanément.
 Cherche des films à l'INTERSECTION des deux moods — par exemple :

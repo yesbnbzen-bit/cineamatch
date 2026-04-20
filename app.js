@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=46';
+import { tmdbService, openaiService } from './services/api.js?v=48';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1034,10 +1034,12 @@ const App = {
             }
 
             // ── Variante de reroll : chaque reroll explore un angle différent ──
-            // rerollCount=0 (1er reroll) → pépites méconnues
-            // rerollCount=1+ (2ème reroll) → registre/style/époque différent
+            // En duo : toujours 'different_angle' — hidden_gem restreint trop le pool
+            // et risque d'éliminer les meilleurs films de compromis (peu connus mais pas "pépites")
+            // En solo : rerollCount=0 → pépites | rerollCount=1+ → angle différent
             store.answers.rerollVariant = isReroll
-                ? (store.rerollCount === 0 ? 'hidden_gem' : 'different_angle')
+                ? ((store.duoMode && store.duoMerged) ? 'different_angle'
+                    : (store.rerollCount === 0 ? 'hidden_gem' : 'different_angle'))
                 : '';
 
             // ── Personnalisation : charger l'historique utilisateur (premier appel uniquement) ──
@@ -1762,26 +1764,32 @@ const App = {
 
             const duoSummary = document.createElement('div');
             duoSummary.id = 'duo-summary-block';
+            const isEn = getLang() === 'en';
             duoSummary.innerHTML = `
+                <div class="duo-recap-header">
+                    <p class="duo-recap-tag">${isEn ? '🎯 Perfect compromise found' : '🎯 Compromis parfait trouvé'}</p>
+                    <h2 class="duo-recap-title">${nameA} <span class="duo-recap-amp">&amp;</span> ${nameB}</h2>
+                    <p class="duo-recap-subtitle">${isEn ? 'Three films you\'ll both love tonight' : 'Trois films que vous allez adorer ce soir'}</p>
+                </div>
                 <div class="duo-summary-card">
                     <!-- Personne A -->
                     <div class="duo-summary-person left">
                         <p class="duo-summary-label red">${nameA}</p>
-                        <p class="duo-summary-mood">${moodIconA} ${moodLabelA}</p>
-                        <p class="duo-summary-films">${moviesA ? `🎬 ${moviesA}` : (getLang() === 'en' ? 'No reference films' : 'Aucun film de référence')}</p>
+                        <div class="duo-mood-pill red-pill">${moodIconA} ${moodLabelA}</div>
+                        <p class="duo-summary-films">${moviesA ? `🎬 ${moviesA}` : (isEn ? 'No reference films' : 'Aucun film de référence')}</p>
                     </div>
 
                     <!-- Centre -->
                     <div class="duo-summary-center">
                         <div class="duo-summary-icon">🎬</div>
-                        <p class="duo-summary-tonight">${getLang() === 'en' ? 'Tonight' : 'Ce soir'}</p>
+                        <p class="duo-vs-text">VS</p>
                     </div>
 
                     <!-- Personne B -->
                     <div class="duo-summary-person right">
                         <p class="duo-summary-label green">${nameB}</p>
-                        <p class="duo-summary-mood">${moodIconB} ${moodLabelB}</p>
-                        <p class="duo-summary-films">${moviesB ? `🎬 ${moviesB}` : (getLang() === 'en' ? 'No reference films' : 'Aucun film de référence')}</p>
+                        <div class="duo-mood-pill green-pill">${moodIconB} ${moodLabelB}</div>
+                        <p class="duo-summary-films">${moviesB ? `🎬 ${moviesB}` : (isEn ? 'No reference films' : 'Aucun film de référence')}</p>
                     </div>
                 </div>`;
             ui.dom.moviesGrid.before(duoSummary);
@@ -2086,7 +2094,9 @@ const App = {
 
         // Lancer le questionnaire au clic ou à l'appui sur Entrée
         const launch = () => {
-            store.duoNameA = nameInput?.value?.trim() || '';
+            // Validation : max 25 chars, pas de HTML/scripts
+            const raw = nameInput?.value?.trim() || '';
+            store.duoNameA = raw.slice(0, 25).replace(/[<>"'&]/g, '');
             this.startFlow(true);
         };
         if (startBtn) startBtn.onclick = launch;
@@ -2276,8 +2286,30 @@ const App = {
             onStorageEvent({ key: 'duo_final_movies', newValue: finalMoviesRaw });
         }, 1500);
 
-        // Nettoyer le polling si on quitte cet écran
-        const _stopPoll = () => { _duoPollDone = true; clearInterval(_duoPoll); };
+        // ── Timeout 10 min : si B ne répond pas, proposer de continuer en solo ──
+        const DUO_TIMEOUT_MS = 10 * 60 * 1000;
+        const _duoTimeout = setTimeout(() => {
+            if (_duoPollDone) return; // B a déjà répondu, pas besoin
+            _duoPollDone = true;
+            clearInterval(_duoPoll);
+            // Afficher bannière de timeout
+            if (waitingText) waitingText.textContent = getLang() === 'en'
+                ? '⏱️ Your partner hasn\'t responded yet...'
+                : '⏱️ Ton partenaire n\'a pas encore répondu...';
+            const timeoutBanner = document.createElement('div');
+            timeoutBanner.className = 'duo-timeout-banner';
+            timeoutBanner.innerHTML = `
+                <p>${getLang() === 'en' ? 'Want to continue solo in the meantime?' : 'Tu veux continuer en solo en attendant ?'}</p>
+                <button class="duo-timeout-solo-btn cta-btn" onclick="location.href='/'">
+                    ${getLang() === 'en' ? '🎬 Continue solo' : '🎬 Continuer en solo'}
+                </button>
+            `;
+            const waitingContainer = document.querySelector('#duo-share .duo-card') || document.querySelector('#duo-share');
+            if (waitingContainer) waitingContainer.appendChild(timeoutBanner);
+        }, DUO_TIMEOUT_MS);
+
+        // Nettoyer le polling et le timeout si on quitte cet écran
+        const _stopPoll = () => { _duoPollDone = true; clearInterval(_duoPoll); clearTimeout(_duoTimeout); };
         document.addEventListener('cinematch:view-change', _stopPoll, { once: true });
     },
 
@@ -2319,7 +2351,9 @@ const App = {
             const nameInputB = document.getElementById('duo-name-b');
             if (startBtn) {
                 const launch = () => {
-                    store.duoNameB = nameInputB?.value?.trim() || '';
+                    // Validation : max 25 chars, pas de HTML/scripts
+                    const raw = nameInputB?.value?.trim() || '';
+                    store.duoNameB = raw.slice(0, 25).replace(/[<>"'&]/g, '');
                     this.startFlow(true);
                 };
                 startBtn.onclick = launch;
@@ -2397,29 +2431,56 @@ const App = {
         }
         const duoEraConflict = eraA !== 'any' && eraB !== 'any' && eraA !== eraB;
 
-        // ── Exclusions : union (si l'un exclut, ça exclut pour tous) ──
-        const mergedExclude = [...new Set([...(a?.exclude || []), ...(b?.exclude || [])])];
+        // ── Exclusions : distinction entre absolues (les deux) et souples (un seul) ──
+        // "none" = carte blanche → ne pas polluer les autres exclusions
+        const exA = (a?.exclude || []).filter(e => e !== 'none');
+        const exB = (b?.exclude || []).filter(e => e !== 'none');
+        const setA = new Set(exA);
+        const setB = new Set(exB);
+        // Absolues : les deux personnes excluent → Score = 0 forcé dans le prompt
+        const hardExclude = [...new Set([...exA.filter(e => setB.has(e))])];
+        // Souples : seulement l'un des deux exclut → pénalité IA -20 pts
+        const softExcludeA = exA.filter(e => !setB.has(e));
+        const softExcludeB = exB.filter(e => !setA.has(e));
+        // Pour compatibilité avec le reste du code (filtres TMDB, etc.) on garde l'union
+        const mergedExclude = [...new Set([...exA, ...exB])];
 
         // ── Mood : celui de la Personne B (la "dernière" à répondre) ──
         const mergedMood = b?.mood || a?.mood;
 
-        // ── Films de référence : alterner A et B, max 3 ──
+        // ── Films de référence : interleave équitable A/B, max 3 ──
+        // Ordre : A1, B1, A2 (A en premier = équitable, pas de biais vers B)
         const aMovies = a?.lastLovedMovies || [];
         const bMovies = b?.lastLovedMovies || [];
         const mergedMovies = [];
         for (let i = 0; i < Math.max(aMovies.length, bMovies.length) && mergedMovies.length < 3; i++) {
-            if (bMovies[i]) mergedMovies.push(bMovies[i]);
             if (aMovies[i] && mergedMovies.length < 3) mergedMovies.push(aMovies[i]);
+            if (bMovies[i] && mergedMovies.length < 3) mergedMovies.push(bMovies[i]);
         }
 
         console.log(`👫 Fusion — Mood:${mergedMood} | Durée:${mergedDuration} | Langue:${mergedLanguage} (${langA}↔${langB}${duoLangConflict?' ⚡CONFLIT':''}) | Époque:${mergedEra}${duoEraRange?` [${duoEraRange.min}-${duoEraRange.max}]`:''} (${eraA}↔${eraB}${duoEraConflict?' ⚡CONFLIT':''})`);
+
+        // ── Pace : inférer depuis le mood de chacun, puis chercher un compromis ──
+        const PACE_FROM_MOOD = {
+            "35,10751": "easy",   // comédie → facile
+            "28,12":    "any",    // action → peu importe
+            "53":       "any",    // thriller → peu importe
+            "27":       "easy",   // horreur → facile (immersif, pas intellectuel)
+            "18,10749": "any",    // émouvant → peu importe
+            "878,9648": "complex" // SF/mystère → complexe
+        };
+        const paceA = a?.pace || PACE_FROM_MOOD[a?.mood] || "any";
+        const paceB = b?.pace || PACE_FROM_MOOD[b?.mood] || "any";
+        // Compromis : si conflit entre easy et complex → prendre "any" (laisser l'IA arbitrer)
+        const mergedPace = paceA === paceB ? paceA : 'any';
+        const duoPaceConflict = paceA !== 'any' && paceB !== 'any' && paceA !== paceB;
 
         return {
             context:          a?.context || 'couple',
             mood:             mergedMood,
             language:         mergedLanguage,
             duration:         mergedDuration,
-            pace:             null,
+            pace:             mergedPace,
             exclude:          mergedExclude,
             era:              mergedEra,
             lastLovedMovies:  mergedMovies,
@@ -2434,7 +2495,14 @@ const App = {
             _duoEraConflict:  duoEraConflict,
             _duoEraRange:     duoEraRange,
             _duoEraLabelA:    ERA_LABELS[eraA] || eraA,
-            _duoEraLabelB:    ERA_LABELS[eraB] || eraB
+            _duoEraLabelB:    ERA_LABELS[eraB] || eraB,
+            // Exclusions différenciées
+            _duoHardExclude:  hardExclude,   // absolues : les deux excluent → Score = 0
+            _duoSoftExcludeA: softExcludeA,  // souple A : seulement A exclut → pénalité
+            _duoSoftExcludeB: softExcludeB,  // souple B : seulement B exclut → pénalité
+            _duoPaceA:        paceA,
+            _duoPaceB:        paceB,
+            _duoPaceConflict: duoPaceConflict
         };
     },
 
