@@ -261,6 +261,20 @@ export const tmdbService = {
             if (data2.results) results = [...results, ...data2.results];
         } catch(e) { console.warn("Next page fetch failed"); }
 
+        // Option B — Boost inspirant : requête parallèle biopic/histoire vraie pour mood "Émouvant / Inspirant"
+        if ((preferences.mood === '18,10749' || preferences.blendedGenreIds?.includes('18')) && !isReroll) {
+            try {
+                // TMDB keyword IDs : 14769=biography, 9798=based on a true story, 4565=underdog
+                const inspiringUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&with_genres=18&with_keywords=14769|9798|4565&vote_average.gte=7.0&vote_count.gte=500&sort_by=vote_average.desc&page=1`;
+                const inspr = await fetch(inspiringUrl, { cache: 'no-store' });
+                const insprData = await inspr.json();
+                if (insprData.results?.length) {
+                    results = [...results, ...insprData.results];
+                    console.log(`🌟 Boost inspirant : +${insprData.results.length} films biopic/histoire vraie ajoutés au pool`);
+                }
+            } catch(e) { console.warn('Boost inspirant failed', e); }
+        }
+
         // Fallback sans keywords si trop peu de résultats
         if (results.length < 5 && preferences.adnKeywordIds?.length > 0) {
             console.log('⚠️ Keywords trop restrictifs, fallback sans keywords');
@@ -745,6 +759,7 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
+${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)
 → ≥ 8.0 = ${weights.quality} pts | 7.5-8.0 = ${Math.round(weights.quality*0.8)} pts | 7.0-7.5 = ${Math.round(weights.quality*0.6)} pts | < 7.0 = ${Math.round(weights.quality*0.4)} pts.
