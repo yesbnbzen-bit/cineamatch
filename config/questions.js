@@ -30,7 +30,7 @@ export const QUESTIONS = [
             { id: "28,12",    label: "Action / Aventure",    icon: "⚡", description: "Bagarres, poursuites, adrénaline et grand spectacle." },
             { id: "53",       label: "Thriller / Suspense",  icon: "🕵️", description: "Tension, manipulation, impossible de décrocher." },
             { id: "27",       label: "Horreur",              icon: "😱", description: "Peur, épouvante et sensations fortes." },
-            { id: "18,10749", label: "Romance / Drame",      icon: "💕", description: "Amour, émotions profondes, histoires qui touchent." },
+            { id: "18,10749", label: "Émouvant / Inspirant",  icon: "💕", description: "Drames, biopics, histoires vraies qui émeuvent et inspirent." },
             { id: "878,9648", label: "SF / Mystère",         icon: "🌌", description: "Futur, réalité tordue, énigmes et révélations." }
         ]
     },
@@ -134,7 +134,7 @@ export const QUESTIONS_EN = [
             { id: "28,12",    label: "Action / Adventure",   icon: "⚡", description: "Fights, chases, adrenaline and spectacle." },
             { id: "53",       label: "Thriller / Suspense",  icon: "🕵️", description: "Tension, manipulation, impossible to stop watching." },
             { id: "27",       label: "Horror",               icon: "😱", description: "Fear, dread and strong sensations." },
-            { id: "18,10749", label: "Romance / Drama",      icon: "💕", description: "Love, deep emotions, stories that move you." },
+            { id: "18,10749", label: "Moving / Inspiring",    icon: "💕", description: "Dramas, biopics, true stories that move and inspire." },
             { id: "878,9648", label: "Sci-Fi / Mystery",     icon: "🌌", description: "Future, twisted reality, enigmas and revelations." }
         ]
     },

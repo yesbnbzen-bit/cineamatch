@@ -1,7 +1,7 @@
 import { tmdbService, openaiService } from './services/api.js?v=44';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
-import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=47';
+import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=7';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=340';
 
@@ -1090,7 +1090,7 @@ const App = {
                 "28,12":    "Action / Aventure",
                 "53":       "Thriller / Suspense",
                 "27":       "Horreur",
-                "18,10749": "Romance / Drame",
+                "18,10749": "Émouvant / Inspirant",
                 "878,9648": "SF / Mystère"
             };
             const durationMap = { short: "Court (< 1h45)", any: "Peu importe", long: "Long format (2h+)" };
