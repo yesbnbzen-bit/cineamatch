@@ -4426,9 +4426,13 @@ body.duo-active {
 }
 
 /* ══ Header recap duo — avant les films ══ */
+#duo-summary-block {
+    margin-bottom: 3rem;
+}
+
 .duo-recap-header {
     text-align: center;
-    margin-bottom: 1.4rem;
+    margin-bottom: 2rem;
     animation: fadeIn 0.6s ease both;
 }
 
@@ -4437,20 +4441,20 @@ body.duo-active {
     background: rgba(229, 9, 20, 0.12);
     border: 1px solid rgba(229, 9, 20, 0.3);
     color: #ff6b6b;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 1.2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    padding: 0.35rem 1rem;
+    padding: 0.4rem 1.1rem;
     border-radius: 100px;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.1rem;
 }
 
 .duo-recap-title {
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 900;
     color: white;
-    margin: 0 0 0.4rem;
+    margin: 0 0 0.8rem;
     line-height: 1.15;
 }
 
@@ -4460,9 +4464,10 @@ body.duo-active {
 }
 
 .duo-recap-subtitle {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.92rem;
+    color: rgba(255, 255, 255, 0.42);
     margin: 0;
+    letter-spacing: 0.3px;
 }
 
 /* Pills de mood dans la summary card */

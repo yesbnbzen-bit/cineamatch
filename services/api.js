@@ -123,7 +123,8 @@ export const tmdbService = {
     async getAdvancedDiscovery(preferences, metadata = {}, isReroll = false, page = 1, castIds = []) {
         // Note: le paramètre `page` de l'URL de base est remplacé plus bas par `randomPage`.
         // On le retire ici pour éviter le doublon page=X&...&page=Y (le dernier gagne, mais c'est source de confusion).
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false`;
+        // 10770 = Téléfilm (TV Movie) — qualité trop variable, exclus par défaut
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770`;
         
         // Add with_cast parameter if we have cast IDs from loved movies
         if (castIds && castIds.length > 0) {
@@ -696,7 +697,9 @@ Cherche des films à l'INTERSECTION des deux moods — par exemple :
 
 ⛔ PÉNALITÉ SÉVÈRE : -35 pts pour tout film orienté à 80%+ vers UN SEUL des deux profils.
 ⛔ INTERDIT : Recommander 3 films qui plaisent tous uniquement à la même personne.
-✅ OBJECTIF : Les deux personnes doivent dire "oui" après avoir vu la fiche du film.`
+⛔ INTERDIT : Film de genre "Téléfilm" ou production TV à petit budget.
+✅ OBJECTIF : Les deux personnes doivent dire "oui" après avoir vu la fiche du film.
+✅ RÈGLE D'OR DU #1 : Le premier film DOIT être le compromis le plus évident — un film où les deux moods se croisent naturellement (ex: comédie avec twist, thriller accessible, drame rythmé). Pas de film ultra-polarisant en #1.`
             : '';
 
         // ── Profil d'âge de l'utilisateur ──

@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=48';
+import { tmdbService, openaiService } from './services/api.js?v=49';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -2246,6 +2246,8 @@ const App = {
                         store.duoMerged          = true;
                         store.duoPersonBAnswers  = bRawAnswers;
                         store.duoPartnerAnswers  = JSON.parse(localStorage.getItem('duo_a_answers') || '{}');
+                        // Restaurer le prénom de B pour Person A
+                        if (bRawAnswers.nameB) store.duoNameB = bRawAnswers.nameB;
                         store.rerollCount        = 0;
                         store._lastMovies        = finalMovies;
 
@@ -2375,7 +2377,8 @@ const App = {
         // ── Signaler à Person A (autre onglet) avec le profil FUSIONNÉ ──
         // Person A utilisera ce profil exact → mêmes résultats
         try {
-            localStorage.setItem('duo_b_answers', JSON.stringify(store.duoPersonBAnswers));
+            // Inclure nameB dans duo_b_answers pour que Person A puisse l'afficher
+            localStorage.setItem('duo_b_answers', JSON.stringify({ ...store.duoPersonBAnswers, nameB: store.duoNameB }));
             localStorage.setItem('duo_merged_answers', JSON.stringify(merged));
         } catch(e) {}
 
