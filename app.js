@@ -1,7 +1,7 @@
 import { tmdbService, openaiService } from './services/api.js?v=44';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
-import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=44';
+import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=45';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=7';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=340';
 
@@ -1094,7 +1094,8 @@ const App = {
                 adult:     "Contenu adulte / Nudité explicite",
                 slow:      "Films contemplatifs sans rythme",
                 complex:   "Scénarios trop complexes / prise de tête",
-                animation: "Films d'animation"
+                animation: "Films d'animation",
+                teen:      "Films d'ados / Coming-of-age"
             };
 
             const contextLabel  = contextMap[store.answers.context]  || "Standard";

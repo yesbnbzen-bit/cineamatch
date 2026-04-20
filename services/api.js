@@ -732,6 +732,7 @@ ${preferences.exclude?.includes('horror') || preferences.exclude?.includes('scar
 ${preferences.exclude?.includes('sad') ? '→ Film déprimant/lourd/à fin tragique alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
 ${preferences.exclude?.includes('adult') ? '→ Film avec nudité/contenu sexuel explicite alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
 ${preferences.exclude?.includes('animation') ? '→ Film d\'animation alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
+${preferences.exclude?.includes('teen') ? '→ Film dont le public cible est clairement adolescent (lycée, coming-of-age, romance ado, teen drama) alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ. Critères : personnages principaux en lycée/collège, intrigue centrée sur l\'adolescence, public visé 13-17 ans. Exemples exclus : "À tous les garçons que j\'ai aimés", "Clueless", "The Kissing Booth", "Twilight", "The Fault in Our Stars", "Divergente". Un film comme "The Breakfast Club" ou "Stand by Me" peut être exclu également.' : ''}
 ${preferences.exclude?.includes('slow') ? '→ Film au rythme contemplatif/très lent avec exclusion "lenteur" demandée : -30 pts. Privilégie un rythme soutenu, des scènes qui avancent.' : ''}
 ${preferences.exclude?.includes('complex') ? '→ Film à scénario alambiqué/cryptique/non-linéaire difficile à suivre alors que l\'utilisateur veut du simple : -30 pts. Favorise des récits clairs et accessibles.' : ''}
 

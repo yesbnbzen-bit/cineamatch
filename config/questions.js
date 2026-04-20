@@ -78,6 +78,7 @@ export const QUESTIONS = [
             { id: "slow",      label: "Trop lent",                icon: "🐌", description: "Pas de films contemplatifs sans rythme." },
             { id: "complex",   label: "Trop complexe",            icon: "🧠", description: "Scénarios alambiqués ou prise de tête." },
             { id: "animation", label: "Films d'animation",        icon: "🎨", description: "Que du live-action." },
+            { id: "teen",      label: "Films d'ados",             icon: "🎓", description: "Pas de lycée, coming-of-age ou romance ado." },
             { id: "none",      label: "Rien ne me dérange",       icon: "😎", description: "L'IA a carte blanche sur tous les thèmes." }
         ]
     },
@@ -178,6 +179,7 @@ export const QUESTIONS_EN = [
             { id: "slow",      label: "Too slow",              icon: "🐌", description: "No slow-burn, contemplative films." },
             { id: "complex",   label: "Too complex",           icon: "🧠", description: "No convoluted or mind-bending plots." },
             { id: "animation", label: "Animation",             icon: "🎨", description: "Live-action only." },
+            { id: "teen",      label: "Teen / YA films",       icon: "🎓", description: "No high school, coming-of-age or teen romance." },
             { id: "none",      label: "Nothing bothers me",    icon: "😎", description: "AI has free rein on all themes." }
         ]
     },
