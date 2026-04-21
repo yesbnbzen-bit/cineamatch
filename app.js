@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=49';
+import { tmdbService, openaiService } from './services/api.js?v=50';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1766,11 +1766,6 @@ const App = {
             duoSummary.id = 'duo-summary-block';
             const isEn = getLang() === 'en';
             duoSummary.innerHTML = `
-                <div class="duo-recap-header">
-                    <p class="duo-recap-tag">${isEn ? '🎯 Perfect compromise found' : '🎯 Compromis parfait trouvé'}</p>
-                    <h2 class="duo-recap-title">${nameA} <span class="duo-recap-amp">&amp;</span> ${nameB}</h2>
-                    <p class="duo-recap-subtitle">${isEn ? 'Three films you\'ll both love tonight' : 'Trois films que vous allez adorer ce soir'}</p>
-                </div>
                 <div class="duo-summary-card">
                     <!-- Personne A -->
                     <div class="duo-summary-person left">
