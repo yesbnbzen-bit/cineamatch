@@ -123,8 +123,10 @@ export const tmdbService = {
     async getAdvancedDiscovery(preferences, metadata = {}, isReroll = false, page = 1, castIds = []) {
         // Note: le paramètre `page` de l'URL de base est remplacé plus bas par `randomPage`.
         // On le retire ici pour éviter le doublon page=X&...&page=Y (le dernier gagne, mais c'est source de confusion).
-        // 10770 = Téléfilm (TV Movie) — qualité trop variable, exclus par défaut
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770`;
+        // 10770 = Téléfilm | 99 = Documentaire — exclus par défaut sauf si mood documentaire
+        const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
+        const excludeDocumentary = !moodStr.includes('99') ? ',99' : '';
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770${excludeDocumentary}`;
         
         // Add with_cast parameter if we have cast IDs from loved movies
         if (castIds && castIds.length > 0) {
@@ -199,13 +201,13 @@ export const tmdbService = {
         const era = preferences.era;
         const hasCastFilter = castIds && castIds.length > 0;
 
-        // 4. Duration Filter (short = <105min, long = >120min)
+        // 4. Duration Filter — minimum 60 min toujours (exclut courts-métrages et mini-docs)
+        url += `&with_runtime.gte=60`;
         if (preferences.duration === 'short') {
             url += `&with_runtime.lte=105`;
         } else if (preferences.duration === 'long') {
             url += `&with_runtime.gte=120`;
         }
-        // duration === 'any' → pas de filtre durée
 
         // 4b. Language Filter — déduit des films de référence ou conflit duo
         if (preferences._duoLangConflict && preferences._duoLangA && preferences._duoLangB) {
@@ -690,16 +692,19 @@ Ces recommandations sont pour DEUX personnes avec des envies DIFFÉRENTES :
   → Personne B veut : ${preferences.duoMoodLabelB || '?'}${langConflictNote}${eraConflictNote}${duoPaceNote}${duoExclusionNote}
 
 CHAQUE film du top 3 DOIT être un vrai compromis qui satisfait les DEUX simultanément.
-Cherche des films à l'INTERSECTION des deux moods — par exemple :
-  • Comédie avec tension/twist (ex: Knives Out, Game Night, The Nice Guys)
-  • Thriller accessible et divertissant (ex: Ocean's Eleven, Catch Me If You Can)
-  • Drame avec énergie/rythme (ex: The Pursuit of Happyness, La La Land)
 
-⛔ PÉNALITÉ SÉVÈRE : -35 pts pour tout film orienté à 80%+ vers UN SEUL des deux profils.
+EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
+  • Suspense + Légèreté → Knives Out, Game Night, The Nice Guys, Murder Mystery, Clue, Palm Springs, Catch Me If You Can
+  • Action + Émouvant → The Pursuit of Happyness, Rocky, Whiplash, Eddie the Eagle, Ford v Ferrari
+  • Horreur + Comédie → Get Out (tension + humour noir), Shaun of the Dead, Ready or Not
+  • SF + Romance → Interstellar, Midnight in Paris, About Time, Her
+  • Thriller + Romance → Gone Girl, Crazy Rich Asians, The Proposal (avec tension)
+
+⛔ SCORE = 0 FORCÉ (pas de -35, mais ZÉRO) pour tout film dont le genre principal est à l'opposé direct d'un des deux moods.
+  Exemple : film d'horreur pur (Saw, Scream, Hereditary) si l'un veut Légèreté → Score = 0.
+  Exemple : comédie légère sans aucune tension si l'un veut Suspense → Score = 0.
 ⛔ INTERDIT : Recommander 3 films qui plaisent tous uniquement à la même personne.
-⛔ INTERDIT : Film de genre "Téléfilm" ou production TV à petit budget.
-✅ OBJECTIF : Les deux personnes doivent dire "oui" après avoir vu la fiche du film.
-✅ RÈGLE D'OR DU #1 : Le premier film DOIT être le compromis le plus évident — un film où les deux moods se croisent naturellement (ex: comédie avec twist, thriller accessible, drame rythmé). Pas de film ultra-polarisant en #1.`
+✅ RÈGLE D'OR DU #1 : Le premier film DOIT être le compromis le plus évident — les deux moods présents dans le même film. Un film où les DEUX personnes peuvent dire "oui" immédiatement.`
             : '';
 
         // ── Profil d'âge de l'utilisateur ──
