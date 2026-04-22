@@ -162,10 +162,16 @@ export const tmdbService = {
 
         if (genreIds) {
             const genreIdsStr = String(genreIds);
-            // Comedy mood (35,10751): use only genre 35 to avoid TMDB AND logic
-            // which would require BOTH Comedy AND Family tags, excluding films like Extreme Job
-            const isComedyMood = genreIdsStr.includes('35');
-            const baseGenres = isComedyMood ? '35' : genreIdsStr;
+            // Comédie feel-good ("35") : with_genres=35 seulement → pool large, toutes comédies
+            // Comédie explosive ("35,28") : with_genres=35,28 → TMDB AND logic VOULUE ici
+            //   → seuls les films Comedy+Action entrent (Extreme Job, Exit, Midnight Runners...)
+            // Autres moods : utiliser les genres tels quels
+            const isComedyFeel = genreIdsStr.includes('35') && !genreIdsStr.includes('28');
+            const isComedyExplosive = genreIdsStr.includes('35') && genreIdsStr.includes('28');
+            let baseGenres;
+            if (isComedyFeel) baseGenres = '35';
+            else if (isComedyExplosive) baseGenres = '35,28';
+            else baseGenres = genreIdsStr;
             const cleanGenres = baseGenres.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
             if (cleanGenres) url += `&with_genres=${cleanGenres}`;
         }
@@ -270,7 +276,7 @@ export const tmdbService = {
             // Pour le mood Comédie : trier par popularité — les vraies comédies fun
             // ont beaucoup de votes populaires (Extreme Job) plutôt qu'une note parfaite (Parasite)
             const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
-            const isComedyMood = moodStr === '35,10751' || moodStr === '35' || moodStr === '10751';
+            const isComedyMood = moodStr.includes('35');
             if (isComedyMood) {
                 // vote_count.gte=2000 : seules les comédies éprouvées par de larges audiences
                 // Les films qui font vraiment rire ont été vus et recommandés massivement
@@ -841,11 +847,16 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
-${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE immédiatement. Rires francs, situations cocasses, énergie fun.
-→ SIGNAL #1 — Comédie + Action/Crime = rire immédiat : "Extreme Job", "Midnight Runners", "Kung Fu Hustle", "The Dude in Me", "Exit". Ces films combinent humour physique et rythme élevé → bonus +10 pts automatique si le film a les genres Action (28) ou Crime (80) en plus de Comedy (35).
-→ SIGNAL #2 — vote_count élevé = film prouvé : un film avec >50 000 votes TMDB a été vu et recommandé par des millions → bonus +5 pts si vote_count > 50000.
-→ Score élevé UNIQUEMENT si le but premier du film est de faire rire. Ex parfaits : "Extreme Job", "Midnight Runners", "Kung Fu Hustle", "Swing Girls", "Superbad", "The Hangover", "Game Night", "Crazy Rich Asians".
-→ Si le synopsis décrit une émotion principale autre que le rire (drame familial, satire sociale, film touchant, thriller) → score ÉTAPE C = 0, même si le film est bon.` : ''}
+${preferences.mood === '35' ? `→ MOOD "COMÉDIE FEEL-GOOD" — légèreté, chaleur, films qui font sourire et se sentir bien.
+→ Ex parfaits : "Swing Girls", "Tampopo", "Kamikaze Girls", "Crazy Rich Asians", "The Full Monty", "Little Miss Sunshine".
+→ Favorise les comédies douces, feel-good, optimistes. Le rire n'a pas besoin d'être explosif — un sourire sincère ou une histoire chaleureuse compte.
+→ Si le synopsis décrit principalement de la tristesse, de la violence ou du cynisme → score ÉTAPE C = 0.` : ''}
+${preferences.mood === '35,28' ? `→ MOOD "COMÉDIE EXPLOSIVE" — l'utilisateur veut RIRE FORT et immédiatement. Énergie max, humour physique, rythme effréné.
+→ Ex parfaits : "Exit", "Midnight Runners", "Kung Fu Hustle", "Extreme Job", "The Dude in Me", "Superbad", "The Hangover", "Game Night".
+→ SIGNAL CLÉ — Comedy + Action/Crime = rire immédiat garanti → bonus +15 pts si le film combine humour et action physique.
+→ SIGNAL POPULARITÉ — vote_count > 50 000 = film validé par des millions → bonus +5 pts.
+→ Score élevé UNIQUEMENT si le but premier est le rire immédiat et l'énergie. Tampopo, Swing Girls = trop doux pour ce mood → score ÉTAPE C bas.
+→ Si le synopsis décrit principalement de l'émotion/drame/satire → score ÉTAPE C = 0.` : ''}
 ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)

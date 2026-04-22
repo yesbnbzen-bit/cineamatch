@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=61';
+import { tmdbService, openaiService } from './services/api.js?v=62';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1088,7 +1088,8 @@ const App = {
             // ── Labels lisibles pour les prompts ──
             const contextMap  = { alone: "Seul", couple: "En couple", family: "En famille", friends: "Entre amis" };
             const moodMap     = {
-                "35,10751": "Rire / Comédie",
+                "35":       "Comédie feel-good",
+                "35,28":    "Comédie explosive",
                 "28,12":    "Action / Aventure",
                 "53":       "Thriller / Suspense",
                 "27":       "Horreur",
@@ -1135,7 +1136,8 @@ const App = {
             // ── Inférer le pace depuis le mood (Q4 supprimée) ──
             // Le mood implique naturellement un niveau de complexité narrative
             const inferredPace = store.answers.pace || {
-                "35,10751": "easy",      // légèreté → histoire simple
+                "35":       "easy",      // feel-good → histoire simple
+                "35,28":    "easy",      // explosive → rythme soutenu mais accessible
                 "28,12":    "any",       // action → peu importe
                 "53":       "complex",   // thriller → scénario construit
                 "27":       "complex",   // horreur → tension construite
@@ -1188,7 +1190,8 @@ const App = {
             // Si les films ADN sont horror-thriller (27+53), on étend la Discovery au-delà
             // du mood strict — sinon Barbarian, Nope, Smile ne rentrent jamais dans le pool
             const GENRE_MAP = {
-                "35,10751": [35, 10751],  // comédie/famille
+                "35":       [35, 10751],  // feel-good → comédies + famille
+                "35,28":    [35, 28],     // explosive → comédie + action
                 "28,12":    [28, 12],     // action/aventure
                 "53":       [53],         // thriller
                 "27":       [27],         // horreur
@@ -1218,7 +1221,8 @@ const App = {
                 // Ajouter les genres ADN qui COMPLÈTENT le mood (pas ceux qui le contredisent)
                 // Un genre ADN "complète" s'il n'est pas l'opposé du mood principal
                 const CONFLICTING = {
-                    "35,10751": [27, 53],    // légèreté ≠ horreur/thriller
+                    "35":       [27, 53],    // feel-good ≠ horreur/thriller
+                    "35,28":    [27, 53],    // explosive ≠ horreur/thriller
                     "28,12":    [],
                     "53":       [35, 10751], // thriller ≠ comédie/famille
                     "27":       [35, 10751], // horreur ≠ comédie/famille
@@ -1236,7 +1240,7 @@ const App = {
 
             // Détecter si l'ADN est en conflit fort avec le mood (pour l'informer au scorer)
             const adnConflictsWithMood = refCount > 0 && (() => {
-                const CONFLICTING = { "35,10751": [27,53], "53": [35,10751], "27": [35,10751] };
+                const CONFLICTING = { "35": [27,53], "35,28": [27,53], "53": [35,28,35], "27": [35,28,35] };
                 const conflicts = new Set(CONFLICTING[store.answers.mood] || []);
                 return Object.keys(lovedGenreFreq).some(g => conflicts.has(Number(g)));
             })();
@@ -1408,7 +1412,7 @@ const App = {
             const familyExcludedGenres = store.answers.context === 'family' ? [27, 53, 10749] : [];
             // Pour le mood Comédie : exclure Drama (18), Thriller (53), Horreur (27) — même dans SOURCE 1 (recs TMDb)
             // Sinon My Annoying Brother, Parasite etc. contournent le filtre TMDB en venant des recs
-            const comedyHardExclusions = (store.answers.mood === '35,10751') ? [18, 53, 27] : [];
+            const comedyHardExclusions = (['35', '35,28'].includes(store.answers.mood)) ? [18, 53, 27] : [];
             const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds, ...comedyHardExclusions])];
 
             if (prefExcludedGenreIds.length > 0) console.log(`🚫 Exclusions préfs permanentes : ${(savedPrefs.exclusions||[]).join(', ')} → genres [${prefExcludedGenreIds.join(',')}]`);
@@ -1748,17 +1752,19 @@ const App = {
         // ── Carte résumé des deux profils (mode Duo uniquement) ──
         if (store.duoMode && store.duoMerged) {
             const moodLabels = getLang() === 'en' ? {
-                "35,10751": "Light mood", "28,12":    "Adrenaline",
-                "53":       "Suspense",  "27":        "Thrills",
-                "18,10749": "Strong emotions", "878,9648": "Mind-bending"
+                "35":       "Feel-good", "35,28":    "Explosive comedy",
+                "28,12":    "Adrenaline", "53":       "Suspense",
+                "27":       "Thrills",   "18,10749": "Strong emotions",
+                "878,9648": "Mind-bending"
             } : {
-                "35,10751": "Légèreté",  "28,12":    "Adrénaline",
-                "53":       "Suspense",  "27":        "Frissons",
-                "18,10749": "Émotions fortes", "878,9648": "Réflexion"
+                "35":       "Feel-good", "35,28":    "Comédie explosive",
+                "28,12":    "Adrénaline", "53":       "Suspense",
+                "27":       "Frissons",  "18,10749": "Émotions fortes",
+                "878,9648": "Réflexion"
             };
             const moodIcons = {
-                "35,10751": "🎈", "28,12": "⚡", "53": "🕵️",
-                "27": "🧟", "18,10749": "🎭", "878,9648": "👽"
+                "35": "😊", "35,28": "🤣", "28,12": "⚡",
+                "53": "🕵️", "27": "🧟", "18,10749": "🎭", "878,9648": "👽"
             };
 
             const answersA = store.duoPartnerAnswers || {};
@@ -2470,7 +2476,8 @@ const App = {
 
         // ── Pace : inférer depuis le mood de chacun, puis chercher un compromis ──
         const PACE_FROM_MOOD = {
-            "35,10751": "easy",   // comédie → facile
+            "35":       "easy",   // feel-good → facile
+            "35,28":    "easy",   // explosive → facile
             "28,12":    "any",    // action → peu importe
             "53":       "any",    // thriller → peu importe
             "27":       "easy",   // horreur → facile (immersif, pas intellectuel)
@@ -2607,13 +2614,15 @@ const App = {
     // ── Partage des résultats ──
     shareResults(movies) {
         const moodLabelsShare = getLang() === 'en' ? {
-            "35,10751": "lighthearted 🎈", "28,12": "adrenaline ⚡",
-            "53": "suspense 🕵️", "27": "thrills 🧟",
-            "18,10749": "strong emotions 🎭", "878,9648": "mind-bending 👽"
+            "35": "feel-good 😊", "35,28": "explosive comedy 🤣",
+            "28,12": "adrenaline ⚡", "53": "suspense 🕵️",
+            "27": "thrills 🧟", "18,10749": "strong emotions 🎭",
+            "878,9648": "mind-bending 👽"
         } : {
-            "35,10751": "légèreté 🎈", "28,12": "adrénaline ⚡",
-            "53": "suspense 🕵️", "27": "frissons 🧟",
-            "18,10749": "émotions fortes 🎭", "878,9648": "réflexion 👽"
+            "35": "feel-good 😊", "35,28": "comédie explosive 🤣",
+            "28,12": "adrénaline ⚡", "53": "suspense 🕵️",
+            "27": "frissons 🧟", "18,10749": "émotions fortes 🎭",
+            "878,9648": "réflexion 👽"
         };
         const mood = moodLabelsShare[store.answers.mood] || (getLang() === 'en' ? 'cinema' : 'cinéma');
         const titles = movies.map((m, i) => `${i+1}. ${m.title} (${m.release_date?.split('-')[0]||''}) — ${m.match_score}% match`).join('\n');

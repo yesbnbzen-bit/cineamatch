@@ -26,7 +26,8 @@ export const QUESTIONS = [
         type: "options",
         key: "mood",
         options: [
-            { id: "35,10751", label: "Rire / Comédie",       icon: "😂", description: "Comédies, gags, films qui font vraiment rire." },
+            { id: "35",       label: "Comédie feel-good",    icon: "😊", description: "Légèreté, sourires, feel-good. Swing Girls, Tampopo, Crazy Rich Asians." },
+            { id: "35,28",    label: "Comédie explosive",    icon: "🤣", description: "Rires immédiats, action, énergie max. Exit, Midnight Runners, Kung Fu Hustle." },
             { id: "28,12",    label: "Action / Aventure",    icon: "⚡", description: "Bagarres, poursuites, adrénaline et grand spectacle." },
             { id: "53",       label: "Thriller / Suspense",  icon: "🕵️", description: "Tension, manipulation, impossible de décrocher." },
             { id: "27",       label: "Horreur",              icon: "😱", description: "Peur, épouvante et sensations fortes." },
@@ -130,7 +131,8 @@ export const QUESTIONS_EN = [
         type: "options",
         key: "mood",
         options: [
-            { id: "35,10751", label: "Comedy / Laugh",       icon: "😂", description: "Comedies, gags, films that make you laugh." },
+            { id: "35",       label: "Feel-good comedy",     icon: "😊", description: "Light, warm films that make you smile. Swing Girls, Tampopo, Crazy Rich Asians." },
+            { id: "35,28",    label: "Explosive comedy",     icon: "🤣", description: "Big laughs, action, max energy. Exit, Midnight Runners, Kung Fu Hustle." },
             { id: "28,12",    label: "Action / Adventure",   icon: "⚡", description: "Fights, chases, adrenaline and spectacle." },
             { id: "53",       label: "Thriller / Suspense",  icon: "🕵️", description: "Tension, manipulation, impossible to stop watching." },
             { id: "27",       label: "Horror",               icon: "😱", description: "Fear, dread and strong sensations." },
