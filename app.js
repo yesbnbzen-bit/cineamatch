@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=62';
+import { tmdbService, openaiService } from './services/api.js?v=63';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1221,8 +1221,8 @@ const App = {
                 // Ajouter les genres ADN qui COMPLÈTENT le mood (pas ceux qui le contredisent)
                 // Un genre ADN "complète" s'il n'est pas l'opposé du mood principal
                 const CONFLICTING = {
-                    "35":       [27, 53],    // feel-good ≠ horreur/thriller
-                    "35,28":    [27, 53],    // explosive ≠ horreur/thriller
+                    "35":       [27, 53, 18, 80],  // feel-good ≠ horreur/thriller/drame/crime
+                    "35,28":    [27, 53, 18, 80],  // explosive ≠ horreur/thriller/drame/crime
                     "28,12":    [],
                     "53":       [35, 10751], // thriller ≠ comédie/famille
                     "27":       [35, 10751], // horreur ≠ comédie/famille
@@ -1236,6 +1236,14 @@ const App = {
                         blendedGenres.add(id);
                     }
                 });
+            }
+
+            // ── Sécurité comédie : jamais de genres sombres dans le blend ──
+            // Si l'utilisateur a cité des films crime/drame/thriller en référence,
+            // ces genres ne doivent PAS contaminer le prompt IA ni le filtre safeCandidates
+            // (sinon l'IA suggère Memories of Murder, Burning, etc. pour un mood comédie)
+            if (['35', '35,28'].includes(String(store.answers.mood))) {
+                [18, 53, 27, 80, 9648].forEach(g => blendedGenres.delete(g));
             }
 
             // Détecter si l'ADN est en conflit fort avec le mood (pour l'informer au scorer)
@@ -1412,7 +1420,7 @@ const App = {
             const familyExcludedGenres = store.answers.context === 'family' ? [27, 53, 10749] : [];
             // Pour le mood Comédie : exclure Drama (18), Thriller (53), Horreur (27) — même dans SOURCE 1 (recs TMDb)
             // Sinon My Annoying Brother, Parasite etc. contournent le filtre TMDB en venant des recs
-            const comedyHardExclusions = (['35', '35,28'].includes(store.answers.mood)) ? [18, 53, 27] : [];
+            const comedyHardExclusions = (['35', '35,28'].includes(String(store.answers.mood))) ? [18, 53, 27] : [];
             const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds, ...comedyHardExclusions])];
 
             if (prefExcludedGenreIds.length > 0) console.log(`🚫 Exclusions préfs permanentes : ${(savedPrefs.exclusions||[]).join(', ')} → genres [${prefExcludedGenreIds.join(',')}]`);
