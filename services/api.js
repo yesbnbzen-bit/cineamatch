@@ -121,6 +121,24 @@ export const tmdbService = {
         } catch (e) { return []; }
     },
 
+    // Retourne cast (IDs + noms) et réalisateur en un seul appel /credits
+    async getMovieCastAndCrew(movieId) {
+        if (!this.apiKey || this.apiKey === 'MOCK') return { castIds: [], castNames: [], director: null };
+        try {
+            const url = `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${this.apiKey}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return { castIds: [], castNames: [], director: null };
+            const data = await resp.json();
+            const topCast = (data.cast || []).slice(0, 5);
+            const director = (data.crew || []).find(p => p.job === 'Director')?.name || null;
+            return {
+                castIds: topCast.map(a => a.id),
+                castNames: topCast.map(a => a.name),
+                director
+            };
+        } catch (e) { return { castIds: [], castNames: [], director: null }; }
+    },
+
     async getMovieKeywords(movieId) {
         if (!this.apiKey || this.apiKey === 'MOCK') return [];
         try {
@@ -379,7 +397,13 @@ function formatGenres(ids) {
 // ─────────────────────────────────────────────────────────────────
 function buildDNAArchetypes(likedMovies) {
     if (!likedMovies || likedMovies.length === 0) return "Aucun film de référence fourni.";
-    return likedMovies.map(m => `"${m.title}" (${(m.release_date || '').split('-')[0] || '?'})`).join(', ');
+    return likedMovies.map(m => {
+        const year = (m.release_date || '').split('-')[0] || '?';
+        let desc = `"${m.title}" (${year})`;
+        if (m._director) desc += ` — réal. ${m._director}`;
+        if (m._castNames?.length > 0) desc += ` — avec ${m._castNames.slice(0, 3).join(', ')}`;
+        return desc;
+    }).join('\n');
 }
 
 export const openaiService = {
@@ -511,6 +535,20 @@ ${userAnswers.blendedGenreIds && userAnswers.blendedGenreIds !== userAnswers.moo
    - Même intensité émotionnelle que les films ADN
    - Variété de sous-genres et de pays
    ${seenTitles.length > 0 ? 'AUCUN des titres déjà vus.' : ''}
+
+ÉTAPE 3 — UNIVERS CULTUREL & REPRÉSENTATION (psychologie de l'identification)
+Les films de référence ne sont pas juste des marqueurs de goût — ils sont des marqueurs d'IDENTITÉ CULTURELLE.
+Les recherches en psychologie (Self-congruity theory, Tajfel & Turner 1979, parasocial relationships) montrent que les spectateurs se projettent dans les films qui reflètent leur univers culturel.
+
+→ Quel est l'UNIVERS CULTUREL dominant de ces films ?
+   Exemples : comédie afro-américaine, buddy-movie afro-français, cinéma de banlieue française, comédie afro-caribéenne, film d'auteur coréen, drama familial indien, etc.
+→ Y a-t-il une COMMUNAUTÉ ou un groupe social représenté à l'écran ? (acteurs noirs américains, personnages latinos, humour communautaire français, casting afro-européen, etc.)
+→ Quel est le STYLE DE LA COMÉDIE si applicable ? (comédie de situation, buddy-comedy, slapstick, comédie sociale, satire communautaire, etc.)
+
+⚡ CE SIGNAL CULTUREL EST PRIORITAIRE pour tes suggestions :
+   Si les films de référence sont clairement dans un univers culturel précis (ex: "comédie afro-américaine"), TU DOIS proposer des films du MÊME univers culturel.
+   Ex avec Think Like a Man + Case Départ : propose Girls Trip, Barbershop, About Last Night, Ride Along, Fous d'amour, Qu'est-ce qu'on a fait au Bon Dieu?, Coming 2 America — PAS des comédies génériques blanches américaines.
+   L'utilisateur veut se retrouver dans ce qu'il regarde — c'est le principe de la résonance culturelle.
 ${userAnswers.rerollVariant === 'hidden_gem' ? `
 🔄 VARIANTE RE-ROLL — PÉPITES MÉCONNUES :
 Tu dois proposer des films MOINS CONNUS mais de grande qualité.
@@ -531,6 +569,7 @@ Réponds UNIQUEMENT par ce JSON strict (pas de markdown, pas de texte autour) :
 {
   "dna_analysis": "string (2-3 phrases) décrivant le style narratif et le niveau d'exigence détectés",
   "theme_interpretation": "string (1-2 phrases) synthèse mood + style pour guider la recherche",
+  "cultural_universe": "string (1 phrase) décrivant l'univers culturel détecté — ex: 'comédie afro-américaine avec ensemble cast diversifié' ou 'buddy-comedy afro-français satirique' ou 'comédie populaire française multiculturelle'. Vide si aucun signal culturel précis.",
   "excluded_from_prompt": ["Titre Film Cité"],
   "genre_ids": "id1,id2",
   "specific_suggestions": ["Titre 1"],
@@ -763,11 +802,26 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
 
         // ── Cast ADN : acteurs issus des films de référence ──
         const adnCastIds = preferences.adnCastIds || [];
-        const castAdnNote = adnCastIds.length > 0
-            ? `\n\n🎭 ACTEURS DES FILMS DE RÉFÉRENCE (IDs TMDB : ${adnCastIds.join(', ')}) :
+        const adnCastNames = preferences.adnCastNames || [];
+        const adnDirectors = preferences.adnDirectors || [];
+        const castAdnNote = (adnCastIds.length > 0 || adnCastNames.length > 0)
+            ? `\n\n🎭 ACTEURS & RÉALISATEURS DES FILMS DE RÉFÉRENCE :${
+                adnCastNames.length > 0 ? `\n  Acteurs : ${adnCastNames.join(', ')}` : ''}${
+                adnDirectors.length > 0 ? `\n  Réalisateurs : ${adnDirectors.join(', ')}` : ''}${
+                adnCastIds.length > 0 ? `\n  (IDs TMDB : ${adnCastIds.join(', ')})` : ''}
   → Certains films du pool ont été trouvés spécifiquement parce qu'ils partagent des acteurs avec les films de référence de l'utilisateur.
   → Accorde un BONUS de +8 pts aux films qui font figurer un de ces acteurs (même si ce n'est pas le rôle principal).
   → L'utilisateur apprécie ces acteurs — c'est un signal fort de cohérence avec ses goûts.`
+            : '';
+
+        // ── Univers culturel : résonance identitaire (Self-congruity theory, Social Identity Theory) ──
+        const culturalUniverse = preferences.cultural_universe || '';
+        const culturalNote = culturalUniverse
+            ? `\n\n🌍 UNIVERS CULTUREL DÉTECTÉ : "${culturalUniverse}"
+  → PRINCIPE PSYCHOLOGIQUE : Les spectateurs cherchent à se voir représentés dans ce qu'ils regardent (Self-congruity theory, Tajfel & Turner 1979).
+  → Accorde un BONUS de +12 pts aux films qui appartiennent clairement à cet univers culturel.
+  → Si un film du pool est dans le même univers culturel (même communauté représentée, mêmes codes culturels, casting similaire), c'est LE signal le plus fort de pertinence.
+  → Ne sacrifie pas la qualité narrative, mais à score égal, TOUJOURS préférer le film culturellement résonant.`
             : '';
 
         // Avertissement conflit ADN/mood (ex: légèreté + Get Out)
@@ -780,7 +834,7 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
 ⚠️ RÈGLE CRITIQUE — ADN CINÉPHILE :
 Les films de référence (ADN) calibrent le style narratif, le rythme et l'esthétique visuelle.
 L'ÉNERGIE/MOOD donne le registre émotionnel général. Les GENRES EFFECTIFS ci-dessous ont priorité sur le libellé du mood.
-${romanceWarning}${inspiringBiopicWarning}${conflictWarning}${castAdnNote}
+${romanceWarning}${inspiringBiopicWarning}${conflictWarning}${castAdnNote}${culturalNote}
 
 ═══════════════════════════════════════════
 PROFIL SPECTATEUR

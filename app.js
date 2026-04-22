@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=54';
+import { tmdbService, openaiService } from './services/api.js?v=55';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1249,62 +1249,81 @@ const App = {
             const blendedGenreIds = [...blendedGenres].join(genreSeparator);
             console.log(`🎭 Genre blend: ${store.answers.mood} → [${blendedGenreIds}] (sep: "${genreSeparator}"`);
 
-            loadingText.innerHTML = `${t('loading.ai')}<br><span style="font-size:0.8rem;opacity:0.7">Humeur : ${moodLabel}</span>`;
-
-            // ── ÉTAPE 1 : OpenAI traduit les réponses en filtres TMDb ──
-            const metadata = await openaiService.extractMetadata(
-                { ...store.answers, contextLabel, moodLabel, durationLabel, excludeLabels, detectedLanguage, blendedGenreIds },
-                isReroll,
-                store.suggestedTitles
-            );
-            store.aiAnalysis = metadata;
-
-            if (isReroll) store.rerollCount++;
-
             loadingText.textContent = t('loading.tmdb');
 
-            // ── Collecter les keywords des films de référence ──
-            // Objectif : trouver les mots-clés de style communs (ex: "psychological-horror", "social-commentary")
-            // et les injecter dans la requête Discovery pour cibler le bon type de film
+            // ── Collecter les keywords ET le cast/crew des films de référence ──
+            // Objectif : trouver les mots-clés de style communs, les acteurs récurrents,
+            // et l'univers culturel pour cibler les bonnes recommandations
             let adnKeywordIds = [];
-            let adnCastIds = [];   // Acteurs des films de référence — pour with_cast Discovery
+            let adnCastIds = [];     // IDs TMDB des acteurs clés → with_cast Discovery
+            let adnCastNames = [];   // Noms lisibles → contexte culturel pour l'IA
+            let adnDirectors = [];   // Réalisateurs → signal de style et d'univers
+
             if (store.answers.lastLovedMovies?.length > 0) {
                 const [keywordMaps, castMaps] = await Promise.all([
                     Promise.all(store.answers.lastLovedMovies.map(m => tmdbService.getMovieKeywords(m.id))),
-                    Promise.all(store.answers.lastLovedMovies.map(m => tmdbService.getMovieTopCast(m.id)))
+                    Promise.all(store.answers.lastLovedMovies.map(m => tmdbService.getMovieCastAndCrew(m.id)))
                 ]);
-                // Compter la fréquence de chaque keyword sur tous les films de référence
+
+                // Keywords (inchangé)
                 const freq = {};
                 keywordMaps.flat().forEach(k => {
-                    freq[k.id] = (freq[k.id] || 0) + 1;
+                    if (k && k.id) freq[k.id] = (freq[k.id] || 0) + 1;
                 });
-                // Garder les keywords qui apparaissent dans ≥1 film de référence, triés par fréquence
-                // On prend max 4 keywords pour ne pas trop restreindre
                 adnKeywordIds = Object.entries(freq)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 4)
                     .map(([id]) => id);
                 console.log(`🔑 Keywords ADN collectés :`, adnKeywordIds);
 
-                // Acteurs : garder ceux qui apparaissent dans ≥2 films de référence
-                // ou les têtes d'affiche du film le mieux noté (si 1 seul film de référence)
+                // Enrichir chaque film de référence avec cast + director (pour buildDNAArchetypes)
+                castMaps.forEach((castData, i) => {
+                    const movie = store.answers.lastLovedMovies[i];
+                    if (movie && castData) {
+                        movie._castNames = castData.castNames?.slice(0, 3) || [];
+                        movie._director  = castData.director || null;
+                    }
+                });
+
+                // Cast ADN : acteurs récurrents sur ≥2 films, sinon têtes d'affiche du 1er film
                 const castFreq = {};
-                castMaps.flat().forEach(id => { castFreq[id] = (castFreq[id] || 0) + 1; });
+                castMaps.forEach(cd => (cd.castIds || []).forEach(id => {
+                    castFreq[id] = (castFreq[id] || 0) + 1;
+                }));
                 const refCount2 = store.answers.lastLovedMovies.length;
                 if (refCount2 >= 2) {
-                    // Acteurs récurrents sur plusieurs films de référence
                     adnCastIds = Object.entries(castFreq)
                         .filter(([, c]) => c >= 2)
                         .sort((a, b) => b[1] - a[1])
                         .slice(0, 3)
                         .map(([id]) => Number(id));
                 }
-                // Si pas d'acteur récurrent, prendre les 2 premiers acteurs du 1er film de référence
-                if (adnCastIds.length === 0 && castMaps[0]?.length > 0) {
-                    adnCastIds = castMaps[0].slice(0, 2).map(Number);
+                if (adnCastIds.length === 0 && castMaps[0]?.castIds?.length > 0) {
+                    adnCastIds = castMaps[0].castIds.slice(0, 2).map(Number);
                 }
-                if (adnCastIds.length > 0) console.log(`🎭 Cast ADN :`, adnCastIds);
+
+                // Noms des acteurs et réalisateurs — pour le contexte culturel de l'IA
+                adnCastNames = [...new Set(castMaps.flatMap(cd => cd.castNames || []))].slice(0, 6);
+                adnDirectors = [...new Set(castMaps.map(cd => cd.director).filter(Boolean))];
+
+                if (adnCastIds.length > 0) console.log(`🎭 Cast ADN IDs :`, adnCastIds);
+                if (adnCastNames.length > 0) console.log(`🎭 Cast ADN noms :`, adnCastNames);
+                if (adnDirectors.length > 0) console.log(`🎬 Réalisateurs ADN :`, adnDirectors);
             }
+
+            // ── ÉTAPE 1 : OpenAI traduit les réponses en filtres TMDb ──
+            // Les films de référence sont maintenant enrichis avec cast + director
+            // → buildDNAArchetypes passera "réal. Tim Story — avec Kevin Hart, Taraji P. Henson..."
+            loadingText.innerHTML = `${t('loading.ai')}<br><span style="font-size:0.8rem;opacity:0.7">Humeur : ${moodLabel}</span>`;
+            const metadata = await openaiService.extractMetadata(
+                { ...store.answers, contextLabel, moodLabel, durationLabel, excludeLabels, detectedLanguage, blendedGenreIds },
+                isReroll,
+                store.suggestedTitles
+            );
+            store.aiAnalysis = metadata;
+            if (metadata.cultural_universe) console.log(`🌍 Univers culturel détecté :`, metadata.cultural_universe);
+
+            if (isReroll) store.rerollCount++;
 
             // ── ÉTAPE 2 : TMDb — 3 sources à poids égal ──
             // Toutes les sources contribuent au même pool, le scorer IA décide ensuite.
@@ -1578,6 +1597,8 @@ const App = {
                     ...store.answers,
                     contextLabel, moodLabel, durationLabel, excludeLabels,
                     blendedGenreIds, adnConflictsWithMood, adnCastIds,
+                    adnCastNames, adnDirectors,
+                    cultural_universe: metadata.cultural_universe || '',
                     isDuoMode:        store.duoMode && store.duoMerged,
                     duoMoodLabelA,    duoMoodLabelB,
                     // Conflits duo : langue & époque
