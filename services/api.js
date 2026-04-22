@@ -272,7 +272,9 @@ export const tmdbService = {
             const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
             const isComedyMood = moodStr === '35,10751' || moodStr === '35' || moodStr === '10751';
             if (isComedyMood) {
-                url += `&sort_by=popularity.desc&vote_count.gte=500&vote_average.gte=6.5`;
+                // vote_count.gte=2000 : seules les comédies éprouvées par de larges audiences
+                // Les films qui font vraiment rire ont été vus et recommandés massivement
+                url += `&sort_by=popularity.desc&vote_count.gte=2000&vote_average.gte=6.5`;
             } else {
                 url += `&sort_by=vote_average.desc&vote_count.gte=300`;
             }
@@ -839,8 +841,10 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
-${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE. Rires francs, situations cocasses, feel-good, légèreté.
-→ Score élevé UNIQUEMENT pour les films dont le but premier est de faire rire. Ex parfaits : "Extreme Job", "Midnight Runners", "Kung Fu Hustle", "Kamikaze Girls", "Swing Girls", "Superbad", "The Hangover", "Game Night".
+${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE immédiatement. Rires francs, situations cocasses, énergie fun.
+→ SIGNAL #1 — Comédie + Action/Crime = rire immédiat : "Extreme Job", "Midnight Runners", "Kung Fu Hustle", "The Dude in Me", "Exit". Ces films combinent humour physique et rythme élevé → bonus +10 pts automatique si le film a les genres Action (28) ou Crime (80) en plus de Comedy (35).
+→ SIGNAL #2 — vote_count élevé = film prouvé : un film avec >50 000 votes TMDB a été vu et recommandé par des millions → bonus +5 pts si vote_count > 50000.
+→ Score élevé UNIQUEMENT si le but premier du film est de faire rire. Ex parfaits : "Extreme Job", "Midnight Runners", "Kung Fu Hustle", "Swing Girls", "Superbad", "The Hangover", "Game Night", "Crazy Rich Asians".
 → Si le synopsis décrit une émotion principale autre que le rire (drame familial, satire sociale, film touchant, thriller) → score ÉTAPE C = 0, même si le film est bon.` : ''}
 ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
