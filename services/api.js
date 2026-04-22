@@ -239,7 +239,7 @@ export const tmdbService = {
 
         // 5. Broad Technical Standards
         if (!hasCastFilter) {
-            url += `&vote_average.gte=5.5&vote_count.gte=50`;
+            url += `&vote_average.gte=5.5&vote_count.gte=200`;
         }
 
         // 6. Era Filter — applied strictly regardless of cast filter
@@ -818,13 +818,13 @@ ${weightingDescription}
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
 ${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE. Expérience attendue : rires francs, situations cocasses, feel-good, légèreté.
 
-3 NIVEAUX DE COMÉDIE — score uniquement le niveau 1 :
+3 NIVEAUX DE COMÉDIE — règles strictes de score :
 ✅ NIVEAU 1 — Comédie FUN (score max) : le film fait rire en premier lieu. Ex: "Extreme Job", "Swing Girls", "Kamikaze Girls", "Midnight Runners", "Kung Fu Hustle", "The Dude in Me", "Superbad", "The Hangover", "Game Night", "Crazy Rich Asians".
-⚠️ NIVEAU 2 — Comédie douce (-25 pts) : film avant tout émouvant/humain avec des moments drôles. Ex: "Pawn" (drame humain touchant), "Forrest Gump", "Little Miss Sunshine". Tagué "Comédie" mais registre principal = émotion/drame.
-❌ NIVEAU 3 — Comédie noire/satire (-40 pts) : humour comme outil critique, pas pour divertir. Ex: "Parasite", "Dr. Strangelove", "The Big Short". NE PAS recommander pour ce mood.
+⚠️ NIVEAU 2 — Comédie douce (score total PLAFONNÉ à 75/100) : film avant tout émouvant/humain avec des moments drôles. Ex: "Pawn" (drame humain touchant), "Forrest Gump", "Little Miss Sunshine". Tagué "Comédie" mais registre principal = émotion/drame. → Score final MAX = 75, peu importe les autres critères.
+❌ NIVEAU 3 — Comédie noire/satire (Score = 0 FORCÉ) : humour comme outil critique, pas pour divertir. Ex: "Parasite", "Dr. Strangelove", "The Big Short". Score = 0 obligatoire.
 
 🔍 RÈGLE DE DÉTECTION : si le synopsis mentionne "drame", "touchant", "humain", "émotion", "lutte", "sacrifié" comme registre principal → c'est niveau 2 ou 3. Si le synopsis mentionne "drôle", "cocasse", "hilarant", "aventure légère", "fun" → c'est niveau 1.
-→ Donne ${weights.mood} pts MAXIMUM au niveau 1. Pénalise automatiquement les niveaux 2 et 3.` : ''}
+→ Donne ${weights.mood} pts MAXIMUM au niveau 1. Applique IMPÉRATIVEMENT le plafond 75 pts pour niveau 2 et Score=0 pour niveau 3.` : ''}
 ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)
