@@ -137,7 +137,18 @@ export const tmdbService = {
         // 1. Genre filtering — utilise le blend ADN+mood si disponible
         // blendedGenreIds = mood strict + genres récurrents des films de référence
         // Ex: mood=thriller(53) + ADN=horreur(27) → "53,27" → trouve Barbarian, Nope, etc.
-        let genreIds = metadata.genre_ids || preferences.blendedGenreIds || preferences.mood;
+        //
+        // RÈGLE COMÉDIE : pour les moods "35" et "35,28", on IGNORE metadata.genre_ids
+        // car l'IA peut retourner les genres ADN (Drama, Romance...) qui contaminaient
+        // la requête TMDB principale. On force l'usage du mood original.
+        const moodIndicatesComedy = String(preferences.mood || '').includes('35');
+        let genreIds;
+        if (moodIndicatesComedy) {
+            // Comédie : toujours partir du mood pur, jamais de l'analyse ADN de l'IA
+            genreIds = preferences.blendedGenreIds || preferences.mood;
+        } else {
+            genreIds = metadata.genre_ids || preferences.blendedGenreIds || preferences.mood;
+        }
 
         // excludeMap :
         // - "horror" → genre 27
