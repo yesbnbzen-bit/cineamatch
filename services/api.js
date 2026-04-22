@@ -121,6 +121,35 @@ export const tmdbService = {
         } catch (e) { return []; }
     },
 
+    // Enrichit les N meilleurs candidats avec cast + réalisateur pour le scorer IA
+    // Appels /credits en parallèle sur les topN films les mieux notés (qualité pondérée)
+    async enrichCandidatesWithCast(candidates, topN = 15) {
+        if (!this.apiKey || this.apiKey === 'MOCK' || candidates.length === 0) return candidates;
+        // Trier par score qualité pondéré : vote_average × log10(vote_count+1)
+        const scored = candidates.map(c => ({
+            c,
+            q: (c.vote_average || 0) * Math.log10((c.vote_count || 1) + 1)
+        }));
+        scored.sort((a, b) => b.q - a.q);
+        const topIds = scored.slice(0, topN).map(s => s.c.id);
+
+        // Fetch crédits en parallèle (15 appels ~100ms chacun = 150ms total)
+        const results = await Promise.allSettled(
+            topIds.map(id => this.getMovieCastAndCrew(id))
+        );
+
+        // Map id → crédits
+        const creditMap = {};
+        topIds.forEach((id, i) => {
+            if (results[i].status === 'fulfilled' && results[i].value) {
+                creditMap[id] = results[i].value;
+            }
+        });
+
+        // Attacher _credits à chaque candidat (null si non enrichi)
+        return candidates.map(c => ({ ...c, _credits: creditMap[c.id] || null }));
+    },
+
     // Retourne cast (IDs + noms) et réalisateur en un seul appel /credits
     async getMovieCastAndCrew(movieId) {
         if (!this.apiKey || this.apiKey === 'MOCK') return { castIds: [], castNames: [], director: null };
@@ -664,14 +693,20 @@ Réponds UNIQUEMENT par ce JSON strict (pas de markdown, pas de texte autour) :
   → Qualité Objective = ${weights.quality} pts max
   → Thème = ${weights.theme} pts max (bonus secondaire)`;
 
-        // ── Enrichissement des candidats avec contexte narratif ──
+        // ── Enrichissement des candidats avec contexte narratif + cast/réalisateur (B-fix) ──
         const enrichedCandidates = candidates.map(m => {
             const year = (m.release_date || '').split('-')[0] || '?';
             const rating = m.vote_average ? `${Number(m.vote_average).toFixed(1)}/10` : 'N/A';
             const votes = m.vote_count ? `${m.vote_count.toLocaleString()} votes` : '';
             const genres = formatGenres(m.genre_ids || []);
-            const overview = m.overview ? m.overview.substring(0, 220) : 'Pas de synopsis.';
-            return `- [ID:${m.id}] "${m.title}" (${year}) | ${genres} | ⭐${rating} (${votes})\n  └─ ${overview}`;
+            const overview = m.overview ? m.overview.substring(0, 200) : 'Pas de synopsis.';
+            // Cast + réalisateur si disponibles (enrichCandidatesWithCast a été appelé en amont)
+            const credits = m._credits;
+            const dirLine  = credits?.director    ? ` | Réal: ${credits.director}` : '';
+            const castLine = credits?.castNames?.length > 0
+                ? ` | Avec: ${credits.castNames.slice(0, 3).join(', ')}`
+                : '';
+            return `- [ID:${m.id}] "${m.title}" (${year}) | ${genres} | ⭐${rating} (${votes})${dirLine}${castLine}\n  └─ ${overview}`;
         }).join('\n');
 
         // ── Ancrage ADN pour les match reasons ──
@@ -802,9 +837,12 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
         };
         const blendedIds = (preferences.blendedGenreIds || '').split(',').map(Number).filter(Boolean);
         const blendedNames = blendedIds.map(id => GENRE_ID_NAMES[id] || id).join(', ');
-        const hasRomanceInBlend = blendedIds.includes(10749);
-        const romanceWarning = !hasRomanceInBlend && preferences.mood?.includes('10749')
-            ? `\n⛔ ROMANCE EXCLUE DU BLEND : Le film de référence n'a pas de dimension romantique. NE PAS scorer favorablement les films romantiques/sentimentaux. Score = 0 pour tout film dont le genre principal est Romance (10749).`
+        // A2-fix : l'ancien check (blendedGenreIds.includes(10749)) était toujours vrai car blendedGenreIds
+        // contient toujours les genres du mood. Le vrai signal = est-ce que les films de référence eux-mêmes
+        // sont romantiques ? Si mood inclut romance MAIS films de référence ne le sont pas → warning.
+        const adnHasRomance = (likedMovies || []).some(m => (m.genre_ids || []).includes(10749));
+        const romanceWarning = !adnHasRomance && preferences.mood?.includes('10749')
+            ? `\n⛔ ROMANCE NON CONFIRMÉE PAR L'ADN : Le mood inclut la Romance/Émotion mais les films de référence ne sont PAS des films romantiques. Si les films de référence sont des biopics, histoires vraies, comédies ou films d'action, cherche des films émouvants dans ces registres — PAS des romances sentimentales pures. Score = 0 pour tout film dont le genre DOMINANT est Romance sans dimension de dépassement humain, biopic, ou humour.`
             : '';
 
         // Avertissement biopic/inspirant : pénalise les romances érotiques quand l'ADN est une histoire vraie

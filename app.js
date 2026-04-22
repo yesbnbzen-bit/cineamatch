@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=57';
+import { tmdbService, openaiService } from './services/api.js?v=58';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1347,28 +1347,25 @@ const App = {
                 console.log(`🎯 ${tmdbRecs.length} candidats via ADN TMDb`);
             }
 
+            // SOURCE 2 + 2b en PARALLÈLE (A3-fix : séquentiel → Promise.all = -2s de temps)
             // SOURCE 2 : Discovery générale (genre blend + époque + langue + keywords)
-            const discovered = await tmdbService.getAdvancedDiscovery(
-                { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds },
-                metadata,
-                isReroll,
-                store.rerollCount + 1,
-                []
-            );
+            // SOURCE 2b : Discovery par acteurs ADN — Think Like a Man → Kevin Hart → Ride Along, Girls Trip...
+            const [discovered, castDiscoveredRaw] = await Promise.all([
+                tmdbService.getAdvancedDiscovery(
+                    { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds },
+                    metadata, isReroll, store.rerollCount + 1, []
+                ),
+                adnCastIds.length > 0
+                    ? tmdbService.getAdvancedDiscovery(
+                        { ...store.answers, detectedLanguage, blendedGenreIds },
+                        {}, false, 1, adnCastIds
+                      )
+                    : Promise.resolve([])
+            ]);
             addUnique(discovered);
-
-            // SOURCE 2b : Discovery par acteurs ADN — trouve des films avec les mêmes têtes d'affiche
-            // Ex : Think Like a Man → Kevin Hart → Girls Trip, Ride Along, About Last Night...
-            if (adnCastIds.length > 0) {
-                const castDiscovered = await tmdbService.getAdvancedDiscovery(
-                    { ...store.answers, detectedLanguage, blendedGenreIds },
-                    {},
-                    false,
-                    1,
-                    adnCastIds
-                );
-                addUnique(castDiscovered);
-                console.log(`🎭 ${castDiscovered.length} candidats via cast ADN`);
+            if (castDiscoveredRaw.length > 0) {
+                addUnique(castDiscoveredRaw);
+                console.log(`🎭 ${castDiscoveredRaw.length} candidats via cast ADN`);
             }
 
             // SOURCE 3 : Suggestions précises de l'IA (enrichissement du pool)
@@ -1551,19 +1548,20 @@ const App = {
                 console.log(`📡 Pool L2 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 3 : on lâche aussi le filtre époque (garde seulement exclusions genres critiques)
+            // Niveau 3 : on lâche VRAIMENT époque ET langue — seuls mood genre + exclusions conservés
+            // (A1-fix : L3 ne réapplique plus eraRange/langFilterSet — il était identique à L2 avant)
             if (safeCandidates.length < 6) {
                 store._relaxedSearch = 'epoque';
-                console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque ni langue`);
-                const fb3 = await tmdbService.getAdvancedDiscovery({}, {}, false, 1, []);
+                console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque NI langue`);
+                const fb3 = await tmdbService.getAdvancedDiscovery(
+                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude },
+                    {}, false, 1, []
+                );
                 for (const f of fb3) {
-                    const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                    // L3 garde les filtres époque et langue (seuls les keywords sont relâchés)
-                    if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
-                    if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
+                    // L3 : NI époque NI langue — uniquement mood + exclusions absolues
                     if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
@@ -1606,6 +1604,12 @@ const App = {
                 ? window.getAgeProfile?.(store.userAge) || null
                 : null;
 
+            // ── B-fix : enrichir les 15 meilleurs candidats avec cast + réalisateur ──
+            // → l'IA verra "Réal: Tim Story | Avec: Kevin Hart, Taraji P. Henson" dans le pool
+            // → appels /credits en parallèle (~150ms) sur les 15 films les mieux notés
+            const enrichedSafeCandidates = await tmdbService.enrichCandidatesWithCast(safeCandidates, 15);
+            console.log(`🎬 Candidats enrichis avec cast : ${enrichedSafeCandidates.filter(c => c._credits).length}/15`);
+
             // ── ÉTAPE 3 : OpenAI score et classe les candidats ──
             const ranked = await openaiService.getDeepRecommendations(
                 store.answers.lastLovedMovies,
@@ -1632,7 +1636,7 @@ const App = {
                     // Profil d'âge
                     _ageProfile:      ageProfile,
                 },
-                safeCandidates,
+                enrichedSafeCandidates,
                 isReroll,
                 [...store.suggestedMovieIds, ...lovedMovieIds],
                 getLang()
