@@ -109,6 +109,18 @@ export const tmdbService = {
         return data.cast || [];
     },
 
+    async getMovieTopCast(movieId) {
+        if (!this.apiKey || this.apiKey === 'MOCK') return [];
+        try {
+            const url = `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${this.apiKey}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            // Retourne les IDs des 3 premiers acteurs (têtes d'affiche)
+            return (data.cast || []).slice(0, 3).map(a => a.id);
+        } catch (e) { return []; }
+    },
+
     async getMovieKeywords(movieId) {
         if (!this.apiKey || this.apiKey === 'MOCK') return [];
         try {

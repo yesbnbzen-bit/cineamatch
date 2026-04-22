@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=52';
+import { tmdbService, openaiService } from './services/api.js?v=53';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1267,10 +1267,12 @@ const App = {
             // Objectif : trouver les mots-clés de style communs (ex: "psychological-horror", "social-commentary")
             // et les injecter dans la requête Discovery pour cibler le bon type de film
             let adnKeywordIds = [];
+            let adnCastIds = [];   // Acteurs des films de référence — pour with_cast Discovery
             if (store.answers.lastLovedMovies?.length > 0) {
-                const keywordMaps = await Promise.all(
-                    store.answers.lastLovedMovies.map(m => tmdbService.getMovieKeywords(m.id))
-                );
+                const [keywordMaps, castMaps] = await Promise.all([
+                    Promise.all(store.answers.lastLovedMovies.map(m => tmdbService.getMovieKeywords(m.id))),
+                    Promise.all(store.answers.lastLovedMovies.map(m => tmdbService.getMovieTopCast(m.id)))
+                ]);
                 // Compter la fréquence de chaque keyword sur tous les films de référence
                 const freq = {};
                 keywordMaps.flat().forEach(k => {
@@ -1283,6 +1285,25 @@ const App = {
                     .slice(0, 4)
                     .map(([id]) => id);
                 console.log(`🔑 Keywords ADN collectés :`, adnKeywordIds);
+
+                // Acteurs : garder ceux qui apparaissent dans ≥2 films de référence
+                // ou les têtes d'affiche du film le mieux noté (si 1 seul film de référence)
+                const castFreq = {};
+                castMaps.flat().forEach(id => { castFreq[id] = (castFreq[id] || 0) + 1; });
+                const refCount2 = store.answers.lastLovedMovies.length;
+                if (refCount2 >= 2) {
+                    // Acteurs récurrents sur plusieurs films de référence
+                    adnCastIds = Object.entries(castFreq)
+                        .filter(([, c]) => c >= 2)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 3)
+                        .map(([id]) => Number(id));
+                }
+                // Si pas d'acteur récurrent, prendre les 2 premiers acteurs du 1er film de référence
+                if (adnCastIds.length === 0 && castMaps[0]?.length > 0) {
+                    adnCastIds = castMaps[0].slice(0, 2).map(Number);
+                }
+                if (adnCastIds.length > 0) console.log(`🎭 Cast ADN :`, adnCastIds);
             }
 
             // ── ÉTAPE 2 : TMDb — 3 sources à poids égal ──
@@ -1316,6 +1337,20 @@ const App = {
                 []
             );
             addUnique(discovered);
+
+            // SOURCE 2b : Discovery par acteurs ADN — trouve des films avec les mêmes têtes d'affiche
+            // Ex : Think Like a Man → Kevin Hart → Girls Trip, Ride Along, About Last Night...
+            if (adnCastIds.length > 0) {
+                const castDiscovered = await tmdbService.getAdvancedDiscovery(
+                    { ...store.answers, detectedLanguage, blendedGenreIds },
+                    {},
+                    false,
+                    1,
+                    adnCastIds
+                );
+                addUnique(castDiscovered);
+                console.log(`🎭 ${castDiscovered.length} candidats via cast ADN`);
+            }
 
             // SOURCE 3 : Suggestions précises de l'IA (enrichissement du pool)
             if (metadata.specific_suggestions?.length > 0) {
