@@ -193,10 +193,11 @@ export const tmdbService = {
         const isComedyMoodForExcl = moodStr.includes('35');
         const baseExcluded = [10770];
         if (!moodStr.includes('99')) baseExcluded.push(99);
-        // Pour le mood Comédie : exclure Drama (18) et Thriller (53) dès le pool TMDB
-        // → Parasite, Pawn, The Great Buddha+ n'entrent plus jamais dans le pool
+        // Pour le mood Comédie : exclure Thriller (53) et Horror (27) dès le pool TMDB
+        // Drama(18) TOLÉRÉ — les romcoms et feel-good ont souvent Comedy+Drama
+        // Parasite sera filtré par passesComedyGuard côté client (il a Thriller(53))
         if (isComedyMoodForExcl) {
-            baseExcluded.push(18, 53);
+            baseExcluded.push(53, 27);
         }
         // Exclusions utilisateur
         const userExcludedGenres = (preferences.exclude || [])

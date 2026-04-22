@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=65';
+import { tmdbService, openaiService } from './services/api.js?v=66';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1419,8 +1419,8 @@ const App = {
 
             // Genres supplémentaires exclus pour le contexte famille
             const familyExcludedGenres = store.answers.context === 'family' ? [27, 53, 10749] : [];
-            // Pour le mood Comédie : exclure Drama (18), Thriller (53), Horreur (27)
-            const comedyHardExclusions = (['35', '35,28'].includes(String(store.answers.mood))) ? [18, 53, 27] : [];
+            // Pour le mood Comédie : exclure Thriller (53) et Horreur (27) — Drama(18) TOLÉRÉ (romcoms, feel-good)
+            const comedyHardExclusions = (['35', '35,28'].includes(String(store.answers.mood))) ? [53, 27] : [];
             const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds, ...comedyHardExclusions])];
 
             if (prefExcludedGenreIds.length > 0) console.log(`🚫 Exclusions préfs permanentes : ${(savedPrefs.exclusions||[]).join(', ')} → genres [${prefExcludedGenreIds.join(',')}]`);
@@ -1429,18 +1429,22 @@ const App = {
             // Ces guards sont auto-suffisants : ils n'utilisent PAS allExcludedGenres
             // ni moodGenresArray pour ne pas dépendre de leurs éventuels bugs.
             const isComedyMood = String(store.answers.mood || '').includes('35');
-            const COMEDY_BANNED  = new Set([18, 53, 27, 80]); // Drama, Thriller, Horror, Crime
+            // Drama(18) autorisé dans les comédies (romcoms, feel-good avec drama léger, etc.)
+            // Seuls Thriller(53), Horreur(27) et Crime(80) sont incompatibles avec un mood comédie
+            const COMEDY_BANNED  = new Set([53, 27, 80]); // Thriller, Horror, Crime — PAS Drama
             const COMEDY_REQUIRED = 35; // Doit avoir le tag Comédie
-            console.log(`🎭 Mood: "${store.answers.mood}" | isComedyMood: ${isComedyMood} | COMEDY_BANNED: [18,53,27,80]`);
+            console.log(`🎭 Mood: "${store.answers.mood}" | isComedyMood: ${isComedyMood} | COMEDY_BANNED: [53,27,80]`);
 
             // Genres requis (mood de l'utilisateur) — utilisé dans tous les niveaux de filtre
             const moodGenresArray = [...moodGenres];
 
             // Helper : est-ce que ce film passe les gardes comédie ?
+            // Exige Comedy(35) + interdit Thriller/Horror/Crime
+            // Drama(18) toléré : Amélie, Grand Budapest Hotel, romcoms ont souvent Drama+Comedy
             const passesComedyGuard = (genres) => {
                 if (!isComedyMood) return true; // Pas un mood comédie → pas de restriction comédie
                 if (!genres.includes(COMEDY_REQUIRED)) return false; // Doit avoir Comedy(35)
-                if (genres.some(g => COMEDY_BANNED.has(g))) return false; // Interdit Drama/Thriller/Horror/Crime
+                if (genres.some(g => COMEDY_BANNED.has(g))) return false; // Interdit Thriller/Horror/Crime
                 return true;
             };
 
