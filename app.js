@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=51';
+import { tmdbService, openaiService } from './services/api.js?v=52';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1459,11 +1459,12 @@ const App = {
                 console.log(`📡 Pool L1 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 2 : on lâche le filtre langue (garde époque + exclusions genres)
+            // Niveau 2 : lâche le genre mais GARDE la langue — respecte l'intention utilisateur
             if (safeCandidates.length < 6) {
                 store._relaxedSearch = 'langue';
-                console.log(`⚠️ Pool toujours petit, fallback L2 sans filtre langue`);
-                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers }, {}, false, 1, []);
+                console.log(`⚠️ Pool toujours petit, fallback L2 — langue conservée, genre élargi`);
+                // On garde detectedLanguage pour respecter le choix langue de l'utilisateur
+                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, false, 1, []);
                 for (const f of fb2) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
@@ -1709,8 +1710,8 @@ const App = {
             const isEn = getLang() === 'en';
             const messages = {
                 langue: isEn
-                    ? '🌍 No films found in your selected language — showing similar films in other languages'
-                    : '🌍 Aucun film trouvé dans la langue choisie — voici des films similaires dans d\'autres langues',
+                    ? '🌍 We broadened the search slightly to find the best matches for you'
+                    : '🌍 On a élargi légèrement la sélection pour te trouver les meilleures correspondances',
                 epoque: isEn
                     ? '📅 Not enough recent films found — showing the best matches from all eras'
                     : '📅 Pas assez de films récents trouvés — voici les meilleures correspondances toutes époques confondues',

@@ -210,16 +210,21 @@ export const tmdbService = {
         }
 
         // 4b. Language Filter — déduit des films de référence ou conflit duo
+        // Groupes de langues : "ko" = tout l'Asie, "es" = hispanophone + luso
+        const LANG_GROUPS_TMDB = { ko: 'ko|ja|zh', es: 'es|pt' };
+
         if (preferences._duoLangConflict && preferences._duoLangA && preferences._duoLangB) {
-            // Duo conflit : filtre OR (langA ou langB) pour ouvrir le pool aux deux cultures
-            const duoLangs = [preferences._duoLangA, preferences._duoLangB].filter(l => l && l !== 'any');
+            const duoLangs = [preferences._duoLangA, preferences._duoLangB]
+                .filter(l => l && l !== 'any')
+                .map(l => LANG_GROUPS_TMDB[l] || l);
             if (duoLangs.length > 0) {
                 url += `&with_original_language=${duoLangs.join('|')}`;
                 console.log(`🌍 Duo langue OR : ${duoLangs.join('|')}`);
             }
-        } else if (preferences.detectedLanguage) {
-            url += `&with_original_language=${preferences.detectedLanguage}`;
-            console.log(`🌍 Langue détectée depuis ADN : ${preferences.detectedLanguage}`);
+        } else if (preferences.detectedLanguage && preferences.detectedLanguage !== 'any') {
+            const langFilter = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
+            url += `&with_original_language=${langFilter}`;
+            console.log(`🌍 Langue filtrée : ${langFilter}`);
         }
 
         // 4c. Keywords Filter — style narratif précis déduit des films de référence
@@ -298,26 +303,35 @@ export const tmdbService = {
 
         let finalResults = [...results];
 
-        // T2 FALLBACK si résultats trop faibles
+        // T2 FALLBACK : relâche genre + époque mais GARDE la langue — l'intention utilisateur est sacrée
         if (finalResults.length < 3) {
-            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&vote_count.gte=20&sort_by=popularity.desc&page=${page}`;
-            if (genreIds) t2Url += `&with_genres=${genreIds}`;
+            const langFilter = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
+            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770&vote_count.gte=50&sort_by=vote_average.desc&vote_average.gte=6.5`;
+            if (langFilter && langFilter !== 'any') t2Url += `&with_original_language=${langFilter}`;
             if (excluded.length > 0) t2Url += `&without_genres=${excluded.join(',')}`;
             if (hasCastFilter) t2Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
-            if (era === 'new') t2Url += `&primary_release_date.gte=2010-01-01`;
             t2Url += `&_=${Date.now()}`;
+            console.log(`⚠️ T2 fallback (garde langue) : ${langFilter || 'any'}`);
             const t2Resp = await fetch(t2Url, { cache: 'no-store' });
             const t2Data = await t2Resp.json();
             const t2Res = t2Data.results || [];
             finalResults = [...finalResults, ...t2Res.filter(r => !finalResults.some(old => old.id === r.id))];
         }
 
-        if (finalResults.length === 0) {
-            console.log("FALLBACK T3 déclenché (Aucun film trouvé avec ces filtres !)");
-            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc`;
-            if (era === 'new') t3Url += `&primary_release_date.gte=2020-01-01`;
+        // T3 FALLBACK : seulement si T2 n'a rien donné non plus — garde quand même la langue
+        if (finalResults.length === 0 && preferences.detectedLanguage && preferences.detectedLanguage !== 'any') {
+            console.log("FALLBACK T3 — langue uniquement, genres ouverts");
+            const langFilter = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
+            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc&vote_count.gte=100&without_genres=10770`;
+            if (langFilter) t3Url += `&with_original_language=${langFilter}`;
+            const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
+            const t3Data = await t3Resp.json();
+            finalResults = t3Data.results || [];
+        } else if (finalResults.length === 0) {
+            // Aucune préférence de langue → fallback global
+            console.log("FALLBACK T3 global");
+            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc&without_genres=10770`;
             if (excluded.length > 0) t3Url += `&without_genres=${excluded.join(',')}`;
-            if (castIds && castIds.length > 0) t3Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
             const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
             const t3Data = await t3Resp.json();
             finalResults = t3Data.results || [];
