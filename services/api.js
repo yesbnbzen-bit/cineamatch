@@ -812,9 +812,15 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
-${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE et s'amuser. Exemples parfaits : "Extreme Job", "Midnight Runners", "The Dude in Me", "Kung Fu Hustle", "My Sassy Girl", "Superbad", "The Hangover", "Game Night", "Murder Mystery", "Crazy Rich Asians", "Girls Trip".
-⛔ ATTENTION — Ces films sont tagués "Comédie" dans TMDB MAIS ne correspondent PAS à ce mood : Parasite (satire sociale noire), The Social Network (drame), Knives Out (thriller), Marriage Story (drame), About Schmidt (drame lent). Un film peut être "drôle" sans être une comédie fun. L'intention = rire franc, situations cocasses, feel-good, légèreté. PAS : humour noir, satire, dark comedy, drame avec quelques touches d'humour.
-→ Donne ${weights.mood} pts MAXIMUM aux vrais films comiques. Pénalise -30 pts les films dont "comédie" est un tag secondaire mais le registre principal est dramatique, thriller ou noir.` : ''}
+${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE. Expérience attendue : rires francs, situations cocasses, feel-good, légèreté.
+
+3 NIVEAUX DE COMÉDIE — score uniquement le niveau 1 :
+✅ NIVEAU 1 — Comédie FUN (score max) : le film fait rire en premier lieu. Ex: "Extreme Job", "Swing Girls", "Kamikaze Girls", "Midnight Runners", "Kung Fu Hustle", "The Dude in Me", "Superbad", "The Hangover", "Game Night", "Crazy Rich Asians".
+⚠️ NIVEAU 2 — Comédie douce (-25 pts) : film avant tout émouvant/humain avec des moments drôles. Ex: "Pawn" (drame humain touchant), "Forrest Gump", "Little Miss Sunshine". Tagué "Comédie" mais registre principal = émotion/drame.
+❌ NIVEAU 3 — Comédie noire/satire (-40 pts) : humour comme outil critique, pas pour divertir. Ex: "Parasite", "Dr. Strangelove", "The Big Short". NE PAS recommander pour ce mood.
+
+🔍 RÈGLE DE DÉTECTION : si le synopsis mentionne "drame", "touchant", "humain", "émotion", "lutte", "sacrifié" comme registre principal → c'est niveau 2 ou 3. Si le synopsis mentionne "drôle", "cocasse", "hilarant", "aventure légère", "fun" → c'est niveau 1.
+→ Donne ${weights.mood} pts MAXIMUM au niveau 1. Pénalise automatiquement les niveaux 2 et 3.` : ''}
 ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)
