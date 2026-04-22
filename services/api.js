@@ -820,7 +820,7 @@ ${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateu
 
 3 NIVEAUX DE COMÉDIE — règles strictes de score :
 ✅ NIVEAU 1 — Comédie FUN (score max) : le film fait rire en premier lieu. Ex: "Extreme Job", "Swing Girls", "Kamikaze Girls", "Midnight Runners", "Kung Fu Hustle", "The Dude in Me", "Superbad", "The Hangover", "Game Night", "Crazy Rich Asians".
-⚠️ NIVEAU 2 — Comédie douce (score total PLAFONNÉ à 75/100) : film avant tout émouvant/humain avec des moments drôles. Ex: "Pawn" (drame humain touchant), "Forrest Gump", "Little Miss Sunshine". Tagué "Comédie" mais registre principal = émotion/drame. → Score final MAX = 75, peu importe les autres critères.
+⚠️ NIVEAU 2 — Comédie douce (score total PLAFONNÉ à 60/100) : film avant tout émouvant/humain avec des moments drôles. Ex: "Pawn" (drame humain touchant), "Forrest Gump", "Little Miss Sunshine". Tagué "Comédie" mais registre principal = émotion/drame. → Score final MAX = 60, peu importe les autres critères. Ne peut jamais figurer dans le top 3 si des comédies fun existent.
 ❌ NIVEAU 3 — Comédie noire/satire (Score = 0 FORCÉ) : humour comme outil critique, pas pour divertir. Ex: "Parasite", "Dr. Strangelove", "The Big Short". Score = 0 obligatoire.
 
 🔍 RÈGLE DE DÉTECTION : si le synopsis mentionne "drame", "touchant", "humain", "émotion", "lutte", "sacrifié" comme registre principal → c'est niveau 2 ou 3. Si le synopsis mentionne "drôle", "cocasse", "hilarant", "aventure légère", "fun" → c'est niveau 1.
