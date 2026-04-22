@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=67';
+import { tmdbService, openaiService } from './services/api.js?v=51';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1088,8 +1088,7 @@ const App = {
             // ── Labels lisibles pour les prompts ──
             const contextMap  = { alone: "Seul", couple: "En couple", family: "En famille", friends: "Entre amis" };
             const moodMap     = {
-                "35":       "Comédie feel-good",
-                "35,28":    "Comédie explosive",
+                "35,10751": "Rire / Comédie",
                 "28,12":    "Action / Aventure",
                 "53":       "Thriller / Suspense",
                 "27":       "Horreur",
@@ -1136,8 +1135,7 @@ const App = {
             // ── Inférer le pace depuis le mood (Q4 supprimée) ──
             // Le mood implique naturellement un niveau de complexité narrative
             const inferredPace = store.answers.pace || {
-                "35":       "easy",      // feel-good → histoire simple
-                "35,28":    "easy",      // explosive → rythme soutenu mais accessible
+                "35,10751": "easy",      // légèreté → histoire simple
                 "28,12":    "any",       // action → peu importe
                 "53":       "complex",   // thriller → scénario construit
                 "27":       "complex",   // horreur → tension construite
@@ -1190,8 +1188,7 @@ const App = {
             // Si les films ADN sont horror-thriller (27+53), on étend la Discovery au-delà
             // du mood strict — sinon Barbarian, Nope, Smile ne rentrent jamais dans le pool
             const GENRE_MAP = {
-                "35":       [35, 10751],  // feel-good → comédies + famille
-                "35,28":    [35, 28],     // explosive → comédie + action
+                "35,10751": [35, 10751],  // comédie/famille
                 "28,12":    [28, 12],     // action/aventure
                 "53":       [53],         // thriller
                 "27":       [27],         // horreur
@@ -1221,8 +1218,7 @@ const App = {
                 // Ajouter les genres ADN qui COMPLÈTENT le mood (pas ceux qui le contredisent)
                 // Un genre ADN "complète" s'il n'est pas l'opposé du mood principal
                 const CONFLICTING = {
-                    "35":       [27, 53, 18, 80],  // feel-good ≠ horreur/thriller/drame/crime
-                    "35,28":    [27, 53, 18, 80],  // explosive ≠ horreur/thriller/drame/crime
+                    "35,10751": [27, 53],    // légèreté ≠ horreur/thriller
                     "28,12":    [],
                     "53":       [35, 10751], // thriller ≠ comédie/famille
                     "27":       [35, 10751], // horreur ≠ comédie/famille
@@ -1238,17 +1234,9 @@ const App = {
                 });
             }
 
-            // ── Sécurité comédie : jamais de genres sombres dans le blend ──
-            // Si l'utilisateur a cité des films crime/drame/thriller en référence,
-            // ces genres ne doivent PAS contaminer le prompt IA ni le filtre safeCandidates
-            // (sinon l'IA suggère Memories of Murder, Burning, etc. pour un mood comédie)
-            if (['35', '35,28'].includes(String(store.answers.mood))) {
-                [18, 53, 27, 80, 9648].forEach(g => blendedGenres.delete(g));
-            }
-
             // Détecter si l'ADN est en conflit fort avec le mood (pour l'informer au scorer)
             const adnConflictsWithMood = refCount > 0 && (() => {
-                const CONFLICTING = { "35": [27,53], "35,28": [27,53], "53": [35,28,35], "27": [35,28,35] };
+                const CONFLICTING = { "35,10751": [27,53], "53": [35,10751], "27": [35,10751] };
                 const conflicts = new Set(CONFLICTING[store.answers.mood] || []);
                 return Object.keys(lovedGenreFreq).some(g => conflicts.has(Number(g)));
             })();
@@ -1404,49 +1392,26 @@ const App = {
 
             // Genres à exclure (session + préférences sauvegardées)
             const EXCLUDE_GENRE_MAP = {
-                horror:    [27],           // Trop de violence → horreur
-                sad:       [18],           // Trop triste → drame lourd
-                scary:     [27, 53],       // Films qui font peur → horreur + thriller
-                adult:     [],             // Contenu adulte → géré via le prompt IA (pas de genre TMDb direct)
-                slow:      [],             // Trop lent → géré via prompt IA
-                complex:   [],             // Trop complexe → géré via prompt IA
-                animation: [16],           // Films d'animation
-                teen:      [16, 10751],    // Films d'ados / coming-of-age → exclut animation + famille (pas de genre "ado" TMDB direct)
-                none:      []              // Rien ne me dérange
+                horror:    [27],        // Trop de violence → horreur
+                sad:       [18],        // Trop triste → drame lourd
+                scary:     [27, 53],    // Films qui font peur → horreur + thriller
+                adult:     [],          // Contenu adulte → géré via le prompt IA (pas de genre TMDb direct)
+                slow:      [],          // Trop lent → géré via prompt IA
+                complex:   [],          // Trop complexe → géré via prompt IA
+                animation: [16],        // Films d'animation
+                none:      []           // Rien ne me dérange
             };
             const excludedGenreIds = (store.answers.exclude || [])
                 .flatMap(ex => EXCLUDE_GENRE_MAP[ex] || []);
 
             // Genres supplémentaires exclus pour le contexte famille
             const familyExcludedGenres = store.answers.context === 'family' ? [27, 53, 10749] : [];
-            // Pour le mood Comédie : exclure Thriller (53) et Horreur (27) — Drama(18) TOLÉRÉ (romcoms, feel-good)
-            const comedyHardExclusions = (['35', '35,28'].includes(String(store.answers.mood))) ? [53, 27] : [];
-            const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds, ...comedyHardExclusions])];
+            const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds])];
 
             if (prefExcludedGenreIds.length > 0) console.log(`🚫 Exclusions préfs permanentes : ${(savedPrefs.exclusions||[]).join(', ')} → genres [${prefExcludedGenreIds.join(',')}]`);
 
-            // ── Constantes comédie — indépendantes de toute autre variable ────────
-            // Ces guards sont auto-suffisants : ils n'utilisent PAS allExcludedGenres
-            // ni moodGenresArray pour ne pas dépendre de leurs éventuels bugs.
-            const isComedyMood = String(store.answers.mood || '').includes('35');
-            // Drama(18) autorisé dans les comédies (romcoms, feel-good avec drama léger, etc.)
-            // Seuls Thriller(53), Horreur(27) et Crime(80) sont incompatibles avec un mood comédie
-            const COMEDY_BANNED  = new Set([53, 27, 80]); // Thriller, Horror, Crime — PAS Drama
-            const COMEDY_REQUIRED = 35; // Doit avoir le tag Comédie
-            console.log(`🎭 Mood: "${store.answers.mood}" | isComedyMood: ${isComedyMood} | COMEDY_BANNED: [53,27,80]`);
-
             // Genres requis (mood de l'utilisateur) — utilisé dans tous les niveaux de filtre
             const moodGenresArray = [...moodGenres];
-
-            // Helper : est-ce que ce film passe les gardes comédie ?
-            // Exige Comedy(35) + interdit Thriller/Horror/Crime
-            // Drama(18) toléré : Amélie, Grand Budapest Hotel, romcoms ont souvent Drama+Comedy
-            const passesComedyGuard = (genres) => {
-                if (!isComedyMood) return true; // Pas un mood comédie → pas de restriction comédie
-                if (!genres.includes(COMEDY_REQUIRED)) return false; // Doit avoir Comedy(35)
-                if (genres.some(g => COMEDY_BANNED.has(g))) return false; // Interdit Thriller/Horror/Crime
-                return true;
-            };
 
             let safeCandidates = candidates.filter(c => {
                 const year = parseInt(c.release_date?.split('-')[0]) || 0;
@@ -1461,11 +1426,11 @@ const App = {
                 // Filtre exclusions genres → s'applique à toutes les sources (animation, horreur, etc.)
                 if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) return false;
                 // Filtre origine — s'applique à TOUTES les sources (TMDb recs, Discovery, IA)
+                // "Américain" → only en | "Français" → only fr | "Asiatique" → ko/ja/zh/cn/th/hi
                 if (langFilterSet && c.original_language && !langFilterSet.has(c.original_language)) return false;
                 // Filtre genre requis — le film doit avoir au moins un genre du mood demandé
+                // Évite les documentaires, drames, etc. qui viennent de SOURCE 1 (recs TMDb) ou SOURCE 3 (IA)
                 if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) return false;
-                // Filtre comédie HARD — indépendant des autres variables, auto-suffisant
-                if (!passesComedyGuard(genres)) return false;
 
                 return true;
             });
@@ -1475,17 +1440,12 @@ const App = {
             store._relaxedSearch = null; // null = recherche normale
 
             // ── FALLBACK PROGRESSIF : relâche les contraintes une par une jusqu'à toujours trouver ──
-            // Chaque niveau doit appeler TMDB avec des paramètres DIFFÉRENTS pour obtenir de nouveaux films.
-            // L1 = pages 3&4 (toujours mêmes filtres, films différents)
-            // L2 = sans filtre langue dans la requête TMDB (langue conservée côté client)
-            // L3 = sans filtre époque (ni TMDB ni client)
 
-            // Niveau 1 : pages suivantes (même filtre, films différents)
+            // Niveau 1 : Discovery large sans keywords (filtres époque + langue + exclusions conservés)
             if (safeCandidates.length < 6) {
-                console.log(`⚠️ Pool trop petit (${safeCandidates.length}), fallback L1 pages suivantes`);
-                const fb1a = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, true, 3, []);
-                const fb1b = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, true, 4, []);
-                for (const f of [...fb1a, ...fb1b]) {
+                console.log(`⚠️ Pool trop petit (${safeCandidates.length}), fallback L1 Discovery large`);
+                const fb1 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, false, 1, []);
+                for (const f of fb1) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
@@ -1494,17 +1454,16 @@ const App = {
                     if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
                     if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
-                    if (!passesComedyGuard(genres)) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                 }
                 console.log(`📡 Pool L1 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 2 : sans filtre langue dans la requête TMDB (filtre langue conservé côté client)
+            // Niveau 2 : on lâche le filtre langue (garde époque + exclusions genres)
             if (safeCandidates.length < 6) {
-                if (langFilterSet) store._relaxedSearch = 'langue';
-                console.log(`⚠️ Pool toujours petit, fallback L2 — TMDB sans langue, filtre client conservé`);
-                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage: null }, {}, false, 1, []);
+                store._relaxedSearch = 'langue';
+                console.log(`⚠️ Pool toujours petit, fallback L2 sans filtre langue`);
+                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers }, {}, false, 1, []);
                 for (const f of fb2) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
@@ -1512,27 +1471,27 @@ const App = {
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
-                    if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
-                    if (!passesComedyGuard(genres)) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                 }
                 console.log(`📡 Pool L2 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 3 : sans filtre époque ni langue dans TMDB, filtre client assoupli sur l'époque
+            // Niveau 3 : on lâche aussi le filtre époque (garde seulement exclusions genres critiques)
             if (safeCandidates.length < 6) {
-                if (eraRange) store._relaxedSearch = 'epoque';
-                console.log(`⚠️ Pool toujours petit, fallback L3 — sans langue ni époque dans TMDB`);
-                const fb3 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage: null, era: 'any' }, {}, false, 1, []);
+                store._relaxedSearch = 'epoque';
+                console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque ni langue`);
+                const fb3 = await tmdbService.getAdvancedDiscovery({}, {}, false, 1, []);
                 for (const f of fb3) {
+                    const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
+                    // L3 garde les filtres époque et langue (seuls les keywords sont relâchés)
+                    if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
-                    if (!passesComedyGuard(genres)) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                 }
                 console.log(`📡 Pool L3 : ${safeCandidates.length} candidats`);
@@ -1543,15 +1502,16 @@ const App = {
                 store._relaxedSearch = 'tout';
                 console.log(`🚨 Fallback NUCLEAR : genre mood conservé, époque/langue/keywords ignorés`);
                 try {
+                    // On garde le genre mood pour rester "dans le même esprit"
                     const nuclearPrefs = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')) };
                     const nuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs, {}, false, 1, []);
                     for (const f of nuclear) {
                         const genres = f.genre_ids || [];
                         if (lovedMovieIds.includes(Number(f.id))) continue;
                         if (store.suggestedMovieIds.includes(Number(f.id))) continue;
+                        // Garde au moins le filtre genre requis et les exclusions
                         if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
                         if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
-                        if (!passesComedyGuard(genres)) continue;
                         if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                     }
                 } catch(e) { console.error('Fallback nuclear échoué', e); }
@@ -1563,33 +1523,6 @@ const App = {
                 console.warn('🚨 Aucun candidat après tous les fallbacks — erreur réseau probable');
                 this.renderError(getLang() === 'en' ? 'Network issue — please try again' : 'Problème réseau — réessaie dans un instant');
                 return;
-            }
-
-            // ── Filtre comédie FINAL (dernière ligne de défense après tous les fallbacks) ─
-            // passesComedyGuard() est auto-suffisant et indépendant de allExcludedGenres
-            if (isComedyMood) {
-                const before = safeCandidates.length;
-                safeCandidates = safeCandidates.filter(c => passesComedyGuard(c.genre_ids || []));
-                console.log(`🚫 Filtre comédie FINAL : ${before} → ${safeCandidates.length} films (retiré: ${before - safeCandidates.length} Drama/Thriller/Horror/Crime sans tag Comédie)`);
-                // Si pool < 3 après filtre, récupère des comédies pures directement
-                if (safeCandidates.length < 3) {
-                    console.log(`⚠️ Pool comédie < 3, Discovery comédie pure de secours`);
-                    try {
-                        // On passe TOUTES les prefs y compris exclude pour respecter animation/teen
-                        const purePrefs = { ...store.answers, detectedLanguage };
-                        const pureComedy = await tmdbService.getAdvancedDiscovery(purePrefs, {}, false, 1, []);
-                        for (const f of pureComedy) {
-                            const fGenres = f.genre_ids || [];
-                            if (lovedMovieIds.includes(Number(f.id))) continue;
-                            if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                            // Respect des exclusions utilisateur (animation, teen, etc.)
-                            if (allExcludedGenres.length > 0 && fGenres.some(g => allExcludedGenres.includes(g))) continue;
-                            if (!passesComedyGuard(fGenres)) continue;
-                            if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
-                        }
-                        console.log(`✅ Pool après récupération comédie pure : ${safeCandidates.length} films`);
-                    } catch(e) { console.warn('Discovery comédie pure échouée', e); }
-                }
             }
 
             loadingText.textContent = t('loading.select');
@@ -1633,15 +1566,9 @@ const App = {
 
             // ── Dédupliquer le ranked par tmdb_id (sécurité anti-doublon) ──
             const seenRankedIds = new Set();
-            const safePoolIds = new Set(safeCandidates.map(c => Number(c.id)));
             const rankedDeduped = ranked.filter(r => {
                 const id = Number(r.tmdb_id);
                 if (!id || seenRankedIds.has(id)) return false;
-                // Rejet si l'IA a halluciné un ID hors du pool safeCandidates
-                if (!safePoolIds.has(id)) {
-                    console.warn(`⚠️ IA a retourné ID hors pool: ${id} — ignoré`);
-                    return false;
-                }
                 seenRankedIds.add(id);
                 return true;
             });
@@ -1782,8 +1709,8 @@ const App = {
             const isEn = getLang() === 'en';
             const messages = {
                 langue: isEn
-                    ? '🌍 We broadened the search slightly to find the best matches for you'
-                    : '🌍 On a élargi légèrement la sélection pour te trouver les meilleures correspondances',
+                    ? '🌍 No films found in your selected language — showing similar films in other languages'
+                    : '🌍 Aucun film trouvé dans la langue choisie — voici des films similaires dans d\'autres langues',
                 epoque: isEn
                     ? '📅 Not enough recent films found — showing the best matches from all eras'
                     : '📅 Pas assez de films récents trouvés — voici les meilleures correspondances toutes époques confondues',
@@ -1811,19 +1738,17 @@ const App = {
         // ── Carte résumé des deux profils (mode Duo uniquement) ──
         if (store.duoMode && store.duoMerged) {
             const moodLabels = getLang() === 'en' ? {
-                "35":       "Feel-good", "35,28":    "Explosive comedy",
-                "28,12":    "Adrenaline", "53":       "Suspense",
-                "27":       "Thrills",   "18,10749": "Strong emotions",
-                "878,9648": "Mind-bending"
+                "35,10751": "Light mood", "28,12":    "Adrenaline",
+                "53":       "Suspense",  "27":        "Thrills",
+                "18,10749": "Strong emotions", "878,9648": "Mind-bending"
             } : {
-                "35":       "Feel-good", "35,28":    "Comédie explosive",
-                "28,12":    "Adrénaline", "53":       "Suspense",
-                "27":       "Frissons",  "18,10749": "Émotions fortes",
-                "878,9648": "Réflexion"
+                "35,10751": "Légèreté",  "28,12":    "Adrénaline",
+                "53":       "Suspense",  "27":        "Frissons",
+                "18,10749": "Émotions fortes", "878,9648": "Réflexion"
             };
             const moodIcons = {
-                "35": "😊", "35,28": "🤣", "28,12": "⚡",
-                "53": "🕵️", "27": "🧟", "18,10749": "🎭", "878,9648": "👽"
+                "35,10751": "🎈", "28,12": "⚡", "53": "🕵️",
+                "27": "🧟", "18,10749": "🎭", "878,9648": "👽"
             };
 
             const answersA = store.duoPartnerAnswers || {};
@@ -2535,8 +2460,7 @@ const App = {
 
         // ── Pace : inférer depuis le mood de chacun, puis chercher un compromis ──
         const PACE_FROM_MOOD = {
-            "35":       "easy",   // feel-good → facile
-            "35,28":    "easy",   // explosive → facile
+            "35,10751": "easy",   // comédie → facile
             "28,12":    "any",    // action → peu importe
             "53":       "any",    // thriller → peu importe
             "27":       "easy",   // horreur → facile (immersif, pas intellectuel)
@@ -2673,15 +2597,13 @@ const App = {
     // ── Partage des résultats ──
     shareResults(movies) {
         const moodLabelsShare = getLang() === 'en' ? {
-            "35": "feel-good 😊", "35,28": "explosive comedy 🤣",
-            "28,12": "adrenaline ⚡", "53": "suspense 🕵️",
-            "27": "thrills 🧟", "18,10749": "strong emotions 🎭",
-            "878,9648": "mind-bending 👽"
+            "35,10751": "lighthearted 🎈", "28,12": "adrenaline ⚡",
+            "53": "suspense 🕵️", "27": "thrills 🧟",
+            "18,10749": "strong emotions 🎭", "878,9648": "mind-bending 👽"
         } : {
-            "35": "feel-good 😊", "35,28": "comédie explosive 🤣",
-            "28,12": "adrénaline ⚡", "53": "suspense 🕵️",
-            "27": "frissons 🧟", "18,10749": "émotions fortes 🎭",
-            "878,9648": "réflexion 👽"
+            "35,10751": "légèreté 🎈", "28,12": "adrénaline ⚡",
+            "53": "suspense 🕵️", "27": "frissons 🧟",
+            "18,10749": "émotions fortes 🎭", "878,9648": "réflexion 👽"
         };
         const mood = moodLabelsShare[store.answers.mood] || (getLang() === 'en' ? 'cinema' : 'cinéma');
         const titles = movies.map((m, i) => `${i+1}. ${m.title} (${m.release_date?.split('-')[0]||''}) — ${m.match_score}% match`).join('\n');

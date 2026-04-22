@@ -125,7 +125,8 @@ export const tmdbService = {
         // On le retire ici pour éviter le doublon page=X&...&page=Y (le dernier gagne, mais c'est source de confusion).
         // 10770 = Téléfilm | 99 = Documentaire — exclus par défaut sauf si mood documentaire
         const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false`;
+        const excludeDocumentary = !moodStr.includes('99') ? ',99' : '';
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770${excludeDocumentary}`;
         
         // Add with_cast parameter if we have cast IDs from loved movies
         if (castIds && castIds.length > 0) {
@@ -137,18 +138,7 @@ export const tmdbService = {
         // 1. Genre filtering — utilise le blend ADN+mood si disponible
         // blendedGenreIds = mood strict + genres récurrents des films de référence
         // Ex: mood=thriller(53) + ADN=horreur(27) → "53,27" → trouve Barbarian, Nope, etc.
-        //
-        // RÈGLE COMÉDIE : pour les moods "35" et "35,28", on IGNORE metadata.genre_ids
-        // car l'IA peut retourner les genres ADN (Drama, Romance...) qui contaminaient
-        // la requête TMDB principale. On force l'usage du mood original.
-        const moodIndicatesComedy = String(preferences.mood || '').includes('35');
-        let genreIds;
-        if (moodIndicatesComedy) {
-            // Comédie : toujours partir du mood pur, jamais de l'analyse ADN de l'IA
-            genreIds = preferences.blendedGenreIds || preferences.mood;
-        } else {
-            genreIds = metadata.genre_ids || preferences.blendedGenreIds || preferences.mood;
-        }
+        let genreIds = metadata.genre_ids || preferences.blendedGenreIds || preferences.mood;
 
         // excludeMap :
         // - "horror" → genre 27
@@ -167,44 +157,27 @@ export const tmdbService = {
             "complex":   [],
             "adult":     [],
             "animation": [16],
-            "teen":      [16, 10751],   // Ados/coming-of-age → animation + famille (pas de genre "ado" TMDB direct)
             "none":      []
         };
         const myExclusions = (preferences.exclude || []).map(ex => excludeMap[ex] || []).flat().filter(Boolean);
 
         if (genreIds) {
             const genreIdsStr = String(genreIds);
-            // Comédie feel-good ("35") : with_genres=35 seulement → pool large, toutes comédies
-            // Comédie explosive ("35,28") : with_genres=35,28 → TMDB AND logic VOULUE ici
-            //   → seuls les films Comedy+Action entrent (Extreme Job, Exit, Midnight Runners...)
-            // Autres moods : utiliser les genres tels quels
-            const isComedyFeel = genreIdsStr.includes('35') && !genreIdsStr.includes('28');
-            const isComedyExplosive = genreIdsStr.includes('35') && genreIdsStr.includes('28');
-            let baseGenres;
-            if (isComedyFeel) baseGenres = '35';
-            else if (isComedyExplosive) baseGenres = '35,28';
-            else baseGenres = genreIdsStr;
-            const cleanGenres = baseGenres.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
+            const cleanGenres = genreIdsStr.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
             if (cleanGenres) url += `&with_genres=${cleanGenres}`;
         }
 
-        // 2. Strict Exclusions — UN SEUL paramètre without_genres combinant tout
-        // Toujours exclus : 10770 (téléfilm), 99 (documentaire sauf si mood=doc)
-        const isComedyMoodForExcl = moodStr.includes('35');
-        const baseExcluded = [10770];
-        if (!moodStr.includes('99')) baseExcluded.push(99);
-        // Pour le mood Comédie : exclure Thriller (53) et Horror (27) dès le pool TMDB
-        // Drama(18) TOLÉRÉ — les romcoms et feel-good ont souvent Comedy+Drama
-        // Parasite sera filtré par passesComedyGuard côté client (il a Thriller(53))
-        if (isComedyMoodForExcl) {
-            baseExcluded.push(53, 27);
+        // 2. Strict Exclusions (without_genres)
+        let excluded = [];
+        if (preferences.exclude && Array.isArray(preferences.exclude)) {
+            preferences.exclude.forEach(ex => {
+                if (excludeMap[ex] && excludeMap[ex].length > 0) {
+                    const ids = Array.isArray(excludeMap[ex]) ? excludeMap[ex].join(',') : excludeMap[ex];
+                    excluded.push(ids);
+                }
+            });
         }
-        // Exclusions utilisateur
-        const userExcludedGenres = (preferences.exclude || [])
-            .flatMap(ex => excludeMap[ex] || [])
-            .filter(Boolean);
-        const allExcluded = [...new Set([...baseExcluded, ...userExcludedGenres, ...myExclusions])];
-        url += `&without_genres=${allExcluded.join(',')}`;
+        if (excluded.length > 0) url += `&without_genres=${excluded.join(',')}`;
 
         // 3. Social Context Filter
         if (preferences.context === 'family') {
@@ -237,21 +210,16 @@ export const tmdbService = {
         }
 
         // 4b. Language Filter — déduit des films de référence ou conflit duo
-        // Groupes de langues : "ko" = tout l'Asie, "es" = hispanophone + luso
-        const LANG_GROUPS_TMDB = { ko: 'ko|ja|zh', es: 'es|pt' };
-
         if (preferences._duoLangConflict && preferences._duoLangA && preferences._duoLangB) {
-            const duoLangs = [preferences._duoLangA, preferences._duoLangB]
-                .filter(l => l && l !== 'any')
-                .map(l => LANG_GROUPS_TMDB[l] || l);
+            // Duo conflit : filtre OR (langA ou langB) pour ouvrir le pool aux deux cultures
+            const duoLangs = [preferences._duoLangA, preferences._duoLangB].filter(l => l && l !== 'any');
             if (duoLangs.length > 0) {
                 url += `&with_original_language=${duoLangs.join('|')}`;
                 console.log(`🌍 Duo langue OR : ${duoLangs.join('|')}`);
             }
-        } else if (preferences.detectedLanguage && preferences.detectedLanguage !== 'any') {
-            const langFilter = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
-            url += `&with_original_language=${langFilter}`;
-            console.log(`🌍 Langue filtrée : ${langFilter}`);
+        } else if (preferences.detectedLanguage) {
+            url += `&with_original_language=${preferences.detectedLanguage}`;
+            console.log(`🌍 Langue détectée depuis ADN : ${preferences.detectedLanguage}`);
         }
 
         // 4c. Keywords Filter — style narratif précis déduit des films de référence
@@ -262,7 +230,7 @@ export const tmdbService = {
 
         // 5. Broad Technical Standards
         if (!hasCastFilter) {
-            url += `&vote_average.gte=5.5&vote_count.gte=200`;
+            url += `&vote_average.gte=5.5&vote_count.gte=50`;
         }
 
         // 6. Era Filter — applied strictly regardless of cast filter
@@ -286,17 +254,8 @@ export const tmdbService = {
         } else if (isReroll) {
             url += `&sort_by=vote_average.desc&vote_count.lte=4000&vote_average.gte=7.0`;
         } else {
-            // Pour le mood Comédie : trier par popularité — les vraies comédies fun
-            // ont beaucoup de votes populaires (Extreme Job) plutôt qu'une note parfaite (Parasite)
-            const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
-            const isComedyMood = moodStr.includes('35');
-            if (isComedyMood) {
-                // vote_count.gte=500 : pool large pour avoir assez de candidats
-                // 2000 était trop restrictif surtout avec with_genres=35,28 (AND logic)
-                url += `&sort_by=popularity.desc&vote_count.gte=500&vote_average.gte=6.0`;
-            } else {
-                url += `&sort_by=vote_average.desc&vote_count.gte=300`;
-            }
+            // Seuil min 300 votes pour la qualité, pas de cap max
+            url += `&sort_by=vote_average.desc&vote_count.gte=300`;
         }
 
         const randomPage = isReroll ? Math.floor(Math.random() * 6) + 1 : 1;
@@ -339,57 +298,29 @@ export const tmdbService = {
 
         let finalResults = [...results];
 
-        // ─── HIÉRARCHIE DES FALLBACKS ────────────────────────────────────────────
-        // Règle d'or : élargir UNIQUEMENT le critère le moins important
-        // Priorité absolue (jamais sacrifiée) : genre/mood + exclusions Drama/Thriller
-        // Priorité haute (sacrifiée en dernier) : langue
-        // Priorité basse (sacrifiée en premier) : époque, note minimale
-        // ─────────────────────────────────────────────────────────────────────────
-
-        // T2 FALLBACK : élargit seulement l'ÉPOQUE et le seuil de note
-        // GARDE : genre comédie + without_genres (Drama/Thriller/TV) + langue
+        // T2 FALLBACK si résultats trop faibles
         if (finalResults.length < 3) {
-            const langFilter2 = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
-            // Reconstruit without_genres complet (même logique que requête principale)
-            const t2BaseExcluded = [10770, 99];
-            if (isComedyMoodForExcl) t2BaseExcluded.push(18, 53);
-            const t2UserExcluded = (preferences.exclude || []).flatMap(ex => ({
-                horror:[27], scary:[27,53], sad:[18], animation:[16], none:[], slow:[], complex:[], adult:[]
-            }[ex] || []));
-            const t2AllExcluded = [...new Set([...t2BaseExcluded, ...t2UserExcluded])];
-
-            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=${t2AllExcluded.join(',')}&vote_count.gte=500&sort_by=popularity.desc&vote_average.gte=6.5`;
-            // GARDE le genre comédie
-            if (isComedyMoodForExcl) t2Url += `&with_genres=35`;
-            // GARDE la langue
-            if (langFilter2 && langFilter2 !== 'any') t2Url += `&with_original_language=${langFilter2}`;
+            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&vote_count.gte=20&sort_by=popularity.desc&page=${page}`;
+            if (genreIds) t2Url += `&with_genres=${genreIds}`;
+            if (excluded.length > 0) t2Url += `&without_genres=${excluded.join(',')}`;
             if (hasCastFilter) t2Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
+            if (era === 'new') t2Url += `&primary_release_date.gte=2010-01-01`;
             t2Url += `&_=${Date.now()}`;
-            console.log(`⚠️ T2 fallback (garde genre+langue, élargit époque) : ${langFilter2 || 'any'}`);
-            try {
-                const t2Resp = await fetch(t2Url, { cache: 'no-store' });
-                const t2Data = await t2Resp.json();
-                const t2Res = t2Data.results || [];
-                finalResults = [...finalResults, ...t2Res.filter(r => !finalResults.some(old => old.id === r.id))];
-            } catch(e) { console.warn('T2 fallback failed', e); }
+            const t2Resp = await fetch(t2Url, { cache: 'no-store' });
+            const t2Data = await t2Resp.json();
+            const t2Res = t2Data.results || [];
+            finalResults = [...finalResults, ...t2Res.filter(r => !finalResults.some(old => old.id === r.id))];
         }
 
-        // T3 FALLBACK : dernier recours — garde genre + langue, sans contrainte de note/époque
         if (finalResults.length === 0) {
-            const langFilter3 = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
-            const t3BaseExcluded = [10770, 99];
-            if (isComedyMoodForExcl) t3BaseExcluded.push(18, 53);
-            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc&vote_count.gte=50&without_genres=${t3BaseExcluded.join(',')}`;
-            // GARDE le genre comédie
-            if (isComedyMoodForExcl) t3Url += `&with_genres=35`;
-            // GARDE la langue si spécifiée
-            if (langFilter3 && langFilter3 !== 'any') t3Url += `&with_original_language=${langFilter3}`;
-            console.log(`⚠️ T3 fallback (genre+langue, sans contrainte époque/note)`);
-            try {
-                const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
-                const t3Data = await t3Resp.json();
-                finalResults = t3Data.results || [];
-            } catch(e) { console.warn('T3 fallback failed', e); }
+            console.log("FALLBACK T3 déclenché (Aucun film trouvé avec ces filtres !)");
+            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc`;
+            if (era === 'new') t3Url += `&primary_release_date.gte=2020-01-01`;
+            if (excluded.length > 0) t3Url += `&without_genres=${excluded.join(',')}`;
+            if (castIds && castIds.length > 0) t3Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
+            const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
+            const t3Data = await t3Resp.json();
+            finalResults = t3Data.results || [];
         }
 
         if (this.apiKey === 'MOCK' || !this.apiKey) {
@@ -860,16 +791,6 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
-${preferences.mood === '35' ? `→ MOOD "COMÉDIE FEEL-GOOD" — légèreté, chaleur, films qui font sourire et se sentir bien.
-→ Ex parfaits : "Swing Girls", "Tampopo", "Kamikaze Girls", "Crazy Rich Asians", "The Full Monty", "Little Miss Sunshine".
-→ Favorise les comédies douces, feel-good, optimistes. Le rire n'a pas besoin d'être explosif — un sourire sincère ou une histoire chaleureuse compte.
-→ Si le synopsis décrit principalement de la tristesse, de la violence ou du cynisme → score ÉTAPE C = 0.` : ''}
-${preferences.mood === '35,28' ? `→ MOOD "COMÉDIE EXPLOSIVE" — l'utilisateur veut RIRE FORT et immédiatement. Énergie max, humour physique, rythme effréné.
-→ Ex parfaits : "Exit", "Midnight Runners", "Kung Fu Hustle", "Extreme Job", "The Dude in Me", "Superbad", "The Hangover", "Game Night".
-→ SIGNAL CLÉ — Comedy + Action/Crime = rire immédiat garanti → bonus +15 pts si le film combine humour et action physique.
-→ SIGNAL POPULARITÉ — vote_count > 50 000 = film validé par des millions → bonus +5 pts.
-→ Score élevé UNIQUEMENT si le but premier est le rire immédiat et l'énergie. Tampopo, Swing Girls = trop doux pour ce mood → score ÉTAPE C bas.
-→ Si le synopsis décrit principalement de l'émotion/drame/satire → score ÉTAPE C = 0.` : ''}
 ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)
