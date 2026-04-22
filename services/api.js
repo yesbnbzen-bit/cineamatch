@@ -157,13 +157,19 @@ export const tmdbService = {
             "complex":   [],
             "adult":     [],
             "animation": [16],
+            "teen":      [16, 10751],  // ados/coming-of-age → animation + famille
             "none":      []
         };
         const myExclusions = (preferences.exclude || []).map(ex => excludeMap[ex] || []).flat().filter(Boolean);
 
         if (genreIds) {
             const genreIdsStr = String(genreIds);
-            const cleanGenres = genreIdsStr.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
+            // Pour le mood Comédie ("35,10751") : utiliser uniquement with_genres=35
+            // "35,10751" en logique AND TMDB = Comedy ET Family simultanément → pool minuscule
+            // On garde 35 seul pour couvrir toutes les comédies, Family(10751) est optionnel
+            const isComedyMood = genreIdsStr.includes('35');
+            const baseGenres = isComedyMood ? '35' : genreIdsStr;
+            const cleanGenres = baseGenres.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
             if (cleanGenres) url += `&with_genres=${cleanGenres}`;
         }
 
