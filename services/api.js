@@ -259,8 +259,15 @@ export const tmdbService = {
         } else if (isReroll) {
             url += `&sort_by=vote_average.desc&vote_count.lte=4000&vote_average.gte=7.0`;
         } else {
-            // Seuil min 300 votes pour la qualité, pas de cap max
-            url += `&sort_by=vote_average.desc&vote_count.gte=300`;
+            // Pour le mood Comédie : trier par popularité — les vraies comédies fun
+            // ont beaucoup de votes populaires (Extreme Job) plutôt qu'une note parfaite (Parasite)
+            const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
+            const isComedyMood = moodStr === '35,10751' || moodStr === '35' || moodStr === '10751';
+            if (isComedyMood) {
+                url += `&sort_by=popularity.desc&vote_count.gte=500&vote_average.gte=6.5`;
+            } else {
+                url += `&sort_by=vote_average.desc&vote_count.gte=300`;
+            }
         }
 
         const randomPage = isReroll ? Math.floor(Math.random() * 6) + 1 : 1;
@@ -805,6 +812,9 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
+${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE et s'amuser. Exemples parfaits : "Extreme Job", "Midnight Runners", "The Dude in Me", "Kung Fu Hustle", "My Sassy Girl", "Superbad", "The Hangover", "Game Night", "Murder Mystery", "Crazy Rich Asians", "Girls Trip".
+⛔ ATTENTION — Ces films sont tagués "Comédie" dans TMDB MAIS ne correspondent PAS à ce mood : Parasite (satire sociale noire), The Social Network (drame), Knives Out (thriller), Marriage Story (drame), About Schmidt (drame lent). Un film peut être "drôle" sans être une comédie fun. L'intention = rire franc, situations cocasses, feel-good, légèreté. PAS : humour noir, satire, dark comedy, drame avec quelques touches d'humour.
+→ Donne ${weights.mood} pts MAXIMUM aux vrais films comiques. Pénalise -30 pts les films dont "comédie" est un tag secondaire mais le registre principal est dramatique, thriller ou noir.` : ''}
 ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)
