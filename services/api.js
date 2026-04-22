@@ -125,8 +125,7 @@ export const tmdbService = {
         // On le retire ici pour éviter le doublon page=X&...&page=Y (le dernier gagne, mais c'est source de confusion).
         // 10770 = Téléfilm | 99 = Documentaire — exclus par défaut sauf si mood documentaire
         const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
-        const excludeDocumentary = !moodStr.includes('99') ? ',99' : '';
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770${excludeDocumentary}`;
+        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false`;
         
         // Add with_cast parameter if we have cast IDs from loved movies
         if (castIds && castIds.length > 0) {
@@ -171,17 +170,22 @@ export const tmdbService = {
             if (cleanGenres) url += `&with_genres=${cleanGenres}`;
         }
 
-        // 2. Strict Exclusions (without_genres)
-        let excluded = [];
-        if (preferences.exclude && Array.isArray(preferences.exclude)) {
-            preferences.exclude.forEach(ex => {
-                if (excludeMap[ex] && excludeMap[ex].length > 0) {
-                    const ids = Array.isArray(excludeMap[ex]) ? excludeMap[ex].join(',') : excludeMap[ex];
-                    excluded.push(ids);
-                }
-            });
+        // 2. Strict Exclusions — UN SEUL paramètre without_genres combinant tout
+        // Toujours exclus : 10770 (téléfilm), 99 (documentaire sauf si mood=doc)
+        const isComedyMoodForExcl = moodStr.includes('35');
+        const baseExcluded = [10770];
+        if (!moodStr.includes('99')) baseExcluded.push(99);
+        // Pour le mood Comédie : exclure Drama (18) et Thriller (53) dès le pool TMDB
+        // → Parasite, Pawn, The Great Buddha+ n'entrent plus jamais dans le pool
+        if (isComedyMoodForExcl) {
+            baseExcluded.push(18, 53);
         }
-        if (excluded.length > 0) url += `&without_genres=${excluded.join(',')}`;
+        // Exclusions utilisateur
+        const userExcludedGenres = (preferences.exclude || [])
+            .flatMap(ex => excludeMap[ex] || [])
+            .filter(Boolean);
+        const allExcluded = [...new Set([...baseExcluded, ...userExcludedGenres, ...myExclusions])];
+        url += `&without_genres=${allExcluded.join(',')}`;
 
         // 3. Social Context Filter
         if (preferences.context === 'family') {
@@ -816,15 +820,9 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
-${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE. Expérience attendue : rires francs, situations cocasses, feel-good, légèreté.
-
-3 NIVEAUX DE COMÉDIE — règles strictes de score :
-✅ NIVEAU 1 — Comédie FUN (score max) : le film fait rire en premier lieu. Ex: "Extreme Job", "Swing Girls", "Kamikaze Girls", "Midnight Runners", "Kung Fu Hustle", "The Dude in Me", "Superbad", "The Hangover", "Game Night", "Crazy Rich Asians".
-⚠️ NIVEAU 2 — Comédie douce (score total PLAFONNÉ à 60/100) : film avant tout émouvant/humain avec des moments drôles. Ex: "Pawn" (drame humain touchant), "Forrest Gump", "Little Miss Sunshine". Tagué "Comédie" mais registre principal = émotion/drame. → Score final MAX = 60, peu importe les autres critères. Ne peut jamais figurer dans le top 3 si des comédies fun existent.
-❌ NIVEAU 3 — Comédie noire/satire (Score = 0 FORCÉ) : humour comme outil critique, pas pour divertir. Ex: "Parasite", "Dr. Strangelove", "The Big Short". Score = 0 obligatoire.
-
-🔍 RÈGLE DE DÉTECTION : si le synopsis mentionne "drame", "touchant", "humain", "émotion", "lutte", "sacrifié" comme registre principal → c'est niveau 2 ou 3. Si le synopsis mentionne "drôle", "cocasse", "hilarant", "aventure légère", "fun" → c'est niveau 1.
-→ Donne ${weights.mood} pts MAXIMUM au niveau 1. Applique IMPÉRATIVEMENT le plafond 75 pts pour niveau 2 et Score=0 pour niveau 3.` : ''}
+${preferences.mood === '35,10751' ? `→ MOOD "RIRE / COMÉDIE" — l'utilisateur veut RIRE. Rires francs, situations cocasses, feel-good, légèreté.
+→ Score élevé UNIQUEMENT pour les films dont le but premier est de faire rire. Ex parfaits : "Extreme Job", "Midnight Runners", "Kung Fu Hustle", "Kamikaze Girls", "Swing Girls", "Superbad", "The Hangover", "Game Night".
+→ Si le synopsis décrit une émotion principale autre que le rire (drame familial, satire sociale, film touchant, thriller) → score ÉTAPE C = 0, même si le film est bon.` : ''}
 ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)
