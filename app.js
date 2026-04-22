@@ -1451,6 +1451,21 @@ const App = {
             });
             console.log(`✅ ${safeCandidates.length} candidats après filtrage | époque:${store.answers.era || 'any'} | langue:${detectedLanguage || 'any'} | exclusions:${allExcludedGenres.join(',') || 'aucune'}`);
 
+            // ── Filtre dur comédie (belt-and-suspenders) ──────────────────────────
+            // Pour les moods comédie, JAMAIS de film avec Drama/Thriller/Horror
+            // même si le film a le tag Comedy (ex: Parasite = Comedy+Thriller+Drama)
+            // Ce filtre s'ajoute à comedyHardExclusions pour garantir un pool propre
+            if (['35', '35,28'].includes(String(store.answers.mood))) {
+                const comedyBanned = new Set([18, 53, 27]);
+                const before = safeCandidates.length;
+                safeCandidates = safeCandidates.filter(c =>
+                    !(c.genre_ids || []).some(g => comedyBanned.has(g))
+                );
+                if (safeCandidates.length < before) {
+                    console.log(`🚫 Filtre dur comédie : retiré ${before - safeCandidates.length} films Drama/Thriller/Horreur (ex: Parasite) → ${safeCandidates.length} restants`);
+                }
+            }
+
             // Tracker les contraintes relâchées pour l'affichage utilisateur
             store._relaxedSearch = null; // null = recherche normale
 
