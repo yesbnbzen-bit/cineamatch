@@ -195,6 +195,8 @@ export const tmdbService = {
         };
         const myExclusions = (preferences.exclude || []).map(ex => excludeMap[ex] || []).flat().filter(Boolean);
 
+        // cleanGenres déclaré en dehors du if pour être accessible dans la section without_genres
+        let cleanGenres = '';
         if (genreIds) {
             const genreIdsStr = String(genreIds);
             // Pour le mood Comédie ("35,10751") : utiliser uniquement with_genres=35
@@ -202,7 +204,7 @@ export const tmdbService = {
             // On garde 35 seul pour couvrir toutes les comédies, Family(10751) est optionnel
             const isComedyMood = genreIdsStr.includes('35');
             const baseGenres = isComedyMood ? '35' : genreIdsStr;
-            const cleanGenres = baseGenres.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
+            cleanGenres = baseGenres.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
             if (cleanGenres) url += `&with_genres=${cleanGenres}`;
         }
 
