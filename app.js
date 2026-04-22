@@ -1406,7 +1406,10 @@ const App = {
 
             // Genres supplémentaires exclus pour le contexte famille
             const familyExcludedGenres = store.answers.context === 'family' ? [27, 53, 10749] : [];
-            const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds])];
+            // Pour le mood Comédie : exclure Drama (18), Thriller (53), Horreur (27) — même dans SOURCE 1 (recs TMDb)
+            // Sinon My Annoying Brother, Parasite etc. contournent le filtre TMDB en venant des recs
+            const comedyHardExclusions = (store.answers.mood === '35,10751') ? [18, 53, 27] : [];
+            const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds, ...comedyHardExclusions])];
 
             if (prefExcludedGenreIds.length > 0) console.log(`🚫 Exclusions préfs permanentes : ${(savedPrefs.exclusions||[]).join(', ')} → genres [${prefExcludedGenreIds.join(',')}]`);
 
@@ -1567,9 +1570,15 @@ const App = {
 
             // ── Dédupliquer le ranked par tmdb_id (sécurité anti-doublon) ──
             const seenRankedIds = new Set();
+            const safePoolIds = new Set(safeCandidates.map(c => Number(c.id)));
             const rankedDeduped = ranked.filter(r => {
                 const id = Number(r.tmdb_id);
                 if (!id || seenRankedIds.has(id)) return false;
+                // Rejet si l'IA a halluciné un ID hors du pool safeCandidates
+                if (!safePoolIds.has(id)) {
+                    console.warn(`⚠️ IA a retourné ID hors pool: ${id} — ignoré`);
+                    return false;
+                }
                 seenRankedIds.add(id);
                 return true;
             });
