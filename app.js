@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=58';
+import { tmdbService, openaiService } from './services/api.js?v=58'; // api unchanged
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1009,6 +1009,34 @@ const App = {
         ui.switchView('loading');
         const loadingText = document.getElementById('loading-text');
 
+        // ── D : Helper feedback visuel live ──
+        // Affiche l'étape courante + sous-texte + allume les points de progression
+        const setStep = (n, msg, sub = '') => {
+            if (loadingText) loadingText.innerHTML = msg;
+            const subEl = document.getElementById('loading-sub');
+            if (subEl) subEl.textContent = sub;
+            document.querySelectorAll('.lstep').forEach(el => {
+                const s = Number(el.dataset.step);
+                el.style.background = s <= n
+                    ? (s === n ? 'var(--primary-color)' : 'rgba(255,255,255,0.55)')
+                    : 'rgba(255,255,255,0.2)';
+            });
+        };
+        // Sous-texte rotatif pendant le chargement (donne l'illusion de progression)
+        let _tipTimer = null;
+        const isEn = getLang() === 'en';
+        const loadingTips = isEn
+            ? ['Did you know? TMDB has over 900,000 films indexed.','We analyse style, not just genre.','Cultural resonance matters — we factor it in.','Your past ratings improve every result.']
+            : ['Le saviez-vous ? TMDB recense plus de 900 000 films.','On analyse le style narratif, pas juste le genre.','La résonance culturelle entre en compte dans le calcul.','Tes notes passées affinent chaque résultat.'];
+        let _tipIdx = 0;
+        const startTips = () => {
+            const subEl = document.getElementById('loading-sub');
+            _tipTimer = setInterval(() => {
+                if (subEl) { subEl.style.opacity = 0; setTimeout(() => { subEl.textContent = loadingTips[_tipIdx++ % loadingTips.length]; subEl.style.opacity = 1; }, 300); }
+            }, 4000);
+        };
+        const stopTips = () => clearInterval(_tipTimer);
+
         // Anecdote cinéma pendant le chargement
         document.querySelectorAll('.trivia-box').forEach(el => el.remove());
         const triviaBox = document.createElement('div');
@@ -1249,7 +1277,8 @@ const App = {
             const blendedGenreIds = [...blendedGenres].join(genreSeparator);
             console.log(`🎭 Genre blend: ${store.answers.mood} → [${blendedGenreIds}] (sep: "${genreSeparator}"`);
 
-            loadingText.textContent = t('loading.tmdb');
+            setStep(1, isEn ? '🎬 Analysing your profile...' : '🎬 Analyse du profil cinéphile...', '');
+            startTips();
 
             // ── Collecter les keywords ET le cast/crew des films de référence ──
             // Objectif : trouver les mots-clés de style communs, les acteurs récurrents,
@@ -1314,7 +1343,7 @@ const App = {
             // ── ÉTAPE 1 : OpenAI traduit les réponses en filtres TMDb ──
             // Les films de référence sont maintenant enrichis avec cast + director
             // → buildDNAArchetypes passera "réal. Tim Story — avec Kevin Hart, Taraji P. Henson..."
-            loadingText.innerHTML = `${t('loading.ai')}<br><span style="font-size:0.8rem;opacity:0.7">Humeur : ${moodLabel}</span>`;
+            setStep(1, isEn ? `🧠 AI reading your taste...` : `🧠 L'IA lit tes goûts...`, moodLabel);
             const metadata = await openaiService.extractMetadata(
                 { ...store.answers, contextLabel, moodLabel, durationLabel, excludeLabels, detectedLanguage, blendedGenreIds },
                 isReroll,
@@ -1324,6 +1353,8 @@ const App = {
             if (metadata.cultural_universe) console.log(`🌍 Univers culturel détecté :`, metadata.cultural_universe);
 
             if (isReroll) store.rerollCount++;
+
+            setStep(2, isEn ? '🔍 Searching the film database...' : '🔍 Recherche dans la base de films...');
 
             // ── ÉTAPE 2 : TMDb — 3 sources à poids égal ──
             // Toutes les sources contribuent au même pool, le scorer IA décide ensuite.
@@ -1533,6 +1564,7 @@ const App = {
             // Niveau 2 : on lâche le filtre langue (garde époque + exclusions genres)
             if (safeCandidates.length < 6) {
                 store._relaxedSearch = 'langue';
+                setStep(2, isEn ? '🌍 Expanding to all languages...' : '🌍 Élargissement toutes langues...');
                 console.log(`⚠️ Pool toujours petit, fallback L2 sans filtre langue`);
                 const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers }, {}, false, 1, []);
                 for (const f of fb2) {
@@ -1552,6 +1584,7 @@ const App = {
             // (A1-fix : L3 ne réapplique plus eraRange/langFilterSet — il était identique à L2 avant)
             if (safeCandidates.length < 6) {
                 store._relaxedSearch = 'epoque';
+                setStep(2, isEn ? '📅 Expanding to all eras...' : '📅 Élargissement toutes époques...');
                 console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque NI langue`);
                 const fb3 = await tmdbService.getAdvancedDiscovery(
                     { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude },
@@ -1572,6 +1605,7 @@ const App = {
             // Niveau 4 (nuclear) : garde uniquement le genre mood, relâche tout le reste
             if (safeCandidates.length === 0) {
                 store._relaxedSearch = 'tout';
+                setStep(2, isEn ? '🔄 Maximum search mode...' : '🔄 Recherche maximale en cours...');
                 console.log(`🚨 Fallback NUCLEAR : genre mood conservé, époque/langue/keywords ignorés`);
                 try {
                     // On garde le genre mood pour rester "dans le même esprit"
@@ -1590,19 +1624,44 @@ const App = {
                 console.log(`📡 Pool nuclear : ${safeCandidates.length} candidats`);
             }
 
-            // Si absolument rien même après nuclear (coupure réseau totale)
+            // C-fix : Si pool toujours vide après nuclear ET historique chargé →
+            // reset du suggestedMovieIds (mieux re-proposer un ancien film que planter)
+            if (safeCandidates.length === 0 && store.suggestedMovieIds.length > 6) {
+                console.warn('🔄 Pool épuisé — reset de l\'historique de session pour débloquer');
+                store.suggestedMovieIds = store.suggestedMovieIds.slice(-6); // Garde seulement les 6 derniers
+                store.suggestedTitles   = store.suggestedTitles.slice(-6);
+                const nuclearPrefs2 = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')) };
+                try {
+                    const retryNuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs2, {}, false, 1, []);
+                    for (const f of retryNuclear) {
+                        const genres = f.genre_ids || [];
+                        if (lovedMovieIds.includes(Number(f.id))) continue;
+                        if (store.suggestedMovieIds.includes(Number(f.id))) continue;
+                        if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
+                        if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
+                        if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
+                    }
+                } catch(e) { console.error('Reset nuclear échoué', e); }
+                if (safeCandidates.length > 0) console.log(`✅ Pool débloqué après reset historique : ${safeCandidates.length} candidats`);
+            }
+
+            // Si absolument rien même après tout (vrai problème réseau ou API down)
             if (safeCandidates.length === 0) {
+                stopTips();
                 console.warn('🚨 Aucun candidat après tous les fallbacks — erreur réseau probable');
                 this.renderError(getLang() === 'en' ? 'Network issue — please try again' : 'Problème réseau — réessaie dans un instant');
                 return;
             }
 
-            loadingText.textContent = t('loading.select');
+            setStep(4, isEn ? '🎥 Finalising your recommendations...' : '🎥 Finalisation de tes recommandations...');
+            stopTips();
 
             // ── Profil d'âge — injecté dans les préférences IA ──
             const ageProfile = store.userAge
                 ? window.getAgeProfile?.(store.userAge) || null
                 : null;
+
+            setStep(3, isEn ? '⭐ AI selecting the best films...' : '⭐ L\'IA sélectionne les meilleurs films...');
 
             // ── B-fix : enrichir les 15 meilleurs candidats avec cast + réalisateur ──
             // → l'IA verra "Réal: Tim Story | Avec: Kevin Hart, Taraji P. Henson" dans le pool
@@ -1697,6 +1756,14 @@ const App = {
                 store.suggestedTitles.push(fill.title);
             }
 
+            // C-fix : FIFO cap — max 45 IDs gardés (≈15 rerolls × 3 films)
+            // Au-delà, on retire les plus anciens pour éviter l'épuisement du pool chez les utilisateurs fidèles
+            const MAX_SEEN = 45;
+            if (store.suggestedMovieIds.length > MAX_SEEN) {
+                store.suggestedMovieIds.splice(0, store.suggestedMovieIds.length - MAX_SEEN);
+                store.suggestedTitles.splice(0, store.suggestedTitles.length - MAX_SEEN);
+            }
+
             if (!finalMovies.length) throw new Error("Impossible de récupérer les détails des films");
 
             // Si toujours < 3 malgré tout (pool IA trop restreint), relancer une fois
@@ -1717,6 +1784,7 @@ const App = {
             this.renderResults(finalMovies);
 
         } catch (e) {
+            stopTips();
             console.error('CineMatch Error:', e);
             this.renderError(e.message);
         }
