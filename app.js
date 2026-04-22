@@ -1451,21 +1451,6 @@ const App = {
             });
             console.log(`✅ ${safeCandidates.length} candidats après filtrage | époque:${store.answers.era || 'any'} | langue:${detectedLanguage || 'any'} | exclusions:${allExcludedGenres.join(',') || 'aucune'}`);
 
-            // ── Filtre dur comédie (belt-and-suspenders) ──────────────────────────
-            // Pour les moods comédie, JAMAIS de film avec Drama/Thriller/Horror
-            // même si le film a le tag Comedy (ex: Parasite = Comedy+Thriller+Drama)
-            // Ce filtre s'ajoute à comedyHardExclusions pour garantir un pool propre
-            if (['35', '35,28'].includes(String(store.answers.mood))) {
-                const comedyBanned = new Set([18, 53, 27]);
-                const before = safeCandidates.length;
-                safeCandidates = safeCandidates.filter(c =>
-                    !(c.genre_ids || []).some(g => comedyBanned.has(g))
-                );
-                if (safeCandidates.length < before) {
-                    console.log(`🚫 Filtre dur comédie : retiré ${before - safeCandidates.length} films Drama/Thriller/Horreur (ex: Parasite) → ${safeCandidates.length} restants`);
-                }
-            }
-
             // Tracker les contraintes relâchées pour l'affichage utilisateur
             store._relaxedSearch = null; // null = recherche normale
 
@@ -1512,7 +1497,8 @@ const App = {
             if (safeCandidates.length < 6) {
                 store._relaxedSearch = 'epoque';
                 console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque ni langue`);
-                const fb3 = await tmdbService.getAdvancedDiscovery({}, {}, false, 1, []);
+                // IMPORTANT : on passe les vraies prefs (mood + langue) pour garder les filtres comédie au niveau TMDB
+                const fb3 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, false, 1, []);
                 for (const f of fb3) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
@@ -1554,6 +1540,36 @@ const App = {
                 console.warn('🚨 Aucun candidat après tous les fallbacks — erreur réseau probable');
                 this.renderError(getLang() === 'en' ? 'Network issue — please try again' : 'Problème réseau — réessaie dans un instant');
                 return;
+            }
+
+            // ── Filtre dur comédie (APRÈS tous les fallbacks) ─────────────────────
+            // Runs AFTER L1/L2/L3/L4 so it catches every film regardless of source.
+            // Parasite (Comedy+Thriller+Drama) and similar films are blocked here.
+            if (['35', '35,28'].includes(String(store.answers.mood))) {
+                const comedyBanned = new Set([18, 53, 27]);
+                const before = safeCandidates.length;
+                safeCandidates = safeCandidates.filter(c =>
+                    !(c.genre_ids || []).some(g => comedyBanned.has(g))
+                );
+                if (safeCandidates.length < before) {
+                    console.log(`🚫 Filtre comédie final : -${before - safeCandidates.length} films Drama/Thriller/Horreur → ${safeCandidates.length} restants`);
+                }
+                // Si le filtre a trop restreint le pool, on complète avec une Discovery comédie pure
+                if (safeCandidates.length < 3) {
+                    console.log(`⚠️ Pool comédie insuffisant après filtre dur (${safeCandidates.length}), Discovery comédie pure`);
+                    try {
+                        const comedyPrefs = { mood: store.answers.mood, language: store.answers.language, era: store.answers.era, detectedLanguage };
+                        const pureComedy = await tmdbService.getAdvancedDiscovery(comedyPrefs, {}, false, 1, []);
+                        for (const f of pureComedy) {
+                            if (lovedMovieIds.includes(Number(f.id))) continue;
+                            if (store.suggestedMovieIds.includes(Number(f.id))) continue;
+                            if ((f.genre_ids || []).some(g => comedyBanned.has(g))) continue;
+                            if (!(f.genre_ids || []).includes(35)) continue; // doit avoir Comedy
+                            if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
+                        }
+                        console.log(`✅ Pool comédie après récupération : ${safeCandidates.length} films`);
+                    } catch(e) { console.warn('Discovery comédie pure échouée', e); }
+                }
             }
 
             loadingText.textContent = t('loading.select');
