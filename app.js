@@ -1,6 +1,6 @@
 import { tmdbService, openaiService } from './services/api.js?v=58'; // api unchanged
 import { store, getters } from './state/store.js?v=43';
-import { ui } from './modules/ui.js?v=42';
+import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=7';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=340';
@@ -131,6 +131,10 @@ const App = {
 
         if (ui.dom.watchlistNavBtn) {
             ui.dom.watchlistNavBtn.addEventListener('click', () => this.showWatchlist());
+        }
+
+        if (ui.dom.profileNavBtn) {
+            ui.dom.profileNavBtn.addEventListener('click', () => this.showProfile());
         }
 
         const prefsBtn = document.getElementById('prefs-nav-btn');
@@ -2886,6 +2890,12 @@ const App = {
             });
             grid.appendChild(card);
         });
+    },
+
+    // ── Profil cinéphile ──
+    async showProfile() {
+        const { authUI } = await import('./modules/auth.js?v=15');
+        authUI.showHistory();
     },
 
     // ── Préférences utilisateur ──

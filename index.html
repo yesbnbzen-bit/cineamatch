@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <title>CineaMatch IA - Trouve le film parfait en 30 secondes</title>
-    <link rel="stylesheet" href="style.css?v=351">
+    <link rel="stylesheet" href="style.css?v=352">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -141,6 +141,7 @@
                         <button class="lang-option" data-lang="en" onclick="window._setLang('en');document.getElementById('lang-switcher').classList.remove('open')">English</button>
                     </div>
                 </div>
+                <button id="profile-nav-btn" class="btn-config btn-profile-nav" style="display:none" title="Mes Films">🎬 <span class="btn-label">Mes Films</span></button>
                 <button id="prefs-nav-btn" class="btn-config" style="display:none" title="Mon espace">⊞ <span class="btn-label" data-i18n="nav.prefs">MON ESPACE</span></button>
                 <button id="config-btn" class="btn-config" style="display:none">⚙ <span class="btn-label" data-i18n="nav.config">CONFIG</span></button>
                 <!-- Bouton connexion (visible si non connecté) -->
@@ -151,7 +152,7 @@
                     <span class="user-name" id="user-name"></span>
                     <div class="user-dropdown">
                         <button class="btn-signout-drop"
-                            onclick="import('./modules/auth.js?v=14').then(m => m.authUI.handleSignOut())">
+                            onclick="import('./modules/auth.js?v=15').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>
                         </button>
                     </div>
@@ -417,26 +418,33 @@
                 <div id="watchlist-grid" class="history-grid"></div>
             </section>
 
-            <!-- ══ HISTORIQUE ══ -->
+            <!-- ══ PROFIL CINÉPHILE ══ -->
             <section id="history-view" class="view">
                 <div class="history-header">
                     <div>
-                        <h2 class="history-title">Mes Films</h2>
-                        <p class="history-subtitle" id="history-subtitle">Films notés et déjà vus</p>
+                        <h2 class="history-title">Mon Profil</h2>
+                        <p class="history-subtitle" id="history-subtitle">Ton ADN cinématographique</p>
                     </div>
                     <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
                 </div>
-                <!-- Stats ADN cinéphile -->
-                <div class="dna-card" id="dna-card" style="display:none">
-                    <div class="dna-card-inner" id="dna-card-inner"></div>
+
+                <!-- Badge niveau cinéphile -->
+                <div id="profile-badge-wrap" style="display:none">
+                    <div id="profile-badge-card" class="profile-badge-card"></div>
                 </div>
+
+                <!-- Stats -->
+                <div id="profile-stats-row" class="profile-stats-row" style="display:none"></div>
+
+                <!-- Séparateur films notés -->
+                <div id="profile-films-label" class="history-section-label" style="display:none">Films notés & vus</div>
+
                 <!-- Grille films -->
                 <div id="history-grid" class="history-grid"></div>
                 <div id="history-empty" class="history-empty" style="display:none">
                     <div class="history-empty-icon">🎬</div>
-                    <p>Ton historique est vide pour l'instant.</p>
-                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;">Lance une première recommandation pour
-                        commencer !</p>
+                    <p>Aucun film noté pour l'instant.</p>
+                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;">Lance une première recommandation pour commencer !</p>
                 </div>
             </section>
         </main>
@@ -751,7 +759,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=368"></script>
+    <script type="module" src="app.js?v=369"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=15';
         authUI.init();

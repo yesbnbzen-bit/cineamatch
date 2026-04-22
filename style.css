@@ -7802,3 +7802,174 @@ body.duo-active {
     }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PROFIL CINÉPHILE — Badge + Stats
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Bouton nav "Mes Films" */
+.btn-profile-nav {
+    background: rgba(255,255,255,0.07) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+}
+.btn-profile-nav:hover {
+    background: rgba(255,255,255,0.13) !important;
+}
+
+/* ── Badge niveau ── */
+#profile-badge-wrap {
+    padding: 0 1.5rem 0;
+    max-width: 900px;
+    margin: 0 auto 1.5rem;
+    width: 100%;
+}
+
+.profile-badge-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.profile-badge-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(229,9,20,0.06) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.pbadge-emoji {
+    font-size: 3rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.pbadge-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pbadge-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.01em;
+}
+
+.pbadge-sub {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 0.65rem;
+}
+
+.pbadge-progress-wrap {
+    height: 5px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+    max-width: 320px;
+}
+
+.pbadge-progress-bar {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+
+.pbadge-progress-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.35);
+}
+.pbadge-progress-label strong {
+    color: rgba(255,255,255,0.6);
+}
+
+/* ── Stats row ── */
+.profile-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0 1.5rem 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.pstat-card {
+    flex: 1 1 100px;
+    min-width: 90px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 1rem 0.75rem;
+    text-align: center;
+    transition: background 0.2s, transform 0.2s;
+}
+.pstat-card:hover {
+    background: rgba(255,255,255,0.09);
+    transform: translateY(-2px);
+}
+
+.pstat-icon {
+    font-size: 1.4rem;
+    margin-bottom: 0.35rem;
+    line-height: 1;
+}
+
+.pstat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+    margin-bottom: 0.25rem;
+}
+
+.pstat-genre-val {
+    font-size: 1.1rem;
+}
+
+.pstat-label {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pstat-genre {
+    flex: 2 1 160px;
+}
+
+/* ── Responsive mobile ── */
+@media (max-width: 480px) {
+    #profile-badge-wrap {
+        padding: 0 1rem 0;
+    }
+    .profile-badge-card {
+        padding: 1rem;
+    }
+    .pbadge-emoji {
+        font-size: 2.2rem;
+    }
+    .pbadge-name {
+        font-size: 1rem;
+    }
+    .profile-stats-row {
+        padding: 0 1rem 1.5rem;
+        gap: 0.5rem;
+    }
+    .pstat-card {
+        flex: 1 1 80px;
+        padding: 0.75rem 0.5rem;
+    }
+    .pstat-value {
+        font-size: 1.3rem;
+    }
+}
+

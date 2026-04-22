@@ -116,6 +116,10 @@ export const authUI = {
         const prefsBtn = document.getElementById('prefs-nav-btn');
         if (prefsBtn) prefsBtn.style.display = 'flex';
 
+        // Afficher bouton "Mes Films" (profil cinéphile)
+        const profileNavBtn = document.getElementById('profile-nav-btn');
+        if (profileNavBtn) profileNavBtn.style.display = 'flex';
+
         // Brancher les raccourcis du panel "Mon Espace"
         const gotoFilms = document.getElementById('prefs-goto-films');
         if (gotoFilms) {
@@ -290,107 +294,134 @@ export const authUI = {
         const histView = document.getElementById('history-view');
         if (histView) histView.classList.add('active');
 
-        const grid    = document.getElementById('history-grid');
-        const empty   = document.getElementById('history-empty');
-        const dnaCard = document.getElementById('dna-card');
-        const dnaInner= document.getElementById('dna-card-inner');
-        const subtitle= document.getElementById('history-subtitle');
-        const title   = document.querySelector('#history-view .history-title');
+        const grid       = document.getElementById('history-grid');
+        const empty      = document.getElementById('history-empty');
+        const subtitle   = document.getElementById('history-subtitle');
+        const badgeWrap  = document.getElementById('profile-badge-wrap');
+        const badgeCard  = document.getElementById('profile-badge-card');
+        const statsRow   = document.getElementById('profile-stats-row');
+        const filmsLabel = document.getElementById('profile-films-label');
 
         if (!grid || !store.currentUser) return;
 
-        // Titre mis à jour
-        if (title) title.textContent = t('history.title');
+        // État de chargement
+        grid.innerHTML = `<p style="color:rgba(255,255,255,0.3);text-align:center;padding:3rem;grid-column:1/-1">Chargement de ton profil...</p>`;
+        if (empty)      empty.style.display      = 'none';
+        if (badgeWrap)  badgeWrap.style.display   = 'none';
+        if (statsRow)   statsRow.style.display    = 'none';
+        if (filmsLabel) filmsLabel.style.display  = 'none';
 
-        grid.innerHTML = `<p style="color:rgba(255,255,255,0.3);text-align:center;padding:3rem;">${t('loading.profil')}</p>`;
-        if (dnaCard) dnaCard.style.display = 'none';
-        if (empty) empty.style.display = 'none';
-
-        // Charger uniquement les films notés ou marqués "déjà vu"
+        // ── Charger les films notés / vus ──
         const films = await ratingsService.getAllRatedOrSeen(store.currentUser.id);
+        const total = films.length;
 
-        if (films.length === 0) {
+        // ── Badge niveau cinéphile ──
+        const BADGES = [
+            { min: 100, emoji: '🎖',  label: 'Légende',    color: '#9b59b6', next: null  },
+            { min: 50,  emoji: '🏆',  label: 'Expert',     color: '#E50914', next: 100   },
+            { min: 25,  emoji: '🎭',  label: 'Passionné',  color: '#f39c12', next: 50    },
+            { min: 10,  emoji: '⭐',  label: 'Cinéphile',  color: '#46d369', next: 25    },
+            { min: 3,   emoji: '🍿',  label: 'Amateur',    color: '#3498db', next: 10    },
+            { min: 0,   emoji: '🎬',  label: 'Novice',     color: '#95a5a6', next: 3     },
+        ];
+        const badge = BADGES.find(b => total >= b.min);
+        const progressPct = badge.next
+            ? Math.round(((total - badge.min) / (badge.next - badge.min)) * 100)
+            : 100;
+
+        if (badgeCard && badgeWrap) {
+            const userName = store.currentUser.user_metadata?.name
+                || store.currentUser.email?.split('@')[0] || '';
+            badgeCard.innerHTML = `
+                <div class="pbadge-emoji">${badge.emoji}</div>
+                <div class="pbadge-info">
+                    <div class="pbadge-name">${userName ? userName + ' · ' : ''}${badge.label}</div>
+                    <div class="pbadge-sub">${total} film${total > 1 ? 's' : ''} dans ton profil</div>
+                    ${badge.next ? `
+                    <div class="pbadge-progress-wrap">
+                        <div class="pbadge-progress-bar" style="width:${progressPct}%;background:${badge.color}"></div>
+                    </div>
+                    <div class="pbadge-progress-label">${total}/${badge.next} films → <strong>${BADGES[BADGES.indexOf(badge)-1]?.label || ''}</strong></div>
+                    ` : `<div class="pbadge-progress-label" style="color:${badge.color}">Niveau maximum atteint 🎉</div>`}
+                </div>
+            `;
+            badgeWrap.style.display = 'block';
+        }
+
+        // ── Cas : aucun film encore ──
+        if (total === 0) {
             grid.innerHTML = '';
             if (empty) {
                 empty.style.display = 'block';
                 empty.innerHTML = `
                     <div class="history-empty-icon">⭐</div>
-                    <p>${t('watchlist.empty')}</p>
+                    <p>Aucun film dans ton profil pour l'instant.</p>
                     <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;margin-top:0.5rem;">
-                        Lance une recommandation, puis note ★ ou marque 👁 les films que tu veux retrouver ici.
+                        Lance une recommandation, puis note ★ ou marque 👁 les films pour les retrouver ici.
                     </p>`;
             }
             return;
         }
 
-        const seenCount   = films.filter(f => f.seen).length;
-        const ratedCount  = films.filter(f => f.rating).length;
-        const avgRating   = ratedCount > 0
-            ? (films.filter(f=>f.rating).reduce((s,f)=>s+f.rating,0) / ratedCount).toFixed(1)
+        // ── Calculs stats ──
+        const seenCount  = films.filter(f => f.seen).length;
+        const ratedCount = films.filter(f => f.rating).length;
+        const lovedCount = films.filter(f => f.rating >= 4).length;
+        const avgRating  = ratedCount > 0
+            ? (films.filter(f => f.rating).reduce((s, f) => s + f.rating, 0) / ratedCount).toFixed(1)
             : null;
 
         if (subtitle) subtitle.textContent = `${seenCount} vu${seenCount>1?'s':''} · ${ratedCount} noté${ratedCount>1?'s':''}`;
 
-        // ── Genre favori depuis l'historique ──
+        // ── Genre favori ──
         const GENRE_NAMES_H = {
-            35:'Comédie', 28:'Action', 10751:'Famille', 12:'Aventure',
-            53:'Thriller', 27:'Horreur', 18:'Drame', 10749:'Romance',
-            878:'SF', 9648:'Mystère', 80:'Crime', 16:'Animation', 99:'Documentaire'
+            35:'Comédie', 28:'Action', 10751:'Famille', 12:'Aventure', 53:'Thriller',
+            27:'Horreur', 18:'Drame', 10749:'Romance', 878:'SF', 9648:'Mystère',
+            80:'Crime', 16:'Animation', 99:'Documentaire', 14:'Fantastique', 37:'Western'
         };
         const genreFreq = {};
-        films.forEach(f => (f.genre_ids||[]).forEach(g => genreFreq[g] = (genreFreq[g]||0)+1));
-        const topGenreEntries = Object.entries(genreFreq).sort((a,b)=>b[1]-a[1]).slice(0,3);
-        const topGenreName = GENRE_NAMES_H[topGenreEntries[0]?.[0]] || null;
-        const topGenreNames = topGenreEntries.map(([id]) => GENRE_NAMES_H[id]).filter(Boolean);
+        films.forEach(f => (f.genre_ids || []).forEach(g => genreFreq[g] = (genreFreq[g]||0) + 1));
+        const topGenreEntries = Object.entries(genreFreq).sort((a,b) => b[1]-a[1]).slice(0, 3);
+        const topGenreName = topGenreEntries.length
+            ? (GENRE_NAMES_H[topGenreEntries[0][0]] || '—') : '—';
 
-        // Film le mieux noté
-        const bestFilm = films.filter(f=>f.rating).sort((a,b)=>b.rating-a.rating)[0] || null;
-
-        // ── Tuiles stats ──
-        if (dnaCard && dnaInner) {
-            const topRated = films.filter(f => f.rating >= 4);
-            dnaInner.innerHTML = `
-                <div class="dna-stat stat-seen">
-                    <div class="dna-stat-icon">👁</div>
-                    <span class="dna-stat-value">${seenCount}</span>
-                    <span class="dna-stat-label">Films vus</span>
-                    <span class="dna-stat-sub">enregistrés dans ton profil</span>
+        // ── Stats row ──
+        if (statsRow) {
+            statsRow.innerHTML = `
+                <div class="pstat-card">
+                    <div class="pstat-icon">👁</div>
+                    <div class="pstat-value">${seenCount}</div>
+                    <div class="pstat-label">Films vus</div>
                 </div>
-                <div class="dna-stat stat-rated">
-                    <div class="dna-stat-icon">⭐</div>
-                    <span class="dna-stat-value">${ratedCount}</span>
-                    <span class="dna-stat-label">Films notés</span>
-                    <span class="dna-stat-sub">avec ta propre note ★</span>
+                <div class="pstat-card">
+                    <div class="pstat-icon">⭐</div>
+                    <div class="pstat-value">${ratedCount}</div>
+                    <div class="pstat-label">Films notés</div>
                 </div>
-                <div class="dna-stat stat-avg">
-                    <div class="dna-stat-icon">✦</div>
-                    <span class="dna-stat-value">${avgRating || '—'}</span>
-                    <span class="dna-stat-label">Note moyenne</span>
-                    <span class="dna-stat-sub">sur 5 étoiles</span>
+                <div class="pstat-card">
+                    <div class="pstat-icon">✦</div>
+                    <div class="pstat-value">${avgRating || '—'}</div>
+                    <div class="pstat-label">Note moyenne</div>
                 </div>
-                <div class="dna-stat stat-love">
-                    <div class="dna-stat-icon">❤️</div>
-                    <span class="dna-stat-value">${topRated.length}</span>
-                    <span class="dna-stat-label">Coups de cœur</span>
-                    <span class="dna-stat-sub">notes 4★ ou plus</span>
+                <div class="pstat-card">
+                    <div class="pstat-icon">❤️</div>
+                    <div class="pstat-value">${lovedCount}</div>
+                    <div class="pstat-label">Coups de cœur</div>
+                </div>
+                <div class="pstat-card pstat-genre">
+                    <div class="pstat-icon">🎭</div>
+                    <div class="pstat-value pstat-genre-val">${topGenreName}</div>
+                    <div class="pstat-label">Genre favori</div>
                 </div>
             `;
-            dnaCard.style.display = 'block';
-
-            // Nettoyer les insights si existants
-            const oldInsights = document.getElementById('history-insights');
-            if (oldInsights) oldInsights.remove();
+            statsRow.style.display = 'flex';
         }
 
-        // ── Label section ──
-        let sectionLabel = document.getElementById('history-section-label');
-        if (!sectionLabel) {
-            sectionLabel = document.createElement('div');
-            sectionLabel.id = 'history-section-label';
-            sectionLabel.className = 'history-section-label';
-            grid.parentNode.insertBefore(sectionLabel, grid);
+        // ── Label films ──
+        if (filmsLabel) {
+            filmsLabel.textContent = `Tes films — ${total} au total`;
+            filmsLabel.style.display = 'block';
         }
-        sectionLabel.textContent = `Tes films — ${films.length} au total`;
 
         // ── Grille des films ──
         grid.innerHTML = '';
@@ -402,14 +433,12 @@ export const authUI = {
                 ? `https://image.tmdb.org/t/p/w342${f.poster_path}`
                 : `https://via.placeholder.com/300x450/1a1a1a/E50914?text=${encodeURIComponent(f.title||'')}`;
 
-            // Étoiles intégrées au bas de la carte
             const starsHtml = f.rating
                 ? `<div class="history-item-rating">
                        ${[1,2,3,4,5].map(n => `<span class="hstar${n <= f.rating ? ' on' : ''}">★</span>`).join('')}
                    </div>`
                 : '';
 
-            // Badge "Vu" uniquement si pas noté
             const seenBadge = (f.seen && !f.rating)
                 ? `<div class="history-item-seen">✓ Vu</div>` : '';
 
@@ -423,9 +452,8 @@ export const authUI = {
                 ${seenBadge}
                 <button class="history-item-delete" title="Retirer de mes films">✕</button>
             `;
-            item.onclick = () => window.open(`https://www.themoviedb.org/movie/${f.movie_id}`,'_blank');
+            item.onclick = () => window.open(`https://www.themoviedb.org/movie/${f.movie_id}`, '_blank');
 
-            // Bouton ✕ — supprime l'entrée et retire la carte avec animation
             const deleteBtn = item.querySelector('.history-item-delete');
             deleteBtn.onclick = async (e) => {
                 e.stopPropagation();
@@ -451,9 +479,11 @@ export const authUI = {
         if (authBtn) authBtn.style.display = 'flex';
         if (userMenu) userMenu.style.display = 'none';
 
-        // Masquer le bouton "Mon Espace" (connecté-only)
+        // Masquer les boutons connecté-only
         const prefsBtn = document.getElementById('prefs-nav-btn');
         if (prefsBtn) prefsBtn.style.display = 'none';
+        const profileNavBtn = document.getElementById('profile-nav-btn');
+        if (profileNavBtn) profileNavBtn.style.display = 'none';
 
         // Vider la watchlist en mémoire (repassage en localStorage)
         store.watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');

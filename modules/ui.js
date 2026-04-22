@@ -24,7 +24,8 @@ export const ui = {
         tmdbInput: document.getElementById('tmdb-key'),
         openaiInput: document.getElementById('openai-key'),
         configBtn: document.getElementById('config-btn'),
-        watchlistNavBtn: document.getElementById('watchlist-nav-btn')
+        watchlistNavBtn: document.getElementById('watchlist-nav-btn'),
+        profileNavBtn:   document.getElementById('profile-nav-btn')
     },
 
     switchView(viewName) {
