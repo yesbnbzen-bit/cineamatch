@@ -291,9 +291,9 @@ export const tmdbService = {
             const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
             const isComedyMood = moodStr.includes('35');
             if (isComedyMood) {
-                // vote_count.gte=2000 : seules les comédies éprouvées par de larges audiences
-                // Les films qui font vraiment rire ont été vus et recommandés massivement
-                url += `&sort_by=popularity.desc&vote_count.gte=2000&vote_average.gte=6.5`;
+                // vote_count.gte=500 : pool large pour avoir assez de candidats
+                // 2000 était trop restrictif surtout avec with_genres=35,28 (AND logic)
+                url += `&sort_by=popularity.desc&vote_count.gte=500&vote_average.gte=6.0`;
             } else {
                 url += `&sort_by=vote_average.desc&vote_count.gte=300`;
             }

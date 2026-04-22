@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=66';
+import { tmdbService, openaiService } from './services/api.js?v=67';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1475,12 +1475,17 @@ const App = {
             store._relaxedSearch = null; // null = recherche normale
 
             // ── FALLBACK PROGRESSIF : relâche les contraintes une par une jusqu'à toujours trouver ──
+            // Chaque niveau doit appeler TMDB avec des paramètres DIFFÉRENTS pour obtenir de nouveaux films.
+            // L1 = pages 3&4 (toujours mêmes filtres, films différents)
+            // L2 = sans filtre langue dans la requête TMDB (langue conservée côté client)
+            // L3 = sans filtre époque (ni TMDB ni client)
 
-            // Niveau 1 : Discovery large sans keywords (filtres époque + langue + exclusions conservés)
+            // Niveau 1 : pages suivantes (même filtre, films différents)
             if (safeCandidates.length < 6) {
-                console.log(`⚠️ Pool trop petit (${safeCandidates.length}), fallback L1 Discovery large`);
-                const fb1 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, false, 1, []);
-                for (const f of fb1) {
+                console.log(`⚠️ Pool trop petit (${safeCandidates.length}), fallback L1 pages suivantes`);
+                const fb1a = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, true, 3, []);
+                const fb1b = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, true, 4, []);
+                for (const f of [...fb1a, ...fb1b]) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
@@ -1495,11 +1500,11 @@ const App = {
                 console.log(`📡 Pool L1 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 2 : lâche le genre mais GARDE la langue — respecte l'intention utilisateur
+            // Niveau 2 : sans filtre langue dans la requête TMDB (filtre langue conservé côté client)
             if (safeCandidates.length < 6) {
-                store._relaxedSearch = 'langue';
-                console.log(`⚠️ Pool toujours petit, fallback L2 — langue conservée, genre élargi`);
-                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, false, 1, []);
+                if (langFilterSet) store._relaxedSearch = 'langue';
+                console.log(`⚠️ Pool toujours petit, fallback L2 — TMDB sans langue, filtre client conservé`);
+                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage: null }, {}, false, 1, []);
                 for (const f of fb2) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
@@ -1507,6 +1512,7 @@ const App = {
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
+                    if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                     if (!passesComedyGuard(genres)) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
@@ -1514,11 +1520,11 @@ const App = {
                 console.log(`📡 Pool L2 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 3 : on lâche aussi le filtre époque (garde genre + langue + comédie)
+            // Niveau 3 : sans filtre époque ni langue dans TMDB, filtre client assoupli sur l'époque
             if (safeCandidates.length < 6) {
-                store._relaxedSearch = 'epoque';
-                console.log(`⚠️ Pool toujours petit, fallback L3`);
-                const fb3 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, false, 1, []);
+                if (eraRange) store._relaxedSearch = 'epoque';
+                console.log(`⚠️ Pool toujours petit, fallback L3 — sans langue ni époque dans TMDB`);
+                const fb3 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage: null, era: 'any' }, {}, false, 1, []);
                 for (const f of fb3) {
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
