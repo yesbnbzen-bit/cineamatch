@@ -163,7 +163,11 @@ export const tmdbService = {
 
         if (genreIds) {
             const genreIdsStr = String(genreIds);
-            const cleanGenres = genreIdsStr.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
+            // Comedy mood (35,10751): use only genre 35 to avoid TMDB AND logic
+            // which would require BOTH Comedy AND Family tags, excluding films like Extreme Job
+            const isComedyMood = genreIdsStr.includes('35');
+            const baseGenres = isComedyMood ? '35' : genreIdsStr;
+            const cleanGenres = baseGenres.split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
             if (cleanGenres) url += `&with_genres=${cleanGenres}`;
         }
 
