@@ -318,38 +318,57 @@ export const tmdbService = {
 
         let finalResults = [...results];
 
-        // T2 FALLBACK : relâche genre + époque mais GARDE la langue — l'intention utilisateur est sacrée
+        // ─── HIÉRARCHIE DES FALLBACKS ────────────────────────────────────────────
+        // Règle d'or : élargir UNIQUEMENT le critère le moins important
+        // Priorité absolue (jamais sacrifiée) : genre/mood + exclusions Drama/Thriller
+        // Priorité haute (sacrifiée en dernier) : langue
+        // Priorité basse (sacrifiée en premier) : époque, note minimale
+        // ─────────────────────────────────────────────────────────────────────────
+
+        // T2 FALLBACK : élargit seulement l'ÉPOQUE et le seuil de note
+        // GARDE : genre comédie + without_genres (Drama/Thriller/TV) + langue
         if (finalResults.length < 3) {
-            const langFilter = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
-            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770&vote_count.gte=50&sort_by=vote_average.desc&vote_average.gte=6.5`;
-            if (langFilter && langFilter !== 'any') t2Url += `&with_original_language=${langFilter}`;
-            if (excluded.length > 0) t2Url += `&without_genres=${excluded.join(',')}`;
+            const langFilter2 = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
+            // Reconstruit without_genres complet (même logique que requête principale)
+            const t2BaseExcluded = [10770, 99];
+            if (isComedyMoodForExcl) t2BaseExcluded.push(18, 53);
+            const t2UserExcluded = (preferences.exclude || []).flatMap(ex => ({
+                horror:[27], scary:[27,53], sad:[18], animation:[16], none:[], slow:[], complex:[], adult:[]
+            }[ex] || []));
+            const t2AllExcluded = [...new Set([...t2BaseExcluded, ...t2UserExcluded])];
+
+            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=${t2AllExcluded.join(',')}&vote_count.gte=100&sort_by=popularity.desc&vote_average.gte=6.0`;
+            // GARDE le genre comédie
+            if (isComedyMoodForExcl) t2Url += `&with_genres=35`;
+            // GARDE la langue
+            if (langFilter2 && langFilter2 !== 'any') t2Url += `&with_original_language=${langFilter2}`;
             if (hasCastFilter) t2Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
             t2Url += `&_=${Date.now()}`;
-            console.log(`⚠️ T2 fallback (garde langue) : ${langFilter || 'any'}`);
-            const t2Resp = await fetch(t2Url, { cache: 'no-store' });
-            const t2Data = await t2Resp.json();
-            const t2Res = t2Data.results || [];
-            finalResults = [...finalResults, ...t2Res.filter(r => !finalResults.some(old => old.id === r.id))];
+            console.log(`⚠️ T2 fallback (garde genre+langue, élargit époque) : ${langFilter2 || 'any'}`);
+            try {
+                const t2Resp = await fetch(t2Url, { cache: 'no-store' });
+                const t2Data = await t2Resp.json();
+                const t2Res = t2Data.results || [];
+                finalResults = [...finalResults, ...t2Res.filter(r => !finalResults.some(old => old.id === r.id))];
+            } catch(e) { console.warn('T2 fallback failed', e); }
         }
 
-        // T3 FALLBACK : seulement si T2 n'a rien donné non plus — garde quand même la langue
-        if (finalResults.length === 0 && preferences.detectedLanguage && preferences.detectedLanguage !== 'any') {
-            console.log("FALLBACK T3 — langue uniquement, genres ouverts");
-            const langFilter = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
-            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc&vote_count.gte=100&without_genres=10770`;
-            if (langFilter) t3Url += `&with_original_language=${langFilter}`;
-            const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
-            const t3Data = await t3Resp.json();
-            finalResults = t3Data.results || [];
-        } else if (finalResults.length === 0) {
-            // Aucune préférence de langue → fallback global
-            console.log("FALLBACK T3 global");
-            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc&without_genres=10770`;
-            if (excluded.length > 0) t3Url += `&without_genres=${excluded.join(',')}`;
-            const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
-            const t3Data = await t3Resp.json();
-            finalResults = t3Data.results || [];
+        // T3 FALLBACK : dernier recours — garde genre + langue, sans contrainte de note/époque
+        if (finalResults.length === 0) {
+            const langFilter3 = LANG_GROUPS_TMDB[preferences.detectedLanguage] || preferences.detectedLanguage;
+            const t3BaseExcluded = [10770, 99];
+            if (isComedyMoodForExcl) t3BaseExcluded.push(18, 53);
+            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc&vote_count.gte=50&without_genres=${t3BaseExcluded.join(',')}`;
+            // GARDE le genre comédie
+            if (isComedyMoodForExcl) t3Url += `&with_genres=35`;
+            // GARDE la langue si spécifiée
+            if (langFilter3 && langFilter3 !== 'any') t3Url += `&with_original_language=${langFilter3}`;
+            console.log(`⚠️ T3 fallback (genre+langue, sans contrainte époque/note)`);
+            try {
+                const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
+                const t3Data = await t3Resp.json();
+                finalResults = t3Data.results || [];
+            } catch(e) { console.warn('T3 fallback failed', e); }
         }
 
         if (this.apiKey === 'MOCK' || !this.apiKey) {
