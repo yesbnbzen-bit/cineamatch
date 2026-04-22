@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=56';
+import { tmdbService, openaiService } from './services/api.js?v=57';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1448,7 +1448,7 @@ const App = {
             const EXCLUDE_GENRE_MAP = {
                 horror:    [27],           // Trop de violence → horreur
                 sad:       [18],           // Trop triste → drame lourd
-                scary:     [27, 53],       // Films qui font peur → horreur + thriller
+                scary:     [27],           // Films qui font peur → horreur pure seulement (53=thriller exclu du mapping — thriller ≠ "qui fait peur")
                 adult:     [],             // Contenu adulte → géré via le prompt IA (pas de genre TMDb direct)
                 slow:      [],             // Trop lent → géré via prompt IA
                 complex:   [],             // Trop complexe → géré via prompt IA
@@ -1778,6 +1778,26 @@ const App = {
         }
 
         ui.dom.moviesGrid.innerHTML = '';
+
+        // ── Bannière "conflit mood/exclusions résolu" ──
+        document.getElementById('conflict-banner')?.remove();
+        if (store._moodExclusionConflict) {
+            const isEn = getLang() === 'en';
+            const conflictMsg = isEn
+                ? '💡 We noticed a small contradiction: your mood and an exclusion overlapped. Your mood took priority — results may include some tension, but we\'ve minimised pure horror.'
+                : '💡 On a détecté une légère contradiction : ton humeur et une exclusion se chevauchaient. L\'humeur a eu la priorité — il peut y avoir de la tension, mais l\'horreur pure est filtrée au maximum.';
+            const cb = document.createElement('div');
+            cb.id = 'conflict-banner';
+            cb.style.cssText = `
+                width:100%;max-width:860px;margin:0 auto 1rem;
+                background:linear-gradient(135deg,rgba(99,179,237,0.1),rgba(49,130,206,0.07));
+                border:1px solid rgba(99,179,237,0.3);border-radius:12px;
+                padding:11px 18px;display:flex;align-items:center;gap:10px;
+                font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.4;
+                animation:fadeIn 0.4s ease;`;
+            cb.innerHTML = `<span style="flex:1">${conflictMsg}</span>`;
+            ui.dom.moviesGrid.before(cb);
+        }
 
         // ── Bannière "critères relâchés" si fallback L2/L3/nuclear utilisé ──
         document.getElementById('relaxed-search-banner')?.remove();

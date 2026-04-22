@@ -171,8 +171,11 @@ export const tmdbService = {
         let genreIds = metadata.genre_ids || preferences.blendedGenreIds || preferences.mood;
 
         // excludeMap :
-        // - "horror" → genre 27
-        // - "scary" → genres 27 (horreur) + 53 (thriller angoissant)
+        // - "horror" → genre 27 (violence/gore)
+        // - "scary" → genre 27 UNIQUEMENT (horreur pure : Conjuring, Hereditary, Annabelle...)
+        //   ⚠️ NE PAS inclure 53 (Thriller) — un thriller de suspense ≠ "qui fait peur"
+        //   American Nightmare = thriller dystopique (53), pas un film d'horreur (27)
+        //   Le "suspense angoissant" est géré par pénalité IA (-20 pts), pas par exclusion genre
         // - "sad" → genre 18 (drame)
         // - "slow" → pas de genre TMDb (géré uniquement par scoring IA)
         // - "complex" → pas de genre TMDb (géré uniquement par scoring IA)
@@ -181,7 +184,7 @@ export const tmdbService = {
         // - "none" → rien à exclure (carte blanche)
         const excludeMap = {
             "horror":    [27],
-            "scary":     [27, 53],
+            "scary":     [27],   // horreur pure seulement — thriller (53) n'est PAS "qui fait peur"
             "sad":       [18],
             "slow":      [],
             "complex":   [],
@@ -890,7 +893,8 @@ ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exempl
 → ID dans [${excludedIds.join(', ')}] : Score = 0 FORCÉ
 → Genre explicitement exclu (animation, horreur, tristesse…) : Score = 0 FORCÉ
 ${preferences.context === 'family' ? '→ Contenu adulte/violent/sexuel avec contexte famille : Score = 0 FORCÉ' : ''}
-${preferences.exclude?.includes('horror') || preferences.exclude?.includes('scary') ? '→ Film d\'horreur ou thriller angoissant alors que l\'utilisateur l\'a explicitement exclu : Score = 0 FORCÉ.' : ''}
+${preferences.exclude?.includes('horror') ? '→ Film d\'horreur (genre 27 : gore, jump-scares, créatures, possession) alors que l\'utilisateur l\'a explicitement exclu : Score = 0 FORCÉ.' : ''}
+${preferences.exclude?.includes('scary') ? '→ Film d\'horreur pure (Conjuring, Hereditary, Insidious, Annabelle, Sinister...) alors que l\'utilisateur a exclu "qui fait peur" : Score = 0 FORCÉ.\n→ Thriller de suspense intense (Se7en, Silence des Agneaux, Prisoners) : -20 pts — acceptable si c\'est le meilleur match, mais à éviter si des alternatives existent.\n→ Note : un thriller d\'action ou dystopique (American Nightmare, Jason Bourne, Mission Impossible) N\'EST PAS "qui fait peur" — ne pas pénaliser.' : ''}
 ${preferences.exclude?.includes('sad') ? '→ Film déprimant/lourd/à fin tragique alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
 ${preferences.exclude?.includes('adult') ? '→ Film avec nudité/contenu sexuel explicite alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
 ${preferences.exclude?.includes('animation') ? '→ Film d\'animation alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
