@@ -167,6 +167,7 @@ export const tmdbService = {
             "complex":   [],
             "adult":     [],
             "animation": [16],
+            "teen":      [16, 10751],   // Ados/coming-of-age → animation + famille (pas de genre "ado" TMDB direct)
             "none":      []
         };
         const myExclusions = (preferences.exclude || []).map(ex => excludeMap[ex] || []).flat().filter(Boolean);

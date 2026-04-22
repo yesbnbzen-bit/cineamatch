@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=64';
+import { tmdbService, openaiService } from './services/api.js?v=65';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1404,14 +1404,15 @@ const App = {
 
             // Genres à exclure (session + préférences sauvegardées)
             const EXCLUDE_GENRE_MAP = {
-                horror:    [27],        // Trop de violence → horreur
-                sad:       [18],        // Trop triste → drame lourd
-                scary:     [27, 53],    // Films qui font peur → horreur + thriller
-                adult:     [],          // Contenu adulte → géré via le prompt IA (pas de genre TMDb direct)
-                slow:      [],          // Trop lent → géré via prompt IA
-                complex:   [],          // Trop complexe → géré via prompt IA
-                animation: [16],        // Films d'animation
-                none:      []           // Rien ne me dérange
+                horror:    [27],           // Trop de violence → horreur
+                sad:       [18],           // Trop triste → drame lourd
+                scary:     [27, 53],       // Films qui font peur → horreur + thriller
+                adult:     [],             // Contenu adulte → géré via le prompt IA (pas de genre TMDb direct)
+                slow:      [],             // Trop lent → géré via prompt IA
+                complex:   [],             // Trop complexe → géré via prompt IA
+                animation: [16],           // Films d'animation
+                teen:      [16, 10751],    // Films d'ados / coming-of-age → exclut animation + famille (pas de genre "ado" TMDB direct)
+                none:      []              // Rien ne me dérange
             };
             const excludedGenreIds = (store.answers.exclude || [])
                 .flatMap(ex => EXCLUDE_GENRE_MAP[ex] || []);
@@ -1564,12 +1565,16 @@ const App = {
                 if (safeCandidates.length < 3) {
                     console.log(`⚠️ Pool comédie < 3, Discovery comédie pure de secours`);
                     try {
-                        const purePrefs = { mood: store.answers.mood, language: store.answers.language, era: store.answers.era, detectedLanguage };
+                        // On passe TOUTES les prefs y compris exclude pour respecter animation/teen
+                        const purePrefs = { ...store.answers, detectedLanguage };
                         const pureComedy = await tmdbService.getAdvancedDiscovery(purePrefs, {}, false, 1, []);
                         for (const f of pureComedy) {
+                            const fGenres = f.genre_ids || [];
                             if (lovedMovieIds.includes(Number(f.id))) continue;
                             if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                            if (!passesComedyGuard(f.genre_ids || [])) continue;
+                            // Respect des exclusions utilisateur (animation, teen, etc.)
+                            if (allExcludedGenres.length > 0 && fGenres.some(g => allExcludedGenres.includes(g))) continue;
+                            if (!passesComedyGuard(fGenres)) continue;
                             if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                         }
                         console.log(`✅ Pool après récupération comédie pure : ${safeCandidates.length} films`);
