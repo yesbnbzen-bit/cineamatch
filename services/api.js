@@ -761,6 +761,15 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
             ? `\n🎯 MOOD "ÉMOUVANT / INSPIRANT" + FILM(S) DE RÉFÉRENCE FOURNI(S) : Ce mood couvre DEUX registres distincts — (A) biopics/histoires vraies/dépassement humain et (B) romances/drames sentimentaux. L'ADN calibre lequel l'utilisateur cherche. Si les films de référence sont des biopics ou histoires vraies (ex: La Méthode Williams, À la recherche du bonheur, Rocky, Judy...) → pénalise FORTEMENT les romances érotiques/sentimentales pures (ex: romans d'amour érotiques, histoires de séduction, soft erotica) : -45 pts. Au contraire, si les films de référence sont des romances (ex: The Notebook, Titanic) → ils sont bienvenus.`
             : '';
 
+        // ── Cast ADN : acteurs issus des films de référence ──
+        const adnCastIds = preferences.adnCastIds || [];
+        const castAdnNote = adnCastIds.length > 0
+            ? `\n\n🎭 ACTEURS DES FILMS DE RÉFÉRENCE (IDs TMDB : ${adnCastIds.join(', ')}) :
+  → Certains films du pool ont été trouvés spécifiquement parce qu'ils partagent des acteurs avec les films de référence de l'utilisateur.
+  → Accorde un BONUS de +8 pts aux films qui font figurer un de ces acteurs (même si ce n'est pas le rôle principal).
+  → L'utilisateur apprécie ces acteurs — c'est un signal fort de cohérence avec ses goûts.`
+            : '';
+
         // Avertissement conflit ADN/mood (ex: légèreté + Get Out)
         const conflictWarning = preferences.adnConflictsWithMood
             ? `\n⚠️ CONFLIT ADN/MOOD DÉTECTÉ : Les films de référence appartiennent à un genre OPPOSÉ au mood choisi (ex: film d'horreur cité pour une soirée légère). Dans ce cas, le MOOD est prioritaire pour le genre — cherche des films du genre demandé (${blendedNames}) mais avec la SOPHISTICATION NARRATIVE et le niveau d'exigence du film de référence. Ne recommande PAS des films du genre du film de référence.`
@@ -771,7 +780,7 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
 ⚠️ RÈGLE CRITIQUE — ADN CINÉPHILE :
 Les films de référence (ADN) calibrent le style narratif, le rythme et l'esthétique visuelle.
 L'ÉNERGIE/MOOD donne le registre émotionnel général. Les GENRES EFFECTIFS ci-dessous ont priorité sur le libellé du mood.
-${romanceWarning}${inspiringBiopicWarning}${conflictWarning}
+${romanceWarning}${inspiringBiopicWarning}${conflictWarning}${castAdnNote}
 
 ═══════════════════════════════════════════
 PROFIL SPECTATEUR

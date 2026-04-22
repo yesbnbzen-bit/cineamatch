@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=53';
+import { tmdbService, openaiService } from './services/api.js?v=54';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1442,7 +1442,10 @@ const App = {
 
             // Genres supplémentaires exclus pour le contexte famille
             const familyExcludedGenres = store.answers.context === 'family' ? [27, 53, 10749] : [];
-            const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds])];
+            // Pour le mood Comédie : exclure Thriller(53) et Crime(80) — incompatibles avec un vrai film comique
+            const isComedyMood = (store.answers.mood || '').includes('35');
+            const comedyHardExclusions = isComedyMood ? [53, 80] : [];
+            const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds, ...comedyHardExclusions])];
 
             if (prefExcludedGenreIds.length > 0) console.log(`🚫 Exclusions préfs permanentes : ${(savedPrefs.exclusions||[]).join(', ')} → genres [${prefExcludedGenreIds.join(',')}]`);
 
@@ -1574,7 +1577,7 @@ const App = {
                 {
                     ...store.answers,
                     contextLabel, moodLabel, durationLabel, excludeLabels,
-                    blendedGenreIds, adnConflictsWithMood,
+                    blendedGenreIds, adnConflictsWithMood, adnCastIds,
                     isDuoMode:        store.duoMode && store.duoMerged,
                     duoMoodLabelA,    duoMoodLabelB,
                     // Conflits duo : langue & époque
