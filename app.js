@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=55';
+import { tmdbService, openaiService } from './services/api.js?v=56';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=42';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1471,6 +1471,21 @@ const App = {
             // Genres requis (mood de l'utilisateur) — utilisé dans tous les niveaux de filtre
             const moodGenresArray = [...moodGenres];
 
+            // ── Résolution de conflit mood/exclusions ──
+            // Ex : mood=Thriller(53) + exclusion "qui fait peur"(53) → impossibilité logique
+            // Règle : le MOOD prend toujours la priorité sur les exclusions
+            // On retire des exclusions tout genre qui est aussi requis par le mood
+            const conflictingExclusions = allExcludedGenres.filter(g => moodGenresArray.includes(g));
+            const effectiveExclusions = conflictingExclusions.length > 0
+                ? allExcludedGenres.filter(g => !moodGenresArray.includes(g))
+                : allExcludedGenres;
+            if (conflictingExclusions.length > 0) {
+                console.warn(`⚠️ Conflit mood/exclusions détecté : genres [${conflictingExclusions.join(',')}] en conflit → mood prioritaire, exclusion ignorée pour ces genres`);
+                store._moodExclusionConflict = true;
+            } else {
+                store._moodExclusionConflict = false;
+            }
+
             let safeCandidates = candidates.filter(c => {
                 const year = parseInt(c.release_date?.split('-')[0]) || 0;
                 const genres = c.genre_ids || [];
@@ -1482,7 +1497,8 @@ const App = {
                 // Filtre époque → s'applique à toutes les sources
                 if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) return false;
                 // Filtre exclusions genres → s'applique à toutes les sources (animation, horreur, etc.)
-                if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) return false;
+                // Note: effectiveExclusions exclut les genres en conflit avec le mood (mood prioritaire)
+                if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) return false;
                 // Filtre origine — s'applique à TOUTES les sources (TMDb recs, Discovery, IA)
                 // "Américain" → only en | "Français" → only fr | "Asiatique" → ko/ja/zh/cn/th/hi
                 if (langFilterSet && c.original_language && !langFilterSet.has(c.original_language)) return false;
@@ -1509,7 +1525,7 @@ const App = {
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
-                    if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
+                    if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
@@ -1528,7 +1544,7 @@ const App = {
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
-                    if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
+                    if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                 }
@@ -1548,7 +1564,7 @@ const App = {
                     // L3 garde les filtres époque et langue (seuls les keywords sont relâchés)
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
-                    if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
+                    if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                 }
@@ -1568,7 +1584,7 @@ const App = {
                         if (lovedMovieIds.includes(Number(f.id))) continue;
                         if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                         // Garde au moins le filtre genre requis et les exclusions
-                        if (allExcludedGenres.length > 0 && genres.some(g => allExcludedGenres.includes(g))) continue;
+                        if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                         if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                         if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                     }

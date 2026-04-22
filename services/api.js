@@ -204,6 +204,9 @@ export const tmdbService = {
         }
 
         // 2. Strict Exclusions (without_genres)
+        // ⚠️ Règle : le mood (with_genres) prend toujours la priorité sur les exclusions
+        // → on retire de without_genres tout genre déjà présent dans with_genres pour éviter l'impossibilité logique
+        const withGenresList = cleanGenres ? cleanGenres.split(',').map(Number).filter(Boolean) : [];
         let excluded = [];
         if (preferences.exclude && Array.isArray(preferences.exclude)) {
             preferences.exclude.forEach(ex => {
@@ -213,7 +216,11 @@ export const tmdbService = {
                 }
             });
         }
-        if (excluded.length > 0) url += `&without_genres=${excluded.join(',')}`;
+        // Filtrer les conflits : si un genre est dans with_genres, ne pas le mettre dans without_genres
+        if (excluded.length > 0) {
+            const safeExcluded = excluded.join(',').split(',').map(Number).filter(id => !withGenresList.includes(id));
+            if (safeExcluded.length > 0) url += `&without_genres=${safeExcluded.join(',')}`;
+        }
 
         // 3. Social Context Filter
         if (preferences.context === 'family') {
