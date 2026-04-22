@@ -339,7 +339,7 @@ export const tmdbService = {
             }[ex] || []));
             const t2AllExcluded = [...new Set([...t2BaseExcluded, ...t2UserExcluded])];
 
-            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=${t2AllExcluded.join(',')}&vote_count.gte=100&sort_by=popularity.desc&vote_average.gte=6.0`;
+            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=${t2AllExcluded.join(',')}&vote_count.gte=500&sort_by=popularity.desc&vote_average.gte=6.5`;
             // GARDE le genre comédie
             if (isComedyMoodForExcl) t2Url += `&with_genres=35`;
             // GARDE la langue
