@@ -3981,15 +3981,14 @@ body.duo-active {
 .duo-how-it-works {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 14px;
-    padding: 1rem 1.25rem;
+    padding: 1.1rem 1.25rem;
     margin-bottom: 1.5rem;
     width: 100%;
     box-sizing: border-box;
-    flex-wrap: wrap;
     justify-content: center;
 }
 
@@ -3997,16 +3996,14 @@ body.duo-active {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     flex: 1;
-    min-width: 80px;
-    max-width: 130px;
+    min-width: 0;
+    max-width: 120px;
     text-align: center;
 }
 
 .duo-step-icon {
-    font-size: 1.6rem;
-    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4018,35 +4015,51 @@ body.duo-active {
 }
 
 .duo-step-text {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     color: rgba(255,255,255,0.6);
-    line-height: 1.35;
+    line-height: 1.4;
 }
 .duo-step-text strong {
     color: #fff;
+    font-weight: 700;
 }
 
 .duo-step-arrow {
     color: rgba(255,255,255,0.25);
-    font-size: 1.2rem;
-    font-weight: 300;
+    font-size: 1.1rem;
     flex-shrink: 0;
     align-self: center;
+    margin-bottom: 1rem; /* aligner avec la mi-hauteur de l'icône */
 }
 
-@media (max-width: 480px) {
+/* ── Mobile : étapes empilées verticalement ── */
+@media (max-width: 540px) {
     .duo-how-it-works {
-        gap: 0.75rem;
-        padding: 0.85rem 1rem;
-    }
-    .duo-step-arrow {
-        display: none;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 1rem;
     }
     .duo-step {
         flex-direction: row;
         text-align: left;
         max-width: 100%;
-        gap: 0.6rem;
+        gap: 0.85rem;
+        width: 100%;
+    }
+    .duo-step-icon {
+        width: 40px;
+        height: 40px;
+    }
+    .duo-step-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+    .duo-step-text {
+        font-size: 0.85rem;
+    }
+    .duo-step-arrow {
+        display: none;
     }
 }
 
