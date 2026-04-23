@@ -75,6 +75,14 @@ export const authService = {
         if (error) throw error;
     },
 
+    // Envoyer l'email de réinitialisation du mot de passe
+    async resetPasswordEmail(email) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/?reset=1'
+        });
+        if (error) throw error;
+    },
+
     // Écouter les changements d'état (connecté / déconnecté)
     onAuthChange(callback) {
         return supabase.auth.onAuthStateChange((_event, session) => {

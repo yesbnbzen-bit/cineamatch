@@ -82,8 +82,17 @@ export const authUI = {
         document.getElementById('form-signin')?.addEventListener('submit', (e) => this.handleSignIn(e));
         document.getElementById('form-signup')?.addEventListener('submit', (e) => this.handleSignUp(e));
 
+        // Mot de passe oublié
+        document.getElementById('btn-forgot-password')?.addEventListener('click', () => this.showForgotPassword());
+
         // Google
         document.getElementById('btn-google')?.addEventListener('click', () => this.handleGoogle());
+
+        // Reset mot de passe depuis le lien email (?reset=1)
+        if (window.location.search.includes('reset=1')) {
+            this.showModal();
+            setTimeout(() => this.showResetPassword(), 300);
+        }
     },
 
     // ── Connexion réussie ──
@@ -614,6 +623,116 @@ export const authUI = {
         } catch (err) {
             this.showError('signin-error', 'Erreur Google : ' + err.message);
         }
+    },
+
+    // ── Mot de passe oublié ──
+    showForgotPassword() {
+        const modal = document.getElementById('auth-modal-overlay');
+        if (!modal) return;
+        // Injecter le formulaire de reset dans la modale
+        const body = modal.querySelector('.auth-modal-body') || modal.querySelector('.auth-body') || modal;
+        const existing = document.getElementById('forgot-form-wrap');
+        if (existing) { existing.style.display = 'block'; return; }
+
+        const wrap = document.createElement('div');
+        wrap.id = 'forgot-form-wrap';
+        wrap.innerHTML = `
+            <div style="padding:1.5rem 0">
+                <button id="btn-back-signin" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:inherit;padding:0;margin-bottom:1.25rem;" data-i18n="auth.forgot.back">← Retour à la connexion</button>
+                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem" data-i18n="auth.forgot.title">Réinitialiser le mot de passe</h3>
+                <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem" data-i18n="auth.forgot.sub">Saisis ton email pour recevoir un lien de réinitialisation.</p>
+                <input type="email" id="forgot-email" placeholder="Email" style="width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:0.75rem">
+                <p id="forgot-msg" style="font-size:0.82rem;color:#46d369;display:none;margin-bottom:0.75rem"></p>
+                <button id="btn-forgot-send" class="btn-primary" style="width:100%" data-i18n="auth.forgot.btn">Envoyer le lien</button>
+            </div>
+        `;
+        // Masquer les formulaires existants
+        document.getElementById('form-signin')?.style.setProperty('display', 'none');
+        document.getElementById('form-signup')?.style.setProperty('display', 'none');
+        document.querySelector('.auth-tabs')?.style.setProperty('display', 'none');
+        document.querySelector('.auth-divider')?.style.setProperty('display', 'none');
+        document.getElementById('btn-google')?.style.setProperty('display', 'none');
+
+        const container = document.querySelector('.auth-body') || document.querySelector('.auth-modal-inner') || document.getElementById('auth-modal-overlay');
+        container?.appendChild(wrap);
+
+        // Appliquer traductions
+        const { applyTranslations } = await import('../config/i18n.js?v=343');
+        applyTranslations();
+
+        document.getElementById('btn-back-signin')?.addEventListener('click', () => {
+            wrap.remove();
+            document.getElementById('form-signin')?.style.removeProperty('display');
+            document.querySelector('.auth-tabs')?.style.removeProperty('display');
+            document.querySelector('.auth-divider')?.style.removeProperty('display');
+            document.getElementById('btn-google')?.style.removeProperty('display');
+        });
+
+        document.getElementById('btn-forgot-send')?.addEventListener('click', async () => {
+            const email = document.getElementById('forgot-email')?.value?.trim();
+            const msg = document.getElementById('forgot-msg');
+            const btn = document.getElementById('btn-forgot-send');
+            if (!email) return;
+            btn.disabled = true;
+            btn.textContent = '⏳';
+            try {
+                await authService.resetPasswordEmail(email);
+                if (msg) { msg.textContent = t('auth.forgot.sent'); msg.style.display = 'block'; }
+                btn.style.display = 'none';
+            } catch(err) {
+                if (msg) { msg.textContent = err.message; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+                btn.disabled = false;
+                btn.textContent = t('auth.forgot.btn');
+            }
+        });
+    },
+
+    // ── Réinitialisation mot de passe (depuis le lien email) ──
+    showResetPassword() {
+        const modal = document.getElementById('auth-modal-overlay');
+        if (!modal) return;
+        document.getElementById('form-signin')?.style.setProperty('display', 'none');
+        document.getElementById('form-signup')?.style.setProperty('display', 'none');
+        document.querySelector('.auth-tabs')?.style.setProperty('display', 'none');
+        document.querySelector('.auth-divider')?.style.setProperty('display', 'none');
+        document.getElementById('btn-google')?.style.setProperty('display', 'none');
+
+        const container = document.querySelector('.auth-body') || document.querySelector('.auth-modal-inner') || modal;
+        const wrap = document.createElement('div');
+        wrap.id = 'reset-form-wrap';
+        wrap.innerHTML = `
+            <div style="padding:1.5rem 0">
+                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem" data-i18n="auth.reset.title">Nouveau mot de passe</h3>
+                <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem" data-i18n="auth.reset.sub">Choisis un nouveau mot de passe pour ton compte.</p>
+                <input type="password" id="reset-password" placeholder="Nouveau mot de passe (6 car. min)" style="width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:0.75rem">
+                <p id="reset-msg" style="font-size:0.82rem;display:none;margin-bottom:0.75rem"></p>
+                <button id="btn-reset-send" class="btn-primary" style="width:100%" data-i18n="auth.reset.btn">Mettre à jour</button>
+            </div>
+        `;
+        container?.appendChild(wrap);
+
+        document.getElementById('btn-reset-send')?.addEventListener('click', async () => {
+            const pwd = document.getElementById('reset-password')?.value;
+            const msg = document.getElementById('reset-msg');
+            const btn = document.getElementById('btn-reset-send');
+            if (!pwd || pwd.length < 6) {
+                if (msg) { msg.textContent = 'Le mot de passe doit faire au moins 6 caractères.'; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = '⏳';
+            try {
+                await authService.updatePassword(pwd);
+                if (msg) { msg.textContent = t('auth.reset.ok'); msg.style.color = '#46d369'; msg.style.display = 'block'; }
+                btn.textContent = '✓';
+                // Nettoyer l'URL
+                window.history.replaceState({}, '', '/');
+            } catch(err) {
+                if (msg) { msg.textContent = err.message; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+                btn.disabled = false;
+                btn.textContent = t('auth.reset.btn');
+            }
+        });
     },
 
     // ── Déconnexion ──

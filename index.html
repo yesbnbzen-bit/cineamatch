@@ -226,6 +226,9 @@
                     </div>
                     <p id="signin-error" class="auth-error" style="display:none;"></p>
                     <button type="submit" id="btn-signin" class="btn-primary" style="width:100%;margin-top:0.5rem;" data-i18n="auth.login.btn">Se connecter</button>
+                    <p style="text-align:center;margin-top:0.6rem">
+                        <button type="button" id="btn-forgot-password" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:0.78rem;cursor:pointer;text-decoration:underline;font-family:inherit;" data-i18n="auth.forgot">Mot de passe oublié ?</button>
+                    </p>
                 </form>
 
                 <!-- Inscription -->
@@ -251,6 +254,9 @@
                     <p id="signup-error" class="auth-error" style="display:none;"></p>
                     <button type="submit" id="btn-signup" class="btn-primary"
                         style="width:100%;margin-top:0.5rem;" data-i18n="auth.signup.btn">Créer mon compte</button>
+                    <p style="font-size:0.72rem;color:rgba(255,255,255,0.3);text-align:center;margin-top:0.75rem;line-height:1.5">
+                        En créant un compte, tu acceptes nos <a href="/legal" target="_blank" style="color:rgba(255,255,255,0.5);text-decoration:underline">CGU et Politique de confidentialité</a>
+                    </p>
                 </form>
             </div>
         </div>
@@ -512,6 +518,14 @@
                 </div>
             </section>
         </main>
+
+        <!-- Footer légal -->
+        <footer id="site-footer" style="display:none;text-align:center;padding:1.5rem;color:rgba(255,255,255,0.2);font-size:0.75rem;border-top:1px solid rgba(255,255,255,0.05)">
+            © 2026 CineaMatch IA ·
+            <a href="/legal" target="_blank" style="color:rgba(255,255,255,0.35);text-decoration:none;margin:0 0.5rem">Mentions légales & CGU</a> ·
+            <a href="/legal#donnees" target="_blank" style="color:rgba(255,255,255,0.35);text-decoration:none;margin:0 0.5rem">Politique de confidentialité</a> ·
+            <a href="mailto:yesbnbzen@gmail.com" style="color:rgba(255,255,255,0.35);text-decoration:none;margin:0 0.5rem">Contact</a>
+        </footer>
 
         <div id="api-modal" class="modal" style="display:none;">
             <div class="modal-content">

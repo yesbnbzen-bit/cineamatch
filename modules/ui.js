@@ -35,6 +35,9 @@ export const ui = {
         if (this.views[viewName]) this.views[viewName].classList.add('active');
         // Scroll top — couvre window + conteneur scrollable + vue elle-même
         this._scrollTop();
+        // Footer légal : visible sur hero et résultats uniquement
+        const footer = document.getElementById('site-footer');
+        if (footer) footer.style.display = ['hero', 'results'].includes(viewName) ? 'block' : 'none';
         document.dispatchEvent(new CustomEvent('cinematch:view-change', { detail: viewName }));
     },
 

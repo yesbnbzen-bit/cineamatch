@@ -49,6 +49,16 @@ export const TRANSLATIONS = {
         'auth.dob.error.min':'Tu dois avoir au moins 13 ans pour utiliser CineMatch IA.',
         'auth.dob.error.req':'Ta date de naissance est requise.',
         'auth.login.btn':    'Se connecter',
+        'auth.forgot':       'Mot de passe oublié ?',
+        'auth.forgot.title': 'Réinitialiser le mot de passe',
+        'auth.forgot.sub':   'Saisis ton email pour recevoir un lien de réinitialisation.',
+        'auth.forgot.btn':   'Envoyer le lien',
+        'auth.forgot.sent':  '✅ Email envoyé ! Vérifie ta boîte mail.',
+        'auth.forgot.back':  '← Retour à la connexion',
+        'auth.reset.title':  'Nouveau mot de passe',
+        'auth.reset.sub':    'Choisis un nouveau mot de passe pour ton compte.',
+        'auth.reset.btn':    'Mettre à jour',
+        'auth.reset.ok':     '✅ Mot de passe mis à jour ! Tu peux te connecter.',
         'auth.signup.btn':   'Créer mon compte',
 
         // Boutons génériques
@@ -289,6 +299,16 @@ export const TRANSLATIONS = {
         'auth.dob.error.min':'You must be at least 13 years old to use CineMatch IA.',
         'auth.dob.error.req':'Your date of birth is required.',
         'auth.login.btn':    'Log in',
+        'auth.forgot':       'Forgot password?',
+        'auth.forgot.title': 'Reset your password',
+        'auth.forgot.sub':   'Enter your email to receive a reset link.',
+        'auth.forgot.btn':   'Send link',
+        'auth.forgot.sent':  '✅ Email sent! Check your inbox.',
+        'auth.forgot.back':  '← Back to login',
+        'auth.reset.title':  'New password',
+        'auth.reset.sub':    'Choose a new password for your account.',
+        'auth.reset.btn':    'Update password',
+        'auth.reset.ok':     '✅ Password updated! You can now log in.',
         'auth.signup.btn':   'Create my account',
 
         // Generic buttons
