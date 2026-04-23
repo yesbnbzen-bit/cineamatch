@@ -5,7 +5,7 @@
 
 import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=8';
 import { store } from '../state/store.js?v=43';
-import { t, applyTranslations } from '../config/i18n.js?v=342';
+import { t, applyTranslations } from '../config/i18n.js?v=343';
 
 // ── Calcule l'âge en années à partir d'une date "YYYY-MM-DD" ──
 function _calcAge(birthDateStr) {
