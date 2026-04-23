@@ -16,12 +16,12 @@ export async function onRequest(context) {
         return new Response(null, { status: 200, headers: CORS_HEADERS });
     }
 
-    if (request.method \!== 'GET') {
+    if (request.method !== 'GET') {
         return new Response('Method Not Allowed', { status: 405 });
     }
 
     const tmdbKey = env.TMDB_API_KEY;
-    if (\!tmdbKey) {
+    if (!tmdbKey) {
         return new Response(
             JSON.stringify({ error: 'TMDB_API_KEY not configured' }),
             { status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
@@ -33,7 +33,7 @@ export async function onRequest(context) {
     const reqUrl = new URL(request.url);
     const tmdbPath = reqUrl.searchParams.get('path');
 
-    if (\!tmdbPath) {
+    if (!tmdbPath) {
         return new Response(
             JSON.stringify({ error: 'Missing path parameter' }),
             { status: 400, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
@@ -44,7 +44,7 @@ export async function onRequest(context) {
     const tmdbParams = new URLSearchParams();
     tmdbParams.set('api_key', tmdbKey);
     for (const [k, v] of reqUrl.searchParams.entries()) {
-        if (k \!== 'path') tmdbParams.set(k, v);
+        if (k !== 'path') tmdbParams.set(k, v);
     }
 
     const tmdbUrl = `https://api.themoviedb.org/3${tmdbPath}?${tmdbParams.toString()}`;
