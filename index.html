@@ -31,7 +31,7 @@
     <link rel="icon" type="image/png" sizes="64x64" href="https://cineamatch.com/favicon-64.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cineamatch.com/favicon-32.png">
     <link rel="apple-touch-icon" href="https://cineamatch.com/favicon-192.png">
-    <link rel="stylesheet" href="style.css?v=365">
+    <link rel="stylesheet" href="style.css?v=366">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -174,7 +174,7 @@
                     <span class="user-name" id="user-name"></span>
                     <div class="user-dropdown">
                         <button class="btn-signout-drop"
-                            onclick="import('./modules/auth.js?v=19').then(m => m.authUI.handleSignOut())">
+                            onclick="import('./modules/auth.js?v=20').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>
                         </button>
                     </div>
@@ -820,7 +820,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script type="module" src="app.js?v=371"></script>
     <script type="module">
-        import { authUI, getAgeProfile } from './modules/auth.js?v=19';
+        import { authUI, getAgeProfile } from './modules/auth.js?v=20';
         authUI.init();
         // Exposer getAgeProfile globalement pour app.js (modules isolés)
         window.getAgeProfile = getAgeProfile;

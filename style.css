@@ -8166,5 +8166,5 @@ body.duo-active {
 
 
 /* ── Contrôle navbar connecté/déconnecté via classe ── */
-.nav-hidden { display: none \!important; }
-#user-menu  { display: none; }           /* caché par défaut, montré via JS */
+.nav-hidden  { display: none \!important; }  /* cache auth-btn quand connecté */
+.nav-visible { display: flex \!important; }  /* montre user-menu quand connecté */
