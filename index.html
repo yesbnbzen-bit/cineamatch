@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <title>CineaMatch IA - Trouve le film parfait en 30 secondes</title>
-    <link rel="stylesheet" href="style.css?v=353">
+    <link rel="stylesheet" href="style.css?v=354">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -322,8 +322,27 @@
                 <div class="duo-card animate-fade">
                     <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
                     <div class="duo-welcome-icon">🎬</div>
-                    <h2 class="duo-title" data-i18n="duo.start.title">C'est parti à deux !</h2>
-                    <p class="duo-subtitle" data-i18n="duo.start.sub">Entre ton prénom pour personnaliser l'expérience, puis réponds au questionnaire.</p>
+                    <h2 class="duo-title" data-i18n="duo.start.title">Trouvez le film parfait pour vous deux !</h2>
+
+                    <!-- Explication visuelle du fonctionnement -->
+                    <div class="duo-how-it-works">
+                        <div class="duo-step">
+                            <div class="duo-step-icon">👤</div>
+                            <div class="duo-step-text"><strong>Toi</strong> tu réponds au questionnaire</div>
+                        </div>
+                        <div class="duo-step-arrow">→</div>
+                        <div class="duo-step">
+                            <div class="duo-step-icon">🔗</div>
+                            <div class="duo-step-text">Tu envoies le lien à ton <strong>partenaire</strong></div>
+                        </div>
+                        <div class="duo-step-arrow">→</div>
+                        <div class="duo-step">
+                            <div class="duo-step-icon">🎬</div>
+                            <div class="duo-step-text">L'IA trouve les films que <strong>vous deux</strong> adorerez</div>
+                        </div>
+                    </div>
+
+                    <p class="duo-subtitle" style="margin-top:0">Entre ton prénom pour commencer :</p>
                     <div class="duo-name-field">
                         <input type="text" id="duo-name-a-start" placeholder="Ton prénom..." data-i18n="duo.placeholder" data-i18n-attr="placeholder" maxlength="20" autocomplete="off">
                     </div>
