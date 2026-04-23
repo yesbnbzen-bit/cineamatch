@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=7';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=8';
 import { store } from '../state/store.js?v=43';
 import { t, applyTranslations } from '../config/i18n.js?v=4';
 
@@ -120,32 +120,6 @@ export const authUI = {
         const profileNavBtn = document.getElementById('profile-nav-btn');
         if (profileNavBtn) profileNavBtn.style.display = 'flex';
 
-        // Brancher les raccourcis du panel "Mon Espace"
-        const gotoFilms = document.getElementById('prefs-goto-films');
-        if (gotoFilms) {
-            gotoFilms.onclick = () => {
-                // Fermer le panel puis naviguer vers Mes Films
-                const modal = document.getElementById('preferences-modal');
-                if (modal) {
-                    modal.classList.remove('visible');
-                    setTimeout(() => { modal.style.display = 'none'; }, 200);
-                }
-                setTimeout(() => this.showHistory(), 220);
-            };
-        }
-
-        const gotoListe = document.getElementById('prefs-goto-liste');
-        if (gotoListe) {
-            gotoListe.onclick = () => {
-                // Fermer le panel puis naviguer vers Ma Liste
-                const modal = document.getElementById('preferences-modal');
-                if (modal) {
-                    modal.classList.remove('visible');
-                    setTimeout(() => { modal.style.display = 'none'; }, 200);
-                }
-                setTimeout(() => window.App?.showWatchlist?.(), 220);
-            };
-        }
 
         // Onboarding uniquement au premier login de cet utilisateur
         const onbKey = `cineamatch_onboarded_${user.id}`;

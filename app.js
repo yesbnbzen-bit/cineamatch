@@ -2,7 +2,7 @@ import { tmdbService, openaiService } from './services/api.js?v=58'; // api unch
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=7';
+import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=8';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=340';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
@@ -2978,7 +2978,7 @@ const App = {
         btn.textContent = '⏳ Mise à jour...';
 
         try {
-            const { authService } = await import('./services/supabase.js?v=7');
+            const { authService } = await import('./services/supabase.js?v=8');
             await authService.updatePassword(newPwd);
             showMsg('✅ Mot de passe mis à jour avec succès !', '#46d369');
             document.getElementById('profil-pwd-new').value     = '';

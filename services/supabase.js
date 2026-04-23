@@ -204,12 +204,13 @@ export const ratingsService = {
     // Sauvegarder ou mettre à jour une notation
     async rate(userId, movie, rating, seen = true) {
         const { error } = await supabase.from('ratings').upsert({
-            user_id:  userId,
-            movie_id: movie.id,
-            title:    movie.title,
+            user_id:     userId,
+            movie_id:    movie.id,
+            title:       movie.title,
             poster_path: movie.poster_path,
-            rating:   rating,
-            seen:     seen
+            genre_ids:   movie.genre_ids || [],
+            rating:      rating,
+            seen:        seen
         });
         if (error) console.error('ratings rate:', error);
     },
@@ -217,11 +218,12 @@ export const ratingsService = {
     // Marquer comme "déjà vu" sans noter
     async markSeen(userId, movie) {
         const { error } = await supabase.from('ratings').upsert({
-            user_id:  userId,
-            movie_id: movie.id,
-            title:    movie.title,
+            user_id:     userId,
+            movie_id:    movie.id,
+            title:       movie.title,
             poster_path: movie.poster_path,
-            seen:     true
+            genre_ids:   movie.genre_ids || [],
+            seen:        true
         });
         if (error) console.error('ratings markSeen:', error);
     },
