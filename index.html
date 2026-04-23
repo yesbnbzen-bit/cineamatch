@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <title>CineaMatch IA - Trouve le film parfait en 30 secondes</title>
-    <link rel="stylesheet" href="style.css?v=357">
+    <link rel="stylesheet" href="style.css?v=358">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -365,6 +365,43 @@
                 <div class="duo-card animate-fade">
                     <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
 
+                    <!-- Icône principale -->
+                    <div class="duo-share-icon-wrap">
+                        <div class="duo-share-icon-bg">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>
+                            </svg>
+                        </div>
+                        <span class="duo-share-sparkle" style="top:-4px;right:8px">✦</span>
+                        <span class="duo-share-sparkle" style="bottom:4px;left:4px;font-size:0.55rem">✦</span>
+                    </div>
+
+                    <!-- Titre + sous-titre -->
+                    <h2 class="duo-title">Ton profil est <span style="-webkit-text-fill-color:#E50914;color:#E50914">prêt</span> !</h2>
+                    <p class="duo-subtitle">Envoie le lien à ton <span style="color:#E50914;font-weight:700">partenaire</span>.</p>
+
+                    <!-- Lien + copier inline -->
+                    <div class="duo-link-row">
+                        <input type="text" id="duo-share-link" class="duo-link-input" readonly>
+                        <button id="duo-copy-btn" class="duo-copy-inline" data-i18n="duo.copy">📋 Copier</button>
+                    </div>
+
+                    <button id="duo-share-btn" class="duo-action-btn duo-action-dark" style="display:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                        <span data-i18n="duo.share.via">Partager via…</span>
+                    </button>
+
+                    <!-- Séparateur -->
+                    <div class="duo-together-sep"><span data-i18n="duo.sep">ou</span></div>
+
+                    <!-- Bouton "même écran" -->
+                    <button id="duo-together-btn" class="duo-action-btn duo-action-ghost" data-i18n="duo.together">
+                        🖥 Vous êtes ensemble ? Remplir ici →
+                    </button>
+
                     <!-- Statut des deux joueurs -->
                     <div id="duo-waiting-anim" class="duo-waiting-anim">
                         <div class="duo-wait-avatars">
@@ -384,32 +421,6 @@
                         </div>
                         <p id="duo-waiting-text" class="duo-waiting-text" data-i18n="duo.wait.text">En attente de ton partenaire…</p>
                     </div>
-
-                    <!-- Titre + sous-titre -->
-                    <h2 class="duo-title" style="font-size:1.6rem;margin-bottom:0.4rem" data-i18n="duo.share.title">Ton profil est prêt !</h2>
-                    <p class="duo-subtitle" style="font-size:0.9rem;margin-bottom:1.25rem">Partage ce lien avec la personne avec qui tu veux regarder un film.</p>
-
-                    <!-- Lien + copier inline -->
-                    <div class="duo-link-row">
-                        <input type="text" id="duo-share-link" class="duo-link-input" readonly>
-                        <button id="duo-copy-btn" class="duo-copy-inline" data-i18n="duo.copy">📋 Copier</button>
-                    </div>
-
-                    <button id="duo-share-btn" class="duo-action-btn duo-action-dark" style="display:none;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                        </svg>
-                        <span data-i18n="duo.share.via">Partager via…</span>
-                    </button>
-
-                    <!-- Séparateur -->
-                    <div class="duo-together-sep"><span data-i18n="duo.sep">ou</span></div>
-
-                    <!-- Bouton "même écran" -->
-                    <button id="duo-together-btn" class="duo-action-btn duo-action-ghost" data-i18n="duo.together">
-                        🖥 Vous êtes ensemble ? Remplir ici →
-                    </button>
 
                     <!-- Notification partenaire prêt -->
                     <div id="duo-partner-ready" class="duo-partner-ready" style="display:none;">
