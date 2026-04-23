@@ -3,6 +3,23 @@ const OPENAI_URL = window.location.hostname === 'localhost' || window.location.h
     ? 'https://api.openai.com/v1/chat/completions'
     : '/api/openai';
 
+// Proxy TMDB : en production, toutes les requêtes passent par /api/tmdb (clé cachée côté serveur)
+// En dev/localhost, requête directe avec la clé depuis le localStorage
+const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+// Construit l'URL TMDB selon l'environnement
+// En prod : /api/tmdb?path=/movie/123&language=fr-FR  (clé gérée par le Worker)
+// En dev  : https://api.themoviedb.org/3/movie/123?api_key=XXX&language=fr-FR
+function tmdbUrl(path, params = {}) {
+    if (IS_PROD) {
+        const qs = new URLSearchParams({ path, ...params }).toString();
+        return `/api/tmdb?${qs}`;
+    } else {
+        const qs = new URLSearchParams({ api_key: tmdbService.apiKey, ...params }).toString();
+        return `https://api.themoviedb.org/3${path}?${qs}`;
+    }
+}
+
 // Clé de fallback dev — à remplacer par une clé valide si la clé localStorage est vide
 const _DEV_KEY = '';
 
@@ -29,7 +46,7 @@ export const tmdbService = {
                 ] 
             };
         }
-        const url = `https://api.themoviedb.org/3/search/movie?api_key=${this.apiKey}&query=${encodeURIComponent(query)}&language=${this.lang}`;
+        const url = tmdbUrl('/search/movie', { query: encodeURIComponent(query), language: this.lang });
         const resp = await fetch(url);
         if (!resp.ok) {
             console.error(`❌ TMDb Search Error: ${resp.status} ${resp.statusText}`);
@@ -40,7 +57,7 @@ export const tmdbService = {
 
     async getRecommendations(movieIds) {
         const allSuggestions = await Promise.allSettled(movieIds.map(async id => {
-            const url = `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${this.apiKey}&language=${this.lang}`;
+            const url = tmdbUrl(`/movie/${id}/recommendations`, { language: this.lang });
             const resp = await fetch(url);
             if (!resp.ok) { console.warn(`TMDB reco ${id}: HTTP ${resp.status}`); return []; }
             const data = await resp.json();
@@ -66,7 +83,7 @@ export const tmdbService = {
                 release_dates: { results: [{ iso_3166_1: "FR", release_dates: [{ certification: "12" }] }] }
             };
         }
-        const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${this.apiKey}&append_to_response=videos,watch/providers,release_dates,credits&language=${this.lang}`;
+        const url = tmdbUrl(`/movie/${movieId}`, { append_to_response: 'videos,watch/providers,release_dates,credits', language: this.lang });
         const resp = await fetch(url);
         if (!resp.ok) {
             console.error(`❌ TMDb getMovieDetails Error: ${resp.status} ${resp.statusText} (movieId: ${movieId})`);
@@ -79,7 +96,7 @@ export const tmdbService = {
         if (!data.videos?.results?.length) {
             try {
                 const videoResp = await fetch(
-                    `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${this.apiKey}`
+                    tmdbUrl(`/movie/${movieId}/videos`)
                 );
                 if (videoResp.ok) {
                     const videoData = await videoResp.json();
@@ -93,7 +110,7 @@ export const tmdbService = {
 
     async searchActor(actorName) {
         if (!this.apiKey || this.apiKey === 'MOCK') return 287; // Brad Pitt Mock ID
-        const url = `https://api.themoviedb.org/3/search/person?api_key=${this.apiKey}&query=${encodeURIComponent(actorName)}&language=${this.lang}`;
+        const url = tmdbUrl('/search/person', { query: encodeURIComponent(actorName), language: this.lang });
         const resp = await fetch(url);
         if (!resp.ok) { console.warn(`searchActor HTTP ${resp.status}`); return null; }
         const data = await resp.json();
@@ -105,7 +122,7 @@ export const tmdbService = {
     },
 
     async getActorMovies(actorId) {
-        const url = `https://api.themoviedb.org/3/person/${actorId}/movie_credits?api_key=${this.apiKey}&language=${this.lang}`;
+        const url = tmdbUrl(`/person/${actorId}/movie_credits`, { language: this.lang });
         const resp = await fetch(url);
         if (!resp.ok) { console.warn(`getActorMovies HTTP ${resp.status}`); return []; }
         const data = await resp.json();
@@ -115,7 +132,7 @@ export const tmdbService = {
     async getMovieTopCast(movieId) {
         if (!this.apiKey || this.apiKey === 'MOCK') return [];
         try {
-            const url = `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${this.apiKey}`;
+            const url = tmdbUrl(`/movie/${movieId}/credits`);
             const resp = await fetch(url);
             if (!resp.ok) return [];
             const data = await resp.json();
@@ -157,7 +174,7 @@ export const tmdbService = {
     async getMovieCastAndCrew(movieId) {
         if (!this.apiKey || this.apiKey === 'MOCK') return { castIds: [], castNames: [], director: null };
         try {
-            const url = `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${this.apiKey}`;
+            const url = tmdbUrl(`/movie/${movieId}/credits`);
             const resp = await fetch(url);
             if (!resp.ok) return { castIds: [], castNames: [], director: null };
             const data = await resp.json();
@@ -174,7 +191,7 @@ export const tmdbService = {
     async getMovieKeywords(movieId) {
         if (!this.apiKey || this.apiKey === 'MOCK') return [];
         try {
-            const url = `https://api.themoviedb.org/3/movie/${movieId}/keywords?api_key=${this.apiKey}`;
+            const url = tmdbUrl(`/movie/${movieId}/keywords`);
             const resp = await fetch(url);
             if (!resp.ok) return [];
             const data = await resp.json();
@@ -188,7 +205,7 @@ export const tmdbService = {
         // 10770 = Téléfilm | 99 = Documentaire — exclus par défaut sauf si mood documentaire
         const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
         const excludeDocumentary = !moodStr.includes('99') ? ',99' : '';
-        let url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&without_genres=10770${excludeDocumentary}`;
+        let url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', without_genres: `10770${excludeDocumentary}` });
         
         // Add with_cast parameter if we have cast IDs from loved movies
         if (castIds && castIds.length > 0) {
@@ -356,7 +373,7 @@ export const tmdbService = {
         if ((preferences.mood === '18,10749' || preferences.blendedGenreIds?.includes('18')) && !isReroll) {
             try {
                 // TMDB keyword IDs : 14769=biography, 9798=based on a true story, 4565=underdog
-                const inspiringUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&with_genres=18&with_keywords=14769|9798|4565&vote_average.gte=7.0&vote_count.gte=500&sort_by=vote_average.desc&page=1`;
+                const inspiringUrl = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', with_genres: '18', 'with_keywords': '14769|9798|4565', 'vote_average.gte': '7.0', 'vote_count.gte': '500', sort_by: 'vote_average.desc', page: '1' });
                 const inspr = await fetch(inspiringUrl, { cache: 'no-store' });
                 const insprData = await inspr.json();
                 if (insprData.results?.length) {
@@ -381,7 +398,7 @@ export const tmdbService = {
 
         // T2 FALLBACK si résultats trop faibles
         if (finalResults.length < 3) {
-            let t2Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&vote_count.gte=20&sort_by=popularity.desc&page=${page}`;
+            let t2Url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', 'vote_count.gte': '20', sort_by: 'popularity.desc', page: String(page) });
             if (genreIds) t2Url += `&with_genres=${genreIds}`;
             if (excluded.length > 0) t2Url += `&without_genres=${excluded.join(',')}`;
             if (hasCastFilter) t2Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
@@ -396,7 +413,7 @@ export const tmdbService = {
 
         if (finalResults.length === 0) {
             console.log("FALLBACK T3 déclenché (Aucun film trouvé avec ces filtres !)");
-            let t3Url = `https://api.themoviedb.org/3/discover/movie?api_key=${this.apiKey}&language=${this.lang}&include_adult=false&sort_by=popularity.desc`;
+            let t3Url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', sort_by: 'popularity.desc' });
             if (era === 'new') t3Url += `&primary_release_date.gte=2020-01-01`;
             if (excluded.length > 0) t3Url += `&without_genres=${excluded.join(',')}`;
             if (castIds && castIds.length > 0) t3Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
