@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 340">
+  <defs>
+    <linearGradient id="cgrad" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FF2A2A"/>
+      <stop offset="100%" stop-color="#880000"/>
+    </linearGradient>
+  </defs>
+
+  <\!-- ═══ ICÔNE C ═══ Center (350,120) R=88 r=54 gap=48° -->
+  <\!-- Pixels dispersés gauche du C -->
+  <rect x="232" y="38"  width="14" height="14" rx="3" fill="#E50914" opacity="1"/>
+  <rect x="213" y="52"  width="11" height="11" rx="2.5" fill="#E50914" opacity="0.88"/>
+  <rect x="194" y="66"  width="16" height="16" rx="3.5" fill="#E50914" opacity="0.82"/>
+  <rect x="176" y="80"  width="9"  height="9"  rx="2" fill="#E50914" opacity="0.65"/>
+  <rect x="162" y="93"  width="11" height="11" rx="2.5" fill="#E50914" opacity="0.52"/>
+  <rect x="224" y="64"  width="9"  height="9"  rx="2" fill="#E50914" opacity="0.72"/>
+  <rect x="204" y="78"  width="13" height="13" rx="3" fill="#E50914" opacity="0.78"/>
+  <rect x="184" y="92"  width="10" height="10" rx="2.2" fill="#E50914" opacity="0.58"/>
+  <rect x="167" y="106" width="7"  height="7"  rx="1.6" fill="#E50914" opacity="0.42"/>
+  <rect x="218" y="90"  width="11" height="11" rx="2.5" fill="#E50914" opacity="0.68"/>
+  <rect x="198" y="104" width="15" height="15" rx="3.2" fill="#E50914" opacity="0.76"/>
+  <rect x="178" y="118" width="9"  height="9"  rx="2" fill="#E50914" opacity="0.52"/>
+  <rect x="163" y="130" width="7"  height="7"  rx="1.6" fill="#E50914" opacity="0.37"/>
+  <rect x="214" y="116" width="9"  height="9"  rx="2" fill="#E50914" opacity="0.62"/>
+  <rect x="194" y="130" width="12" height="12" rx="2.8" fill="#E50914" opacity="0.66"/>
+  <rect x="176" y="144" width="8"  height="8"  rx="1.8" fill="#E50914" opacity="0.47"/>
+  <rect x="228" y="140" width="9"  height="9"  rx="2" fill="#E50914" opacity="0.63"/>
+  <rect x="208" y="154" width="13" height="13" rx="3" fill="#E50914" opacity="0.6"/>
+  <rect x="166" y="158" width="6"  height="6"  rx="1.4" fill="#E50914" opacity="0.3"/>
+  <rect x="188" y="168" width="10" height="10" rx="2.2" fill="#E50914" opacity="0.5"/>
+
+  <\!-- C path: center(350,120) R=88 r=54 gap=±48° -->
+  <\!-- cos48=0.6691 sin48=0.7431 -->
+  <\!-- Outer top : (350+88*0.6691, 120-88*0.7431) = (408.9, 54.6) -->
+  <\!-- Outer bot : (350+88*0.6691, 120+88*0.7431) = (408.9, 185.4) -->
+  <\!-- Inner bot : (350+54*0.6691, 120+54*0.7431) = (386.1, 160.1) -->
+  <\!-- Inner top : (350+54*0.6691, 120-54*0.7431) = (386.1, 79.9) -->
+  <path d="M 408.9 54.6
+           A 88 88 0 1 0 408.9 185.4
+           L 386.1 160.1
+           A 54 54 0 1 1 386.1 79.9
+           Z"
+        fill="url(#cgrad)"/>
+
+  <\!-- Play triangle center(350,120) -->
+  <polygon points="333,104 333,136 368,120" fill="white" opacity="0.95"/>
+
+  <\!-- ═══ TEXTE ═══ -->
+  <\!-- "CINEA" rouge  "MATCH" blanc  "| IA" rouge -->
+  <text x="350" y="238" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" letter-spacing="-1">
+    <tspan fill="#E50914">CINEA</tspan><tspan fill="#ffffff">MATCH</tspan>
+  </text>
+  <\!-- Separateur vertical + IA -->
+  <line x1="576" y1="194" x2="576" y2="242" stroke="#ffffff" stroke-width="2"/>
+  <text x="590" y="238" font-family="Arial Black, sans-serif" font-size="58" font-weight="900" fill="#E50914" letter-spacing="-1">IA</text>
+
+  <\!-- Sous-titre -->
+  <text x="350" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="rgba(255,255,255,0.7)" letter-spacing="5">L'IA TROUVE TON FILM</text>
+</svg>
