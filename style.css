@@ -4307,14 +4307,15 @@ body.duo-active {
     margin-bottom: 1.25rem;
 }
 .duo-share-icon-bg {
-    width: 80px;
-    height: 80px;
-    background: radial-gradient(circle, rgba(229,9,20,0.35) 0%, rgba(229,9,20,0.08) 70%);
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(circle at 40% 40%, rgba(229,9,20,0.7) 0%, rgba(180,0,10,0.85) 60%, rgba(120,0,8,0.9) 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(229,9,20,0.25);
+    border: none;
+    box-shadow: 0 8px 32px rgba(229,9,20,0.4);
 }
 .duo-share-sparkle {
     position: absolute;
