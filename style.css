@@ -5955,7 +5955,7 @@ body.duo-active {
 @media (max-width: 600px) {
     .navbar {
         padding: 14px 4% 10px; /* top 14px = respiration visible */
-        overflow: hidden;
+        overflow: visible; /* ne pas clipper les boutons nav */
     }
 
     .logo {
@@ -8163,3 +8163,8 @@ body.duo-active {
     }
 }
 
+
+
+/* ── Contrôle navbar connecté/déconnecté via classe ── */
+.nav-hidden { display: none \!important; }
+#user-menu  { display: none; }           /* caché par défaut, montré via JS */

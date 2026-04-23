@@ -114,8 +114,8 @@ export const authUI = {
         // Mettre à jour la navbar
         const authBtn = document.getElementById('auth-btn');
         const userMenu = document.getElementById('user-menu');
-        if (authBtn) authBtn.style.display = 'none';
-        if (userMenu) userMenu.style.display = 'flex';
+        if (authBtn) authBtn.classList.add('nav-hidden');
+        if (userMenu) userMenu.classList.remove('nav-hidden');
         const userAvatar = document.getElementById('user-avatar');
         const userName   = document.getElementById('user-name');
         if (userAvatar) userAvatar.textContent = initials;
@@ -516,8 +516,8 @@ export const authUI = {
 
         const authBtn = document.getElementById('auth-btn');
         const userMenu = document.getElementById('user-menu');
-        if (authBtn) authBtn.style.display = 'flex';
-        if (userMenu) userMenu.style.display = 'none';
+        if (authBtn) authBtn.classList.remove('nav-hidden');
+        if (userMenu) userMenu.classList.add('nav-hidden');
 
         // Masquer les boutons connecté-only
         const prefsBtn = document.getElementById('prefs-nav-btn');
