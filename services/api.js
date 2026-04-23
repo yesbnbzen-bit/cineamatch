@@ -39,13 +39,14 @@ export const tmdbService = {
     },
 
     async getRecommendations(movieIds) {
-        const allSuggestions = await Promise.all(movieIds.map(async id => {
+        const allSuggestions = await Promise.allSettled(movieIds.map(async id => {
             const url = `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${this.apiKey}&language=${this.lang}`;
             const resp = await fetch(url);
+            if (!resp.ok) { console.warn(`TMDB reco ${id}: HTTP ${resp.status}`); return []; }
             const data = await resp.json();
             return data.results || [];
         }));
-        const flat = [].concat(...allSuggestions);
+        const flat = [].concat(...allSuggestions.map(r => r.status === 'fulfilled' ? r.value : []));
         return Array.from(new Map(flat.map(item => [item.id, item])).values());
     },
 
@@ -94,6 +95,7 @@ export const tmdbService = {
         if (!this.apiKey || this.apiKey === 'MOCK') return 287; // Brad Pitt Mock ID
         const url = `https://api.themoviedb.org/3/search/person?api_key=${this.apiKey}&query=${encodeURIComponent(actorName)}&language=${this.lang}`;
         const resp = await fetch(url);
+        if (!resp.ok) { console.warn(`searchActor HTTP ${resp.status}`); return null; }
         const data = await resp.json();
         if (data.results && data.results.length > 0) {
             console.log(`🎬 Found actor: ${data.results[0].name} (ID: ${data.results[0].id})`);
@@ -105,6 +107,7 @@ export const tmdbService = {
     async getActorMovies(actorId) {
         const url = `https://api.themoviedb.org/3/person/${actorId}/movie_credits?api_key=${this.apiKey}&language=${this.lang}`;
         const resp = await fetch(url);
+        if (!resp.ok) { console.warn(`getActorMovies HTTP ${resp.status}`); return []; }
         const data = await resp.json();
         return data.cast || [];
     },
@@ -339,6 +342,7 @@ export const tmdbService = {
         const finalUrl = url + `&page=${randomPage}&_=${Date.now()}`;
 
         let resp = await fetch(finalUrl, { cache: 'no-store' });
+        if (!resp.ok) { console.warn(`getAdvancedDiscovery HTTP ${resp.status}`); return []; }
         let data = await resp.json();
         let results = data.results || [];
 
@@ -384,7 +388,8 @@ export const tmdbService = {
             if (era === 'new') t2Url += `&primary_release_date.gte=2010-01-01`;
             t2Url += `&_=${Date.now()}`;
             const t2Resp = await fetch(t2Url, { cache: 'no-store' });
-            const t2Data = await t2Resp.json();
+            if (!t2Resp.ok) { console.warn(`T2 fallback HTTP ${t2Resp.status}`); }
+            const t2Data = t2Resp.ok ? await t2Resp.json() : { results: [] };
             const t2Res = t2Data.results || [];
             finalResults = [...finalResults, ...t2Res.filter(r => !finalResults.some(old => old.id === r.id))];
         }
@@ -396,7 +401,8 @@ export const tmdbService = {
             if (excluded.length > 0) t3Url += `&without_genres=${excluded.join(',')}`;
             if (castIds && castIds.length > 0) t3Url += `&with_cast=${castIds.slice(0,3).join(',')}`;
             const t3Resp = await fetch(t3Url + `&_=${Date.now()}`);
-            const t3Data = await t3Resp.json();
+            if (!t3Resp.ok) { console.warn(`T3 fallback HTTP ${t3Resp.status}`); }
+            const t3Data = t3Resp.ok ? await t3Resp.json() : { results: [] };
             finalResults = t3Data.results || [];
         }
 
