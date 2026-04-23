@@ -1984,8 +1984,8 @@ const App = {
                 ? displayProviders.slice(0, 4).map(p => {
                     const streamUrl = STREAMING_URLS[p.provider_name]?.(m.title) || jwUrl;
                     return `<a href="${streamUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
-                               title="Regarder sur ${p.provider_name}" class="provider-link">
-                                <img src="https://image.tmdb.org/t/p/original${p.logo_path}" alt="${p.provider_name}"
+                               title="Regarder sur ${escapeHtml(p.provider_name)}" class="provider-link">
+                                <img src="https://image.tmdb.org/t/p/original${p.logo_path}" alt="${escapeHtml(p.provider_name)}"
                                      style="width:28px;height:28px;border-radius:7px;object-fit:cover;display:block;">
                             </a>`;
                   }).join('') + (isVOD ? `<span class="vod-badge" title="Disponible en location/achat">VOD</span>` : '')
@@ -2041,7 +2041,7 @@ const App = {
                 <div class="poster-container" onclick="window.open('https://www.themoviedb.org/movie/${m.id}', '_blank')">
                     <div class="poster-bg" style="background-image:url('https://image.tmdb.org/t/p/w500${m.poster_path}')"></div>
                     <div class="poster-glow"></div>
-                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" alt="${m.title}"
+                    <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" alt="${escapeHtml(m.title)}"
                          onerror="this.src='https://via.placeholder.com/500x750/1a1a1a/E50914?text=${encodeURIComponent(m.title)}'">
                     <div class="poster-overlay"></div>
                     ${trailerBtnHtml}

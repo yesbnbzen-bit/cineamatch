@@ -16,8 +16,12 @@ function _safeGetJSON(key, fallback) {
     catch(e) { return fallback; }
 }
 
+// ⚠️  Cette clé TMDb est read-only (lecture seule) et visible côté client — c'est inévitable
+//     pour une app frontend sans proxy. Pour limiter les abus :
+//     → Aller sur https://www.themoviedb.org/settings/api et restreindre
+//       cette clé au domaine cineamatch.com uniquement.
 const DEFAULT_TMDB_KEY   = '9845ee0aa36c422338ce96c39c07178f';
-const DEFAULT_OPENAI_KEY = 'server-managed';  // Clé gérée côté serveur Netlify (OPENAI_API_KEY env var)
+const DEFAULT_OPENAI_KEY = 'server-managed';  // Clé gérée côté serveur via env var Cloudflare
 
 export const store = {
     step: 0,
