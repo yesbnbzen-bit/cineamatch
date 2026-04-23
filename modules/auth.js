@@ -279,7 +279,7 @@ export const authUI = {
         if (!grid || !store.currentUser) return;
 
         // État de chargement
-        grid.innerHTML = `<p style="color:rgba(255,255,255,0.3);text-align:center;padding:3rem;grid-column:1/-1">Chargement de tes films...</p>`;
+        grid.innerHTML = `<p style="color:rgba(255,255,255,0.3);text-align:center;padding:3rem;grid-column:1/-1">${t('profile.loading')}</p>`;
         if (empty)     empty.style.display    = 'none';
         if (badgeWrap) badgeWrap.style.display = 'none';
         if (statsRow)  statsRow.style.display  = 'none';
@@ -291,13 +291,14 @@ export const authUI = {
 
         // ── Niveaux cinéphile ──
         const BADGES = [
-            { min: 100, emoji: '🎖', label: 'Légende',   color: '#9b59b6', next: null },
-            { min: 50,  emoji: '🏆', label: 'Expert',    color: '#E50914', next: 100  },
-            { min: 25,  emoji: '🎭', label: 'Passionné', color: '#f39c12', next: 50   },
-            { min: 10,  emoji: '⭐', label: 'Cinéphile', color: '#46d369', next: 25   },
-            { min: 3,   emoji: '🍿', label: 'Amateur',   color: '#3498db', next: 10   },
-            { min: 0,   emoji: '🎬', label: 'Débutant',  color: '#95a5a6', next: 3    },
+            { min: 100, emoji: '🎖', labelKey: 'profile.badge.legend',     color: '#9b59b6', next: null },
+            { min: 50,  emoji: '🏆', labelKey: 'profile.badge.expert',     color: '#E50914', next: 100  },
+            { min: 25,  emoji: '🎭', labelKey: 'profile.badge.passionate', color: '#f39c12', next: 50   },
+            { min: 10,  emoji: '⭐', labelKey: 'profile.badge.cinephile',  color: '#46d369', next: 25   },
+            { min: 3,   emoji: '🍿', labelKey: 'profile.badge.amateur',    color: '#3498db', next: 10   },
+            { min: 0,   emoji: '🎬', labelKey: 'profile.badge.beginner',   color: '#95a5a6', next: 3    },
         ];
+        BADGES.forEach(b => { b.label = t(b.labelKey); });
         const badge = BADGES.find(b => total >= b.min);
         const nextBadge = badge.next ? BADGES[BADGES.indexOf(badge) - 1] : null;
         const progressPct = badge.next
@@ -313,15 +314,20 @@ export const authUI = {
                 <div class="pbadge-emoji">${badge.emoji}</div>
                 <div class="pbadge-info">
                     <div class="pbadge-name">${userName ? userName + ' · ' : ''}<span style="color:${badge.color}">${badge.label}</span></div>
-                    <div class="pbadge-sub">Plus tu notes de films, plus CineaMatch apprend tes goûts et te conseille mieux 🎯</div>
+                    <div class="pbadge-sub">${t('profile.badge.sub')}</div>
                     ${badge.next ? `
                     <div class="pbadge-progress-wrap">
                         <div class="pbadge-progress-bar" style="width:${progressPct}%;background:${badge.color}"></div>
                     </div>
                     <div class="pbadge-progress-label">
-                        Note encore <strong>${remaining} film${remaining > 1 ? 's' : ''}</strong> pour devenir <strong style="color:${nextBadge?.color}">${nextBadge?.label || ''} ${nextBadge?.emoji || ''}</strong>
+                        ${t('profile.badge.next')
+                            .replace('{n}', `<strong>${remaining}</strong>`)
+                            .replace('{s}', remaining > 1 ? 's' : '')
+                            .replace('{color}', nextBadge?.color || '')
+                            .replace('{label}', nextBadge?.label || '')
+                            .replace('{emoji}', nextBadge?.emoji || '')}
                     </div>
-                    ` : `<div class="pbadge-progress-label" style="color:${badge.color}">🎉 Tu as atteint le niveau maximum !</div>`}
+                    ` : `<div class="pbadge-progress-label" style="color:${badge.color}">${t('profile.badge.max')}</div>`}
                 </div>
             `;
             badgeWrap.style.display = 'block';
@@ -331,8 +337,8 @@ export const authUI = {
         const ratedCount = films.filter(f => f.rating).length;
         const seenCount  = films.filter(f => f.seen).length;
         if (subtitle) subtitle.textContent = ratedCount > 0
-            ? `${ratedCount} film${ratedCount>1?'s':''} noté${ratedCount>1?'s':''} · ${seenCount} vu${seenCount>1?'s':''}`
-            : 'Commence à noter des films pour voir tes stats !';
+            ? `${ratedCount} film${ratedCount>1?'s':''} ${t('profile.tab.rated').includes('Rated') ? 'rated' : 'noté'+((ratedCount>1)?'s':'')} · ${seenCount} ${t('profile.tab.rated').includes('Rated') ? 'watched' : 'vu'+((seenCount>1)?'s':'')}`
+            : (t('profile.loading').includes('Loading') ? 'Start rating films to see your stats!' : 'Commence à noter des films pour voir tes stats !');
 
         // ── Cas : aucun film ──
         if (total === 0) {
@@ -341,10 +347,8 @@ export const authUI = {
                 empty.style.display = 'block';
                 empty.innerHTML = `
                     <div class="history-empty-icon">🎬</div>
-                    <p>Aucun film dans ton profil pour l'instant.</p>
-                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;margin-top:0.5rem;">
-                        Lance une recommandation, puis clique ★ sur les films regardés pour les retrouver ici.
-                    </p>`;
+                    <p>${t('profile.empty.title')}</p>
+                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;margin-top:0.5rem;">${t('profile.empty.hint')}</p>`;
             }
             this._renderWatchlistTab(store.watchlist);
             if (tabs) tabs.style.display = 'flex';
@@ -378,28 +382,28 @@ export const authUI = {
                 <div class="pstat-card">
                     <div class="pstat-icon">🎬</div>
                     <div class="pstat-value">${total}</div>
-                    <div class="pstat-label">Films dans mon profil</div>
-                    <div class="pstat-hint">Films que tu as vus ou notés</div>
+                    <div class="pstat-label">${t('profile.stats.films')}</div>
+                    <div class="pstat-hint">${t('profile.stats.films.hint')}</div>
                 </div>
                 <div class="pstat-card">
                     <div class="pstat-icon">❤️</div>
                     <div class="pstat-value">${lovedCount}</div>
-                    <div class="pstat-label">Films adorés</div>
-                    <div class="pstat-hint">Que tu as noté 4★ ou 5★</div>
+                    <div class="pstat-label">${t('profile.stats.loved')}</div>
+                    <div class="pstat-hint">${t('profile.stats.loved.hint')}</div>
                 </div>
                 ${avgStarsHtml ? `
                 <div class="pstat-card">
                     <div class="pstat-stars">${avgStarsHtml}</div>
                     <div class="pstat-value">${avgRating.toFixed(1)}<span style="font-size:0.9rem;opacity:0.5">/5</span></div>
-                    <div class="pstat-label">Ta note moyenne</div>
-                    <div class="pstat-hint">Sur tous tes films notés</div>
+                    <div class="pstat-label">${t('profile.stats.avg')}</div>
+                    <div class="pstat-hint">${t('profile.stats.avg.hint')}</div>
                 </div>` : ''}
                 ${topGenreName ? `
                 <div class="pstat-card">
                     <div class="pstat-icon">🎭</div>
                     <div class="pstat-value pstat-genre-val">${topGenreName}</div>
-                    <div class="pstat-label">Ton genre préféré</div>
-                    <div class="pstat-hint">Le genre que tu regardes le plus</div>
+                    <div class="pstat-label">${t('profile.stats.genre')}</div>
+                    <div class="pstat-hint">${t('profile.stats.genre.hint')}</div>
                 </div>` : ''}
             `;
             statsRow.style.display = 'flex';
@@ -451,7 +455,7 @@ export const authUI = {
                     ${starsHtml}
                 </div>
                 ${seenBadge}
-                <button class="history-item-delete" title="Retirer de mes films">✕</button>
+                <button class="history-item-delete" title="${t('history.delete')}">✕</button>
             `;
             item.onclick = () => window.open(`https://www.themoviedb.org/movie/${f.movie_id}`, '_blank');
             item.querySelector('.history-item-delete').onclick = async (e) => {
@@ -487,7 +491,7 @@ export const authUI = {
                     <p class="history-item-title">${m.title||'—'}</p>
                     ${m.release_date ? `<p class="history-item-meta">${m.release_date.split('-')[0]}</p>` : ''}
                 </div>
-                <button class="watchlist-btn active" onclick="toggleWatchlist(event,${m.id})" title="Retirer de ma liste">
+                <button class="watchlist-btn active" onclick="toggleWatchlist(event,${m.id})" title="${t('watchlist.remove.btn')}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </button>
             `;

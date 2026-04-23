@@ -343,8 +343,8 @@
                 <div class="duo-card animate-fade">
                     <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
                     <div class="duo-welcome-icon">🎬</div>
-                    <h2 class="duo-title">C'est parti à <span style="-webkit-text-fill-color:#E50914;color:#E50914">deux</span> !</h2>
-                    <p class="duo-subtitle">Répondez ensemble pour trouver<br>les films que vous allez <span style="color:#E50914;font-weight:700">adorer</span>.</p>
+                    <h2 class="duo-title" data-i18n="duo.start.title.html" data-i18n-html>C'est parti à <span style="-webkit-text-fill-color:#E50914;color:#E50914">deux</span> !</h2>
+                    <p class="duo-subtitle" data-i18n="duo.start.sub.html" data-i18n-html>Répondez ensemble pour trouver<br>les films que vous allez <span style="color:#E50914;font-weight:700">adorer</span>.</p>
 
                     <!-- Explication visuelle 3 étapes -->
                     <div class="duo-how-it-works">
@@ -352,25 +352,25 @@
                             <div class="duo-step-icon">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E50914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                             </div>
-                            <div class="duo-step-text"><strong>Toi</strong> tu réponds<br>au questionnaire</div>
+                            <div class="duo-step-text" data-i18n="duo.step1" data-i18n-html><strong>Toi</strong> tu réponds<br>au questionnaire</div>
                         </div>
                         <div class="duo-step-arrow">→</div>
                         <div class="duo-step">
                             <div class="duo-step-icon">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E50914" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                             </div>
-                            <div class="duo-step-text">Tu envoies le lien<br>à ton <strong>partenaire</strong></div>
+                            <div class="duo-step-text" data-i18n="duo.step2" data-i18n-html>Tu envoies le lien<br>à ton <strong>partenaire</strong></div>
                         </div>
                         <div class="duo-step-arrow">→</div>
                         <div class="duo-step">
                             <div class="duo-step-icon">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="#E50914" stroke="#E50914" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                             </div>
-                            <div class="duo-step-text">L'IA trouve les films<br>que <strong style="color:#E50914">vous deux</strong> adorerez</div>
+                            <div class="duo-step-text" data-i18n="duo.step3" data-i18n-html>L'IA trouve les films<br>que <strong style="color:#E50914">vous deux</strong> adorerez</div>
                         </div>
                     </div>
 
-                    <p class="duo-subtitle" style="margin-top:0;margin-bottom:0.75rem;font-size:0.95rem">Entre ton prénom pour commencer :</p>
+                    <p class="duo-subtitle" style="margin-top:0;margin-bottom:0.75rem;font-size:0.95rem" data-i18n="duo.start.label">Entre ton prénom pour commencer :</p>
                     <div class="duo-name-field">
                         <input type="text" id="duo-name-a-start" placeholder="Ton prénom..." data-i18n="duo.placeholder" data-i18n-attr="placeholder" maxlength="20" autocomplete="off">
                     </div>
@@ -387,7 +387,7 @@
                     <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
 
                     <!-- Titre + sous-titre -->
-                    <h2 class="duo-title">Ton profil est <span style="-webkit-text-fill-color:#E50914;color:#E50914">prêt</span> !</h2>
+                    <h2 class="duo-title" data-i18n="duo.share.title.html" data-i18n-html>Ton profil est <span style="-webkit-text-fill-color:#E50914;color:#E50914">prêt</span> !</h2>
                     <p class="duo-subtitle">Envoie le lien à ton <span style="color:#E50914;font-weight:700">partenaire</span>.</p>
 
                     <!-- Lien sur une ligne, Copier en dessous -->
@@ -420,7 +420,7 @@
                         <div class="duo-wait-avatars">
                             <div class="duo-wait-avatar duo-wait-avatar-a">
                                 <div class="duo-wait-avatar-icon">✓</div>
-                                <span id="duo-wait-name-a" class="duo-wait-name">Toi</span>
+                                <span id="duo-wait-name-a" class="duo-wait-name" data-i18n="duo.wait.you">Toi</span>
                             </div>
                             <div class="duo-wait-connector">
                                 <span class="duo-wait-dot"></span>
@@ -756,9 +756,7 @@
                 </ul>
 
                 <button class="btn-primary paywall-cta" id="paywall-cta-primary" data-i18n="paywall.cta">Créer un compte gratuit</button>
-                <button class="paywall-cta-secondary" id="paywall-cta-secondary" style="display:none;">
-                    J'ai déjà un compte
-                </button>
+                <button class="paywall-cta-secondary" id="paywall-cta-secondary" style="display:none;" data-i18n="paywall.signin.btn">J'ai déjà un compte</button>
                 <p class="paywall-footnote" data-i18n="paywall.footnote">100% gratuit · Sans carte bancaire</p>
             </div>
         </div>

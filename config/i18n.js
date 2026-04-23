@@ -157,6 +157,64 @@ export const TRANSLATIONS = {
         'duo.share.via':     'Partager via…',
         'duo.sep':           'ou',
         'duo.together':      '🖥 Vous êtes ensemble ? Remplir ici →',
+
+        // Duo start — titres et étapes (avec HTML)
+        'duo.start.title.html':  'C\'est parti à <span style="-webkit-text-fill-color:#E50914;color:#E50914">deux</span> !',
+        'duo.share.title.html':  'Ton profil est <span style="-webkit-text-fill-color:#E50914;color:#E50914">prêt</span> !',
+        'duo.start.sub.html':    'Répondez ensemble pour trouver les films que vous allez <span style="color:#E50914;font-weight:700">adorer</span>.',
+        'duo.start.label':       'Entre ton prénom pour commencer :',
+        'duo.step1':             '<strong>Toi</strong> tu réponds<br>au questionnaire',
+        'duo.step2':             'Tu envoies le lien<br>à ton <strong>partenaire</strong>',
+        'duo.step3':             'L\'IA trouve les films<br>que <strong style="color:#E50914">vous deux</strong> adorerez',
+        'duo.wait.you':          'Toi',
+
+        // Profile — niveaux cinéphile
+        'profile.badge.legend':     'Légende',
+        'profile.badge.expert':     'Expert',
+        'profile.badge.passionate': 'Passionné',
+        'profile.badge.cinephile':  'Cinéphile',
+        'profile.badge.amateur':    'Amateur',
+        'profile.badge.beginner':   'Débutant',
+        'profile.badge.sub':        'Plus tu notes de films, plus CineaMatch apprend tes goûts et te conseille mieux 🎯',
+        'profile.badge.next':       'Note encore <strong>{n}</strong> film{s} pour devenir <strong style="color:{color}">{label} {emoji}</strong>',
+        'profile.badge.max':        '🎉 Tu as atteint le niveau maximum !',
+
+        // Profile — stats
+        'profile.stats.films':       'Films dans mon profil',
+        'profile.stats.films.hint':  'Films que tu as vus ou notés',
+        'profile.stats.loved':       'Films adorés',
+        'profile.stats.loved.hint':  'Que tu as noté 4★ ou 5★',
+        'profile.stats.avg':         'Ta note moyenne',
+        'profile.stats.avg.hint':    'Sur tous tes films notés',
+        'profile.stats.genre':       'Ton genre préféré',
+        'profile.stats.genre.hint':  'Le genre que tu regardes le plus',
+
+        // Profile — tabs et états vides
+        'profile.tab.rated':         '⭐ Films notés & vus',
+        'profile.tab.favorites':     '❤️ Mes Favoris',
+        'profile.rated.empty':       'Aucun film noté pour l\'instant.',
+        'profile.rated.hint':        'Lance une recommandation, puis note ★ les films regardés pour les retrouver ici.',
+        'profile.favorites.empty':   'Ta liste de favoris est vide.',
+        'profile.favorites.hint':    'Clique sur ❤️ sur un film recommandé pour le sauvegarder ici.',
+        'profile.films.label':       'Tes films — {n} au total',
+        'profile.subtitle':          '{rated} film{s} noté{s} · {seen} vu{sv}',
+        'profile.loading':           'Chargement de tes films...',
+        'profile.empty.title':       'Aucun film dans ton profil pour l\'instant.',
+        'profile.empty.hint':        'Lance une recommandation, puis clique ★ sur les films regardés.',
+
+        // Paywall features
+        'paywall.feature.1':     'Suggestions illimitées à chaque recherche',
+        'paywall.feature.2':     'Recommandations ultra-personnalisées par l\'IA',
+        'paywall.feature.3':     'Filtres streaming avancés',
+        'paywall.signin.btn':    'J\'ai déjà un compte',
+
+        // Reroll paywall
+        'paywall.reroll.title':  'Rerolls illimités',
+        'paywall.reroll.sub':    'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite.',
+
+        // Bouton suppression historique
+        'history.delete':        'Retirer de mes films',
+        'watchlist.remove.btn':  'Retirer de ma liste',
         'duo.partner.ready':  '🎉 Ton partenaire a terminé !',
         'duo.see.results':    'Voir les résultats →',
         'duo.welcome.title':  'Ton partenaire t\'attend !',
@@ -339,6 +397,64 @@ export const TRANSLATIONS = {
         'duo.share.via':     'Share via…',
         'duo.sep':           'or',
         'duo.together':      '🖥 Are you together? Fill in here →',
+
+        // Duo start — titles and steps (with HTML)
+        'duo.start.title.html':  'Let\'s go, <span style="-webkit-text-fill-color:#E50914;color:#E50914">duo</span>!',
+        'duo.share.title.html':  'Your profile is <span style="-webkit-text-fill-color:#E50914;color:#E50914">ready</span>!',
+        'duo.start.sub.html':    'Answer together and find films you\'ll both <span style="color:#E50914;font-weight:700">love</span>.',
+        'duo.start.label':       'Enter your first name to get started:',
+        'duo.step1':             '<strong>You</strong> answer<br>the questionnaire',
+        'duo.step2':             'You send the link<br>to your <strong>partner</strong>',
+        'duo.step3':             'The AI finds films you <strong style="color:#E50914">both</strong> will love',
+        'duo.wait.you':          'You',
+
+        // Profile — badge levels
+        'profile.badge.legend':     'Legend',
+        'profile.badge.expert':     'Expert',
+        'profile.badge.passionate': 'Passionate',
+        'profile.badge.cinephile':  'Cinephile',
+        'profile.badge.amateur':    'Amateur',
+        'profile.badge.beginner':   'Beginner',
+        'profile.badge.sub':        'The more films you rate, the better CineaMatch learns your taste 🎯',
+        'profile.badge.next':       'Rate <strong>{n}</strong> more film{s} to become <strong style="color:{color}">{label} {emoji}</strong>',
+        'profile.badge.max':        '🎉 You\'ve reached the maximum level!',
+
+        // Profile — stats
+        'profile.stats.films':       'Films in my profile',
+        'profile.stats.films.hint':  'Films you\'ve watched or rated',
+        'profile.stats.loved':       'Loved films',
+        'profile.stats.loved.hint':  'That you rated 4★ or 5★',
+        'profile.stats.avg':         'Your average rating',
+        'profile.stats.avg.hint':    'On all your rated films',
+        'profile.stats.genre':       'Your favourite genre',
+        'profile.stats.genre.hint':  'The genre you watch the most',
+
+        // Profile — tabs and empty states
+        'profile.tab.rated':         '⭐ Rated & watched',
+        'profile.tab.favorites':     '❤️ My Favourites',
+        'profile.rated.empty':       'No rated films yet.',
+        'profile.rated.hint':        'Start a recommendation, then rate ★ watched films to find them here.',
+        'profile.favorites.empty':   'Your favourites list is empty.',
+        'profile.favorites.hint':    'Click ❤️ on a recommended film to save it here.',
+        'profile.films.label':       'Your films — {n} total',
+        'profile.subtitle':          '{rated} film{s} rated · {seen} watched',
+        'profile.loading':           'Loading your films...',
+        'profile.empty.title':       'No films in your profile yet.',
+        'profile.empty.hint':        'Start a recommendation, then click ★ on watched films.',
+
+        // Paywall features
+        'paywall.feature.1':     'Unlimited suggestions per search',
+        'paywall.feature.2':     'Ultra-personalized AI recommendations',
+        'paywall.feature.3':     'Advanced streaming filters',
+        'paywall.signin.btn':    'I already have an account',
+
+        // Reroll paywall
+        'paywall.reroll.title':  'Unlimited rerolls',
+        'paywall.reroll.sub':    'You\'ve used your 3 free suggestions. Go Premium for unlimited recommendations.',
+
+        // History/watchlist buttons
+        'history.delete':        'Remove from my films',
+        'watchlist.remove.btn':  'Remove from my list',
         'duo.partner.ready':  '🎉 Your partner is done!',
         'duo.see.results':    'See results →',
         'duo.welcome.title':  'Your partner is waiting!',
@@ -391,9 +507,12 @@ export function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         const attr = el.getAttribute('data-i18n-attr'); // ex: "placeholder"
+        const isHtml = el.hasAttribute('data-i18n-html'); // innerHTML (pour spans colorés)
         const val = t(key);
         if (attr) {
             el.setAttribute(attr, val);
+        } else if (isHtml) {
+            el.innerHTML = val; // pour les éléments avec HTML formaté (spans, strong, etc.)
         } else {
             el.textContent = val;
         }
