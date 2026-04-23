@@ -626,26 +626,12 @@ export const authUI = {
     },
 
     // ── Mot de passe oublié ──
-    showForgotPassword() {
+    async showForgotPassword() {
         const modal = document.getElementById('auth-modal-overlay');
         if (!modal) return;
-        // Injecter le formulaire de reset dans la modale
-        const body = modal.querySelector('.auth-modal-body') || modal.querySelector('.auth-body') || modal;
         const existing = document.getElementById('forgot-form-wrap');
         if (existing) { existing.style.display = 'block'; return; }
 
-        const wrap = document.createElement('div');
-        wrap.id = 'forgot-form-wrap';
-        wrap.innerHTML = `
-            <div style="padding:1.5rem 0">
-                <button id="btn-back-signin" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:inherit;padding:0;margin-bottom:1.25rem;" data-i18n="auth.forgot.back">← Retour à la connexion</button>
-                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem" data-i18n="auth.forgot.title">Réinitialiser le mot de passe</h3>
-                <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem" data-i18n="auth.forgot.sub">Saisis ton email pour recevoir un lien de réinitialisation.</p>
-                <input type="email" id="forgot-email" placeholder="Email" style="width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:0.75rem">
-                <p id="forgot-msg" style="font-size:0.82rem;color:#46d369;display:none;margin-bottom:0.75rem"></p>
-                <button id="btn-forgot-send" class="btn-primary" style="width:100%" data-i18n="auth.forgot.btn">Envoyer le lien</button>
-            </div>
-        `;
         // Masquer les formulaires existants
         document.getElementById('form-signin')?.style.setProperty('display', 'none');
         document.getElementById('form-signup')?.style.setProperty('display', 'none');
@@ -653,12 +639,22 @@ export const authUI = {
         document.querySelector('.auth-divider')?.style.setProperty('display', 'none');
         document.getElementById('btn-google')?.style.setProperty('display', 'none');
 
-        const container = document.querySelector('.auth-body') || document.querySelector('.auth-modal-inner') || document.getElementById('auth-modal-overlay');
-        container?.appendChild(wrap);
+        const wrap = document.createElement('div');
+        wrap.id = 'forgot-form-wrap';
+        wrap.innerHTML = `
+            <div style="padding:0.5rem 0">
+                <button id="btn-back-signin" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:inherit;padding:0;margin-bottom:1.25rem;">${t('auth.forgot.back')}</button>
+                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem">${t('auth.forgot.title')}</h3>
+                <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem">${t('auth.forgot.sub')}</p>
+                <input type="email" id="forgot-email" placeholder="Email" style="width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:0.75rem">
+                <p id="forgot-msg" style="font-size:0.82rem;color:#46d369;display:none;margin-bottom:0.75rem"></p>
+                <button id="btn-forgot-send" class="btn-primary" style="width:100%">${t('auth.forgot.btn')}</button>
+            </div>
+        `;
 
-        // Appliquer traductions
-        const { applyTranslations } = await import('../config/i18n.js?v=343');
-        applyTranslations();
+        // Insérer dans la modale (.auth-modal)
+        const container = modal.querySelector('.auth-modal') || modal;
+        container.appendChild(wrap);
 
         document.getElementById('btn-back-signin')?.addEventListener('click', () => {
             wrap.remove();
@@ -691,13 +687,14 @@ export const authUI = {
     showResetPassword() {
         const modal = document.getElementById('auth-modal-overlay');
         if (!modal) return;
+        this.showModal();
         document.getElementById('form-signin')?.style.setProperty('display', 'none');
         document.getElementById('form-signup')?.style.setProperty('display', 'none');
         document.querySelector('.auth-tabs')?.style.setProperty('display', 'none');
         document.querySelector('.auth-divider')?.style.setProperty('display', 'none');
         document.getElementById('btn-google')?.style.setProperty('display', 'none');
 
-        const container = document.querySelector('.auth-body') || document.querySelector('.auth-modal-inner') || modal;
+        const container = modal.querySelector('.auth-modal') || modal;
         const wrap = document.createElement('div');
         wrap.id = 'reset-form-wrap';
         wrap.innerHTML = `
