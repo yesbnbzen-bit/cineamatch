@@ -3,7 +3,7 @@ import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=8';
-import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=340';
+import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=341';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
 function _updateMultiCounter(grid, q, count) {

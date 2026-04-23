@@ -6,7 +6,7 @@ export const TRANSLATIONS = {
     fr: {
         // Navbar
         'nav.myfilms':       'Mes Films',
-        'nav.mylist':        'Ma Liste',
+        'nav.mylist':        'Mes Favoris',
         'nav.prefs':         'MON ESPACE',
         'prefs.title':       'Mon Espace',
         'prefs.settings.label': 'Préférences IA',
@@ -102,8 +102,8 @@ export const TRANSLATIONS = {
         'results.why':       '✦ Pourquoi ce film pour toi',
         'results.seen':      '👁 J\'ai vu ce film',
         'results.seen.done': '✓ Vu',
-        'results.add':       'Ajouter à Ma Liste',
-        'results.remove':    'Retirer de Ma Liste',
+        'results.add':       'Ajouter à Mes Favoris',
+        'results.remove':    'Retirer de Mes Favoris',
         'results.copied':    '✓ Copié !',
         'results.copylink':  '📋 Copier le lien',
         'results.copiedclip':'✓ Copié dans le presse-papier !',
@@ -125,7 +125,7 @@ export const TRANSLATIONS = {
         // History / Watchlist
         'history.title':     'Mes Films',
         'history.subtitle':  'Films notés et déjà vus',
-        'watchlist.title':   'Ma Liste',
+        'watchlist.title':   'Mes Favoris',
         'watchlist.subtitle':'Tes films à regarder',
         'watchlist.empty':   'Ta liste est vide',
         'watchlist.hint':    'Clique sur le cœur ❤ d\'un film pour l\'ajouter ici',

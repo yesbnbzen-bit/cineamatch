@@ -5,7 +5,7 @@
 
 import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=8';
 import { store } from '../state/store.js?v=43';
-import { t, applyTranslations } from '../config/i18n.js?v=4';
+import { t, applyTranslations } from '../config/i18n.js?v=5';
 
 // ── Calcule l'âge en années à partir d'une date "YYYY-MM-DD" ──
 function _calcAge(birthDateStr) {
@@ -313,7 +313,7 @@ export const authUI = {
                 <div class="pbadge-emoji">${badge.emoji}</div>
                 <div class="pbadge-info">
                     <div class="pbadge-name">${userName ? userName + ' · ' : ''}<span style="color:${badge.color}">${badge.label}</span></div>
-                    <div class="pbadge-sub">Ton niveau de cinéphile — basé sur les films que tu notes</div>
+                    <div class="pbadge-sub">Plus tu notes de films, plus CineaMatch apprend tes goûts et te conseille mieux 🎯</div>
                     ${badge.next ? `
                     <div class="pbadge-progress-wrap">
                         <div class="pbadge-progress-bar" style="width:${progressPct}%;background:${badge.color}"></div>

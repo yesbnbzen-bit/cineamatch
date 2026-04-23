@@ -2486,14 +2486,9 @@ input[type="text"]:focus {
     text-transform: uppercase;
     box-shadow: 0 4px 16px rgba(229, 9, 20, 0.55);
     transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
-    opacity: 0;
-    transform: translateY(6px);
-    pointer-events: auto;
-}
-
-.poster-container:hover .btn-trailer {
-    opacity: 1;
+    opacity: 0.85;
     transform: translateY(0);
+    pointer-events: auto;
 }
 
 .btn-trailer:hover {
