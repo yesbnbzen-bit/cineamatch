@@ -174,7 +174,7 @@
                     <span class="user-name" id="user-name"></span>
                     <div class="user-dropdown">
                         <button class="btn-signout-drop"
-                            onclick="import('./modules/auth.js?v=17').then(m => m.authUI.handleSignOut())">
+                            onclick="import('./modules/auth.js?v=18').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>
                         </button>
                     </div>
@@ -818,9 +818,9 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=370"></script>
+    <script type="module" src="app.js?v=371"></script>
     <script type="module">
-        import { authUI, getAgeProfile } from './modules/auth.js?v=17';
+        import { authUI, getAgeProfile } from './modules/auth.js?v=18';
         authUI.init();
         // Exposer getAgeProfile globalement pour app.js (modules isolés)
         window.getAgeProfile = getAgeProfile;

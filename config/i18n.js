@@ -529,6 +529,8 @@ export function applyTranslations() {
         const attr = el.getAttribute('data-i18n-attr'); // ex: "placeholder"
         const isHtml = el.hasAttribute('data-i18n-html'); // innerHTML (pour spans colorés)
         const val = t(key);
+        // Ne pas écraser le contenu si la clé n'est pas trouvée
+        if (val === key) return;
         if (attr) {
             el.setAttribute(attr, val);
         } else if (isHtml) {
