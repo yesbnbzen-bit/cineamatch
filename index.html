@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <title>CineaMatch IA - Trouve le film parfait en 30 secondes</title>
-    <link rel="stylesheet" href="style.css?v=358">
+    <link rel="stylesheet" href="style.css?v=359">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -365,25 +365,34 @@
                 <div class="duo-card animate-fade">
                     <div class="duo-badge-pill" data-i18n="duo.badge">👫 MODE DUO</div>
 
-                    <!-- Icône principale -->
+                    <!-- Icône principale clap cinéma -->
                     <div class="duo-share-icon-wrap">
                         <div class="duo-share-icon-bg">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>
+                            <!-- Clap cinéma SVG -->
+                            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 20H4a2 2 0 0 1-2-2v-8h20v8a2 2 0 0 1-2 2z"/>
+                                <path d="M2 10l1.5-5h17L22 10"/>
+                                <line x1="7" y1="5.2" x2="5.5" y2="10"/>
+                                <line x1="12" y1="4.3" x2="10.5" y2="10"/>
+                                <line x1="17" y1="3.4" x2="15.5" y2="10"/>
                             </svg>
                         </div>
-                        <span class="duo-share-sparkle" style="top:-4px;right:8px">✦</span>
-                        <span class="duo-share-sparkle" style="bottom:4px;left:4px;font-size:0.55rem">✦</span>
+                        <span class="duo-share-sparkle" style="top:-6px;right:2px">✦</span>
+                        <span class="duo-share-sparkle" style="top:10px;right:-14px;font-size:0.5rem;animation-delay:0.7s">✦</span>
+                        <span class="duo-share-sparkle" style="bottom:0px;left:-8px;font-size:0.55rem;animation-delay:1.3s">✦</span>
                     </div>
 
                     <!-- Titre + sous-titre -->
                     <h2 class="duo-title">Ton profil est <span style="-webkit-text-fill-color:#E50914;color:#E50914">prêt</span> !</h2>
                     <p class="duo-subtitle">Envoie le lien à ton <span style="color:#E50914;font-weight:700">partenaire</span>.</p>
 
-                    <!-- Lien + copier inline -->
+                    <!-- Lien sur une ligne, Copier en dessous -->
                     <div class="duo-link-row">
                         <input type="text" id="duo-share-link" class="duo-link-input" readonly>
-                        <button id="duo-copy-btn" class="duo-copy-inline" data-i18n="duo.copy">📋 Copier</button>
+                        <button id="duo-copy-btn" class="duo-copy-inline">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            Copier
+                        </button>
                     </div>
 
                     <button id="duo-share-btn" class="duo-action-btn duo-action-dark" style="display:none;">

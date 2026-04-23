@@ -4090,10 +4090,10 @@ body.duo-active {
 /* Boutons unifiés */
 .duo-action-btn {
     width: 100%;
-    padding: 11px 16px;
-    border-radius: 11px;
-    font-size: 0.88rem;
-    font-weight: 600;
+    padding: 15px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
     font-family: inherit;
     cursor: pointer;
     display: flex;
@@ -4163,28 +4163,36 @@ body.duo-active {
 
 .duo-copy-inline {
     flex-shrink: 0;
-    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 1.4rem;
     background: #E50914;
     color: white;
     border: none;
-    border-radius: 10px;
-    font-size: 0.82rem;
-    font-weight: 700;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 800;
     cursor: pointer;
     font-family: inherit;
     white-space: nowrap;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.3px;
+    min-height: 52px;
 }
-.duo-copy-inline:hover { background: #c8000f; }
+.duo-copy-inline:hover {
+    background: #c8000f;
+    transform: scale(1.02);
+}
 
 .duo-link-input {
     flex: 1;
-    background: rgba(255, 255, 255, 0.04) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 10px !important;
-    color: rgba(255, 255, 255, 0.6) !important;
-    font-size: 0.78rem !important;
-    padding: 0.75rem 1rem !important;
+    border-radius: 12px !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+    font-size: 0.8rem !important;
+    padding: 0.9rem 1.1rem !important;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
