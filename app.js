@@ -2894,8 +2894,35 @@ const App = {
 
     // ── Profil cinéphile ──
     async showProfile() {
-        const { authUI } = await import('./modules/auth.js?v=15');
+        const { authUI } = await import('./modules/auth.js?v=16');
         authUI.showHistory();
+    },
+
+    switchProfileTab(tab) {
+        const grid    = document.getElementById('history-grid');
+        const empty   = document.getElementById('history-empty');
+        const wlGrid  = document.getElementById('profile-watchlist-grid');
+        const wlEmpty = document.getElementById('profile-watchlist-empty');
+        const tabRated = document.getElementById('ptab-rated');
+        const tabList  = document.getElementById('ptab-list');
+
+        if (tab === 'rated') {
+            tabRated?.classList.add('active');
+            tabList?.classList.remove('active');
+            if (grid)   grid.style.display   = '';
+            if (empty && window._profileFilms?.length === 0) empty.style.display = 'block';
+            else if (empty) empty.style.display = 'none';
+            if (wlGrid)  wlGrid.style.display  = 'none';
+            if (wlEmpty) wlEmpty.style.display  = 'none';
+        } else {
+            tabRated?.classList.remove('active');
+            tabList?.classList.add('active');
+            if (grid)  grid.style.display  = 'none';
+            if (empty) empty.style.display = 'none';
+            const hasWl = store.watchlist?.length > 0;
+            if (wlGrid)  wlGrid.style.display  = hasWl ? '' : 'none';
+            if (wlEmpty) wlEmpty.style.display  = hasWl ? 'none' : 'block';
+        }
     },
 
     // ── Préférences utilisateur ──

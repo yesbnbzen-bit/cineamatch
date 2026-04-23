@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <title>CineaMatch IA - Trouve le film parfait en 30 secondes</title>
-    <link rel="stylesheet" href="style.css?v=352">
+    <link rel="stylesheet" href="style.css?v=353">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -152,7 +152,7 @@
                     <span class="user-name" id="user-name"></span>
                     <div class="user-dropdown">
                         <button class="btn-signout-drop"
-                            onclick="import('./modules/auth.js?v=15').then(m => m.authUI.handleSignOut())">
+                            onclick="import('./modules/auth.js?v=16').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>
                         </button>
                     </div>
@@ -422,8 +422,8 @@
             <section id="history-view" class="view">
                 <div class="history-header">
                     <div>
-                        <h2 class="history-title">Mon Profil</h2>
-                        <p class="history-subtitle" id="history-subtitle">Ton ADN cinématographique</p>
+                        <h2 class="history-title">Mes Films</h2>
+                        <p class="history-subtitle" id="history-subtitle"></p>
                     </div>
                     <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
                 </div>
@@ -436,15 +436,26 @@
                 <!-- Stats -->
                 <div id="profile-stats-row" class="profile-stats-row" style="display:none"></div>
 
-                <!-- Séparateur films notés -->
-                <div id="profile-films-label" class="history-section-label" style="display:none">Films notés & vus</div>
+                <!-- Onglets Films notés / Ma Liste -->
+                <div id="profile-tabs" class="profile-tabs" style="display:none">
+                    <button class="ptab active" id="ptab-rated" onclick="App.switchProfileTab('rated')">⭐ Films notés & vus</button>
+                    <button class="ptab" id="ptab-list" onclick="App.switchProfileTab('list')">❤️ Ma Liste</button>
+                </div>
 
-                <!-- Grille films -->
+                <!-- Grille films notés -->
                 <div id="history-grid" class="history-grid"></div>
                 <div id="history-empty" class="history-empty" style="display:none">
                     <div class="history-empty-icon">🎬</div>
                     <p>Aucun film noté pour l'instant.</p>
-                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;">Lance une première recommandation pour commencer !</p>
+                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;">Lance une recommandation, puis note ★ les films regardés pour les retrouver ici.</p>
+                </div>
+
+                <!-- Grille Ma Liste (watchlist) -->
+                <div id="profile-watchlist-grid" class="history-grid" style="display:none"></div>
+                <div id="profile-watchlist-empty" class="history-empty" style="display:none">
+                    <div class="history-empty-icon">❤️</div>
+                    <p>Ta liste est vide pour l'instant.</p>
+                    <p style="color:rgba(255,255,255,0.3);font-size:0.9rem;">Clique sur ❤️ sur un film recommandé pour le sauvegarder ici.</p>
                 </div>
             </section>
         </main>
@@ -745,9 +756,9 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=369"></script>
+    <script type="module" src="app.js?v=370"></script>
     <script type="module">
-        import { authUI, getAgeProfile } from './modules/auth.js?v=15';
+        import { authUI, getAgeProfile } from './modules/auth.js?v=16';
         authUI.init();
         // Exposer getAgeProfile globalement pour app.js (modules isolés)
         window.getAgeProfile = getAgeProfile;
