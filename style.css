@@ -135,6 +135,32 @@ body {
     min-height: 100vh;
 }
 
+/* ── Max-width pour très grands écrans (1440px+) ── */
+@media (min-width: 1440px) {
+    .navbar {
+        max-width: 1600px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding-left: 3rem;
+        padding-right: 3rem;
+    }
+    #main-container {
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .hero-content {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .movies-grid {
+        max-width: 1300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
 /* Navbar */
 .navbar {
     padding: 1.5rem 4%;

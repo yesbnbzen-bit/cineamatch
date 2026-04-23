@@ -51,6 +51,21 @@ export const TRANSLATIONS = {
         'auth.login.btn':    'Se connecter',
         'auth.signup.btn':   'Créer mon compte',
 
+        // Boutons génériques
+        'btn.save':          'Enregistrer',
+        'btn.save.continue': 'Enregistrer et Continuer',
+        'btn.close':         'Fermer',
+        'btn.skip':          'Passer',
+        'btn.expand':        'Voir plus ▼',
+        'btn.collapse':      'Voir moins ▲',
+        'btn.solo':          '🎬 Continuer en solo',
+
+        // Paywall
+        'paywall.sub':       'Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.',
+        'paywall.cta':       'Créer un compte gratuit',
+        'paywall.footnote':  '100% gratuit · Sans carte bancaire',
+        'paywall.premium':   'Passer Premium — 4,99€/mois',
+
         // Session resume
         'resume.text':       '🎬 Tu avais une session en cours — reprendre là où tu t\'es arrêté ?',
         'resume.yes':        'Reprendre →',
@@ -217,6 +232,21 @@ export const TRANSLATIONS = {
         'auth.dob.error.req':'Your date of birth is required.',
         'auth.login.btn':    'Log in',
         'auth.signup.btn':   'Create my account',
+
+        // Generic buttons
+        'btn.save':          'Save',
+        'btn.save.continue': 'Save and Continue',
+        'btn.close':         'Close',
+        'btn.skip':          'Skip',
+        'btn.expand':        'See more ▼',
+        'btn.collapse':      'See less ▲',
+        'btn.solo':          '🎬 Continue solo',
+
+        // Paywall
+        'paywall.sub':       'Create a free account to unlock unlimited suggestions and keep your history.',
+        'paywall.cta':       'Create a free account',
+        'paywall.footnote':  '100% free · No credit card required',
+        'paywall.premium':   'Go Premium — €4.99/month',
 
         // Session resume
         'resume.text':       '🎬 You had a session in progress — pick up where you left off?',

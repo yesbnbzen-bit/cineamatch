@@ -31,7 +31,7 @@
     <link rel="icon" type="image/png" sizes="64x64" href="https://cineamatch.com/favicon-64.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cineamatch.com/favicon-32.png">
     <link rel="apple-touch-icon" href="https://cineamatch.com/favicon-192.png">
-    <link rel="stylesheet" href="style.css?v=361">
+    <link rel="stylesheet" href="style.css?v=362">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
@@ -523,8 +523,7 @@
                     <input type="password" id="tmdb-key" placeholder="API Key ou v4 Token">
                 </div>
                 <input type="hidden" id="openai-key" value="server-managed">
-                <button id="save-api-btn" class="btn-primary" style="width: 100%; margin-top: 1.5rem;">Enregistrer et
-                    Continuer</button>
+                <button id="save-api-btn" class="btn-primary" style="width: 100%; margin-top: 1.5rem;" data-i18n="btn.save.continue">Enregistrer et Continuer</button>
             </div>
         </div>
     </div>
@@ -729,7 +728,7 @@
 
             <!-- ══ ZONE 3 : Pied fixe ══ -->
             <div class="prefs-footer">
-                <button id="prefs-save-btn" class="btn-primary" style="width:100%">Enregistrer</button>
+                <button id="prefs-save-btn" class="btn-primary" style="width:100%" data-i18n="btn.save">Enregistrer</button>
             </div>
 
         </div>
@@ -747,7 +746,7 @@
             </div>
             <!-- Corps -->
             <div class="paywall-body">
-                <p class="paywall-sub" id="paywall-sub">Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.</p>
+                <p class="paywall-sub" id="paywall-sub" data-i18n="paywall.sub">Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.</p>
 
                 <ul class="paywall-perks">
                     <li>Suggestions illimitées à chaque recherche</li>
@@ -756,13 +755,11 @@
                     <li>Filtres streaming avancés</li>
                 </ul>
 
-                <button class="btn-primary paywall-cta" id="paywall-cta-primary">
-                    Créer un compte gratuit
-                </button>
+                <button class="btn-primary paywall-cta" id="paywall-cta-primary" data-i18n="paywall.cta">Créer un compte gratuit</button>
                 <button class="paywall-cta-secondary" id="paywall-cta-secondary" style="display:none;">
                     J'ai déjà un compte
                 </button>
-                <p class="paywall-footnote">100% gratuit · Sans carte bancaire</p>
+                <p class="paywall-footnote" data-i18n="paywall.footnote">100% gratuit · Sans carte bancaire</p>
             </div>
         </div>
     </div>
@@ -801,7 +798,7 @@
                     <span class="onboarding-dot"></span>
                 </div>
                 <div class="onboarding-actions">
-                    <button id="onboarding-skip" class="onboarding-skip">Passer</button>
+                    <button id="onboarding-skip" class="onboarding-skip" data-i18n="btn.skip">Passer</button>
                     <button id="onboarding-next" class="onboarding-next-btn">Suivant →</button>
                 </div>
             </div>
@@ -831,7 +828,7 @@
                 <button id="resume-no-btn" class="resume-skip-btn" data-i18n="resume.no">Nouvelle session</button>
             </div>
         </div>
-        <button class="resume-banner-close" id="resume-close-btn" aria-label="Fermer">✕</button>
+        <button class="resume-banner-close" id="resume-close-btn" data-i18n="btn.close" data-i18n-attr="aria-label" aria-label="Fermer">✕</button>
     </div>
 </body>
 

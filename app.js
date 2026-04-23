@@ -3,7 +3,7 @@ import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=8';
-import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=341';
+import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=342';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
 function _updateMultiCounter(grid, q, count) {
@@ -2081,8 +2081,8 @@ const App = {
                     <button class="card-expand-btn" onclick="(function(btn){
                         const card=btn.closest('.movie-card');
                         const isExp=card.classList.toggle('expanded');
-                        btn.innerHTML=isExp?'Voir moins &#9650;':'Voir plus &#9660;';
-                    })(this)">Voir plus &#9660;</button>
+                        btn.innerHTML=isExp?t('btn.collapse'):t('btn.expand');
+                    })(this)">${t('btn.expand')}</button>
                     <!-- Détails dépliables -->
                     <div class="card-details">
                         ${synopsisHtml}
@@ -2470,7 +2470,7 @@ const App = {
             timeoutBanner.innerHTML = `
                 <p>${getLang() === 'en' ? 'Want to continue solo in the meantime?' : 'Tu veux continuer en solo en attendant ?'}</p>
                 <button class="duo-timeout-solo-btn cta-btn" onclick="location.href='/'">
-                    ${getLang() === 'en' ? '🎬 Continue solo' : '🎬 Continuer en solo'}
+                    ${t('btn.solo')}
                 </button>
             `;
             const waitingContainer = document.querySelector('#duo-share .duo-card') || document.querySelector('#duo-share');
@@ -3104,7 +3104,7 @@ const App = {
             if (icon)    icon.textContent    = '⚡';
             if (title)   title.textContent   = 'Rerolls illimités';
             if (sub)     sub.textContent     = 'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite.';
-            if (ctaPrim) { ctaPrim.textContent = 'Passer Premium — 4,99€/mois'; ctaPrim.onclick = () => { this.hidePaywallModal(); /* TODO: open pricing page */ }; }
+            if (ctaPrim) { ctaPrim.textContent = t('paywall.premium'); ctaPrim.onclick = () => { this.hidePaywallModal(); /* TODO: open pricing page */ }; }
             if (ctaSec)  ctaSec.style.display = 'none';
         }
 
