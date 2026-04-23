@@ -4293,34 +4293,39 @@ body.duo-active {
 }
 
 .duo-waiting-anim {
-    margin-top: 1.4rem;
+    margin-top: 0;
+    margin-bottom: 1.25rem;
     width: 100%;
     text-align: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1.25rem 1rem 1rem;
 }
 
 .duo-wait-avatars {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.8rem;
-    margin-bottom: 0.75rem;
+    gap: 1rem;
+    margin-bottom: 0.65rem;
 }
 
 .duo-wait-avatar {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.4rem;
 }
 
 .duo-wait-avatar-icon {
-    width: 52px;
-    height: 52px;
+    width: 62px;
+    height: 62px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     border: 2px solid;
     transition: all 0.4s ease;
 }
@@ -4352,8 +4357,8 @@ body.duo-active {
 }
 
 .duo-wait-name {
-    font-size: 0.72rem;
-    color: rgba(255,255,255,0.45);
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.55);
     font-weight: 600;
     letter-spacing: 0.3px;
 }
