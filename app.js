@@ -1507,9 +1507,21 @@ const App = {
             // Ex : mood=Thriller(53) + exclusion "qui fait peur"(53) → impossibilité logique
             // Règle : le MOOD prend toujours la priorité sur les exclusions
             // On retire des exclusions tout genre qui est aussi requis par le mood
-            const conflictingExclusions = allExcludedGenres.filter(g => moodGenresArray.includes(g));
+            // ⚠️ On n'utilise que le genre PRINCIPAL du mood pour la détection (pas les genres secondaires)
+            // Ex : mood=comédie → genre principal = 35 (comédie), 10751 (famille) = secondaire
+            //      exclusion "ados" → genre 10751 → PAS un vrai conflit car comédie ≠ famille obligatoire
+            const PRIMARY_MOOD_GENRE = {
+                "35,10751": [35],         // comédie (35 = core, 10751 famille = secondaire)
+                "28,12":    [28, 12],     // action/aventure
+                "53":       [53],         // thriller
+                "27":       [27],         // horreur
+                "18,10749": [18, 10749],  // drame/romance
+                "878,9648": [878, 9648]   // SF/mystère
+            };
+            const primaryMoodGenres = PRIMARY_MOOD_GENRE[store.answers.mood] || moodGenresArray;
+            const conflictingExclusions = allExcludedGenres.filter(g => primaryMoodGenres.includes(g));
             const effectiveExclusions = conflictingExclusions.length > 0
-                ? allExcludedGenres.filter(g => !moodGenresArray.includes(g))
+                ? allExcludedGenres.filter(g => !primaryMoodGenres.includes(g))
                 : allExcludedGenres;
             if (conflictingExclusions.length > 0) {
                 console.warn(`⚠️ Conflit mood/exclusions détecté : genres [${conflictingExclusions.join(',')}] en conflit → mood prioritaire, exclusion ignorée pour ces genres`);
@@ -1860,8 +1872,8 @@ const App = {
         if (store._moodExclusionConflict) {
             const isEn = getLang() === 'en';
             const conflictMsg = isEn
-                ? '💡 We noticed a small contradiction: your mood and an exclusion overlapped. Your mood took priority — results may include some tension, but we\'ve minimised pure horror.'
-                : '💡 On a détecté une légère contradiction : ton humeur et une exclusion se chevauchaient. L\'humeur a eu la priorité — il peut y avoir de la tension, mais l\'horreur pure est filtrée au maximum.';
+                ? '💡 We noticed a small overlap between your mood and your exclusions. Your mood took priority — your exclusions are still applied as much as possible.'
+                : '💡 Ton humeur et une de tes exclusions se chevauchaient légèrement. L\'humeur a été prioritaire — tes exclusions restent appliquées au maximum.';
             const cb = document.createElement('div');
             cb.id = 'conflict-banner';
             cb.style.cssText = `
