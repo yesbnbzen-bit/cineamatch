@@ -1030,8 +1030,8 @@ const App = {
         let _tipTimer = null;
         const isEn = getLang() === 'en';
         const loadingTips = isEn
-            ? ['Did you know? TMDB has over 900,000 films indexed.','We analyse style, not just genre.','Cultural resonance matters — we factor it in.','Your past ratings improve every result.']
-            : ['Le saviez-vous ? TMDB recense plus de 900 000 films.','On analyse le style narratif, pas juste le genre.','La résonance culturelle entre en compte dans le calcul.','Tes notes passées affinent chaque résultat.'];
+            ? ['We analyse style, not just genre.','Cultural resonance matters — we factor it in.','Your past ratings improve every result.','Our database covers over 900,000 films worldwide.']
+            : ['On analyse le style narratif, pas juste le genre.','La résonance culturelle entre en compte dans le calcul.','Tes notes passées affinent chaque résultat.','Notre base couvre plus de 900 000 films dans le monde.'];
         let _tipIdx = 0;
         const startTips = () => {
             const subEl = document.getElementById('loading-sub');
