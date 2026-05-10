@@ -843,7 +843,21 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
 
         // ── Contexte social → impact sur le scoring ──
         const contextImpact = preferences.context === 'family'
-            ? `\n⛔ CONTEXTE FAMILLE (BLOQUANT) : Score = 0 automatique pour tout film violent, sexuellement explicite, ou contenu adulte.`
+            ? `\n⛔ CONTEXTE FAMILLE — CONTRAINTE ABSOLUE ET NON NÉGOCIABLE :
+Score = 0 FORCÉ pour TOUT film qui correspond à l'un de ces critères, MÊME SI son genre est "Animation" ou "SF" :
+  • Violence graphique, sang, morts violentes, combats brutaux (ex: Batman TDK Returns, Watchmen, Logan, Old Boy, Deadpool)
+  • Thèmes adultes : sexualité, addiction, trauma, horreur psychologique
+  • Ton sombre, nihiliste ou désespéré (ex: films de superhéros "dark", dystopies violentes)
+  • Certification française 16+ ou 18+ (ou équivalent)
+  • Animation pour adultes (ex: Batman The Dark Knight Returns, Invincible, The Boys : INTERDIT)
+
+✅ SEULS les films accessibles à des enfants de 8-12 ans sont autorisés en contexte famille :
+  • SF familiale : WALL-E, Zootopie, Moana, Les Indestructibles, Big Hero 6, En route !, Stitch
+  • Action/Aventure familiale : Indiana Jones, Star Wars (épisodes principaux), Jumanji (2017), Ghostbusters (1984)
+  • SF légère : E.T., Retour vers le futur, Gremlins (avec prudence), Men in Black (1)
+
+🚨 RÈGLE D'OR : Si tu hésites entre deux films dont l'un est "plus sûr" pour une famille, choisis TOUJOURS le plus sûr. Le contexte famille prime sur tout le reste — ADN, références, diversité.
+🚨 L'ADN des films de référence (ex: Ready Player One) ne doit PAS pousser vers des films adultes/sombres. Le contexte famille écrase l'ADN pour tout ce qui concerne la violence et le ton.`
             : preferences.context === 'couple'
             ? `\n💑 CONTEXTE COUPLE : Favorise les films avec une dimension émotionnelle forte, une tension relationnelle, ou une histoire qui invite à la discussion post-visionnage. +10 pts bonus pour les films qui créent un "effet miroir" dans une relation.`
             : preferences.context === 'friends'

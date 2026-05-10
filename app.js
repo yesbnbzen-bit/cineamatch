@@ -1530,6 +1530,19 @@ const App = {
                 store._moodExclusionConflict = false;
             }
 
+            // IDs TMDB de films explicitement interdits en contexte famille (dark/adulte malgré genre Animation ou SF)
+            const FAMILY_BLACKLIST_IDS = new Set([
+                38356,  // Batman: The Dark Knight Returns Part 1
+                183011, // Batman: The Dark Knight Returns Part 2
+                49009,  // Watchmen (film animé)
+                293660, // Deadpool
+                32657,  // Batman: Under the Red Hood
+                263115, // Logan
+                102382, // The Amazing Spider-Man 2 (violence)
+                102926, // Deadpool 2
+                567604, // Deadpool & Wolverine
+            ]);
+
             let safeCandidates = candidates.filter(c => {
                 const year = parseInt(c.release_date?.split('-')[0]) || 0;
                 const genres = c.genre_ids || [];
@@ -1549,6 +1562,8 @@ const App = {
                 // Filtre genre requis — le film doit avoir au moins un genre du mood demandé
                 // Évite les documentaires, drames, etc. qui viennent de SOURCE 1 (recs TMDb) ou SOURCE 3 (IA)
                 if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) return false;
+                // ⛔ Contexte famille : blacklist films dark/adultes même si genre = Animation ou SF
+                if (store.answers.context === 'family' && FAMILY_BLACKLIST_IDS.has(Number(c.id))) return false;
 
                 return true;
             });
