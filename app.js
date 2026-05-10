@@ -1750,10 +1750,27 @@ const App = {
             const finalMovies = [];
             const noSynopsisReserve = [];
 
+            // Construire un Set des IDs candidats valides (anti-hallucination IA)
+            const validCandidateIds = new Set(safeCandidates.map(c => Number(c.id)));
+
             for (const r of rankedDeduped) {
                 if (finalMovies.length >= 3) break;
+
+                // ✅ Anti-hallucination : vérifier que l'IA n'a pas inventé un ID hors candidats
+                if (!validCandidateIds.has(Number(r.tmdb_id))) {
+                    console.warn(`⚠️ ID ${r.tmdb_id} ("${r.match_reason?.substring(0,40)}...") absent des candidats — hallucination IA ignorée`);
+                    continue;
+                }
+
                 const details = await tmdbService.getMovieDetails(r.tmdb_id);
                 if (!details) continue;
+
+                // ✅ Anti-redirect TMDB : vérifier que l'ID retourné correspond bien à celui demandé
+                if (Number(details.id) !== Number(r.tmdb_id)) {
+                    console.warn(`⚠️ TMDB redirect détecté : demandé ${r.tmdb_id}, reçu ${details.id} (${details.title}) — film ignoré`);
+                    continue;
+                }
+
                 if (!details.overview || details.overview.trim().length < 10) {
                     // Pas de synopsis : mettre en réserve, on les utilisera si besoin
                     noSynopsisReserve.push({ ...details, ...r });
