@@ -1438,11 +1438,21 @@ const App = {
             }
 
             // SOURCE 3 : Suggestions précises de l'IA (enrichissement du pool)
+            // Si plateformes actives → on n'ajoute les suggestions IA que si elles
+            // sont déjà dans le pool Netflix (évite les films hors-plateforme)
             if (metadata.specific_suggestions?.length > 0) {
                 const searches = await Promise.all(
                     metadata.specific_suggestions.map(t => tmdbService.searchMovies(t).catch(() => null))
                 );
-                addUnique(searches.map(d => d?.results?.[0]).filter(Boolean));
+                const aiResults = searches.map(d => d?.results?.[0]).filter(Boolean);
+                const _activePlatforms = (store.preferredPlatforms || []).filter(p => p !== 'any');
+                if (_activePlatforms.length > 0) {
+                    // Garder seulement les films IA déjà présents dans le pool filtré Netflix
+                    const poolIds = new Set(candidates.map(c => Number(c.id)));
+                    addUnique(aiResults.filter(f => poolIds.has(Number(f.id))));
+                } else {
+                    addUnique(aiResults);
+                }
             }
 
             console.log(`📡 Pool total : ${candidates.length} candidats (ADN+Discovery+IA)`);
@@ -1682,8 +1692,8 @@ const App = {
             // Niveau 1 : Discovery large sans keywords (filtres époque + langue + exclusions conservés)
             if (safeCandidates.length < 6) {
                 console.log(`⚠️ Pool trop petit (${safeCandidates.length}), fallback L1 Discovery large`);
-                // Fallback L1 : pas de filtre plateforme (évite un pool vide en fallback)
-                const fb1 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage, _userPlatforms: [] }, {}, false, 1, []);
+                // Fallback L1 : garde le filtre plateforme, relâche seulement les keywords
+                const fb1 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage, _userPlatforms: store.preferredPlatforms || [] }, {}, false, 1, []);
                 for (const f of fb1) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
@@ -1705,7 +1715,8 @@ const App = {
                 if (!keepLangInL2) store._relaxedSearch = 'langue';
                 setStep(2, isEn ? '🌍 Expanding to all languages...' : '🌍 Élargissement toutes langues...');
                 console.log(`⚠️ Pool toujours petit, fallback L2 ${keepLangInL2 ? '(langue ADN conservée)' : 'sans filtre langue'}`);
-                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers }, {}, false, 1, []);
+                // Fallback L2 : garde le filtre plateforme, relâche langue
+                const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers, _userPlatforms: store.preferredPlatforms || [] }, {}, false, 1, []);
                 for (const f of fb2) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
