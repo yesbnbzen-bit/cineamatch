@@ -44,11 +44,81 @@ async function fillExclusions(page, excludeList) {
 }
 
 // ─────────────────────────────────────────────────────────────────
+//  Générer des variantes de recherche pour un titre
+//  Ex: "WALL-E" → ["WALL-E", "WALLE", "Wall E", "Wall"]
+// ─────────────────────────────────────────────────────────────────
+// Années connues pour les titres courts ambigus (évite les faux positifs)
+const KNOWN_YEARS = {
+  'her': '2013',
+  'it': '2017',
+  'us': '2019',
+  'up': '2009',
+  'io': '2019',
+  'ma': '2019',
+};
+
+function searchVariants(title) {
+  const variants = [title];
+  // Sans tiret
+  if (title.includes('-')) variants.push(title.replace(/-/g, ''));
+  // Tiret → espace
+  if (title.includes('-')) variants.push(title.replace(/-/g, ' '));
+  // Sans ponctuation spéciale
+  const clean = title.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+  if (clean !== title && clean.length > 0) variants.push(clean);
+  // Premier mot uniquement (si titre long)
+  const firstWord = title.split(/[\s\-:,]/)[0];
+  if (firstWord.length >= 3 && firstWord !== title) variants.push(firstWord);
+  // Titre très court (≤4 chars) → ajouter variante avec année pour lever l'ambiguïté
+  const key = title.trim().toLowerCase();
+  if (title.trim().length <= 4 && KNOWN_YEARS[key]) {
+    variants.push(`${title} ${KNOWN_YEARS[key]}`);
+  }
+  // Dédupliquer
+  return [...new Set(variants)];
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Trouver le meilleur résultat parmi les .search-item visibles
+//  Cherche d'abord une correspondance exacte, sinon prend le 1er
+// ─────────────────────────────────────────────────────────────────
+async function clickBestResult(page, ref) {
+  // Récupérer tous les titres affichés
+  const items = await page.$$('#search-results .search-item');
+  if (items.length === 0) return false;
+
+  const refLower = ref.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  // Chercher la meilleure correspondance par titre
+  let bestIdx = 0;
+  let bestScore = -1;
+
+  for (let i = 0; i < items.length; i++) {
+    const titleEl = await items[i].$('strong');
+    if (!titleEl) continue;
+    const titleText = (await titleEl.textContent() || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+    // Score : correspondance exacte = 100, commence par = 50, contient = 25
+    let score = 0;
+    if (titleText === refLower) score = 100;
+    else if (titleText.startsWith(refLower) || refLower.startsWith(titleText)) score = 50;
+    else if (titleText.includes(refLower) || refLower.includes(titleText)) score = 25;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = i;
+    }
+  }
+
+  await items[bestIdx].click();
+  return true;
+}
+
+// ─────────────────────────────────────────────────────────────────
 //  Étape films de référence (search-multi)
 // ─────────────────────────────────────────────────────────────────
 async function fillReferences(page, refs) {
   if (!refs || refs.length === 0) {
-    // Passer l'étape
     await page.waitForSelector('#search-skip-btn', { timeout: TIMEOUT_QUESTION });
     await page.click('#search-skip-btn');
     await wait(400);
@@ -58,31 +128,58 @@ async function fillReferences(page, refs) {
   await page.waitForSelector('#movie-search', { timeout: TIMEOUT_QUESTION });
 
   for (const ref of refs) {
-    await page.fill('#movie-search', '');
-    await page.type('#movie-search', ref, { delay: 60 });
+    const variants = searchVariants(ref);
+    let found = false;
 
-    // Attendre les résultats de recherche
-    try {
-      await page.waitForSelector('#search-results .search-result-item', {
-        timeout: 8000,
-      });
-      await wait(300);
-      // Cliquer sur le premier résultat
-      await page.click('#search-results .search-result-item:first-child');
-      await wait(500);
-    } catch (e) {
-      console.warn(`  ⚠️  Film "${ref}" non trouvé dans la recherche — ignoré`);
+    for (const variant of variants) {
+      console.log(`     🔍 Recherche "${variant}"...`);
+      await page.fill('#movie-search', '');
+      await page.type('#movie-search', variant, { delay: 80 });
+
+      // Attendre debounce (300ms) + appel API TMDB (réseau + rendu)
+      await wait(2500);
+
+      try {
+        await page.waitForSelector('#search-results .search-item', {
+          timeout: 6000,
+          state: 'visible',
+        });
+        await wait(300);
+
+        // Cliquer sur le meilleur résultat (pas forcément le 1er)
+        found = await clickBestResult(page, ref);
+        if (found) {
+          await wait(700);
+          console.log(`     ✓ Film "${ref}" sélectionné (variante: "${variant}")`);
+          break;
+        }
+      } catch (e) {
+        // Pas de résultats pour cette variante, essayer la suivante
+      }
+    }
+
+    if (!found) {
+      console.warn(`  ⚠️  Film "${ref}" introuvable après ${variants.length} variante(s) — ignoré`);
     }
   }
 
-  // Cliquer sur le bouton "Ajouter mes films" si des films ont été sélectionnés
+  // ── Vérifier combien de films ont vraiment été ajoutés ──
+  await wait(500);
+  const selectedBadges = await page.$$('#selected-movies .movie-badge');
+  const addedCount = selectedBadges.length;
+  console.log(`     📊 Films effectivement ajoutés : ${addedCount}/${refs.length}`);
+
+  if (addedCount === 0 && refs.length > 0) {
+    console.warn('     ⚠️  AUCUN film de référence ajouté — les résultats seront sans ADN !');
+  }
+
   const nextBtn = page.locator('#search-next-btn');
   const skipBtn = page.locator('#search-skip-btn');
 
   try {
-    await nextBtn.waitFor({ timeout: 3000, state: 'visible' });
-    const isVisible = await nextBtn.isVisible();
-    if (isVisible) {
+    const isNextVisible = await nextBtn.isVisible();
+    if (isNextVisible) {
+      console.log('     ✓ Clic sur "Valider les films"');
       await nextBtn.click();
     } else {
       await skipBtn.click();
@@ -90,7 +187,10 @@ async function fillReferences(page, refs) {
   } catch {
     await skipBtn.click();
   }
-  await wait(400);
+  await wait(600);
+
+  // Retourner le nombre de films vraiment sélectionnés (pour le rapport)
+  return addedCount;
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -123,7 +223,12 @@ async function fillQuestionnaire(page, profile) {
   await wait(600);
 
   console.log(`  → Q7 Références: ${references.join(', ') || '(aucune)'}`);
-  await fillReferences(page, references);
+  const refsAdded = await fillReferences(page, references);
+  if (references.length > 0 && refsAdded === 0) {
+    console.warn(`  ⚠️  ATTENTION : 0/${references.length} références ajoutées — résultats sans ADN`);
+  } else if (references.length > 0) {
+    console.log(`  ✅ ${refsAdded}/${references.length} références confirmées dans le DOM`);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────

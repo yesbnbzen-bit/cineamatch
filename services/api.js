@@ -369,18 +369,38 @@ export const tmdbService = {
             if (data2.results) results = [...results, ...data2.results];
         } catch(e) { console.warn("Next page fetch failed"); }
 
-        // Option B — Boost inspirant : requête parallèle biopic/histoire vraie pour mood "Émouvant / Inspirant"
+        // Option B — Boost pool secondaire selon la polarité émotionnelle détectée
         if ((preferences.mood === '18,10749' || preferences.blendedGenreIds?.includes('18')) && !isReroll) {
-            try {
-                // TMDB keyword IDs : 14769=biography, 9798=based on a true story, 4565=underdog
-                const inspiringUrl = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', with_genres: '18', 'with_keywords': '14769|9798|4565', 'vote_average.gte': '7.0', 'vote_count.gte': '500', sort_by: 'vote_average.desc', page: '1' });
-                const inspr = await fetch(inspiringUrl, { cache: 'no-store' });
-                const insprData = await inspr.json();
-                if (insprData.results?.length) {
-                    results = [...results, ...insprData.results];
-                    console.log(`🌟 Boost inspirant : +${insprData.results.length} films biopic/histoire vraie ajoutés au pool`);
-                }
-            } catch(e) { console.warn('Boost inspirant failed', e); }
+            const _sadEx  = (preferences.exclude || []).includes('sad');
+            const _couple = preferences.context === 'couple';
+            const _noAdn  = !(preferences.lastLovedMovies?.length > 0);
+            const _adnRom = (preferences.lastLovedMovies || []).some(m => (m.genre_ids || []).includes(10749));
+            const _romancePolarityActive = (_adnRom && _sadEx) || (_noAdn && _couple && _sadEx);
+
+            if (_romancePolarityActive) {
+                // POLARITÉ A → boost films Romance (genre 10749) bien notés
+                try {
+                    const romanceUrl = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', with_genres: '10749', 'vote_average.gte': '6.5', 'vote_count.gte': '300', sort_by: 'vote_average.desc', page: '1' });
+                    const romResp = await fetch(romanceUrl, { cache: 'no-store' });
+                    const romData = await romResp.json();
+                    if (romData.results?.length) {
+                        results = [...results, ...romData.results];
+                        console.log(`💕 Boost romance : +${romData.results.length} films romantiques ajoutés au pool`);
+                    }
+                } catch(e) { console.warn('Boost romance failed', e); }
+            } else {
+                // POLARITÉ B → boost biopic/histoire vraie inspirante
+                try {
+                    // TMDB keyword IDs : 14769=biography, 9798=based on a true story, 4565=underdog
+                    const inspiringUrl = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', with_genres: '18', 'with_keywords': '14769|9798|4565', 'vote_average.gte': '7.0', 'vote_count.gte': '500', sort_by: 'vote_average.desc', page: '1' });
+                    const inspr = await fetch(inspiringUrl, { cache: 'no-store' });
+                    const insprData = await inspr.json();
+                    if (insprData.results?.length) {
+                        results = [...results, ...insprData.results];
+                        console.log(`🌟 Boost inspirant : +${insprData.results.length} films biopic/histoire vraie ajoutés au pool`);
+                    }
+                } catch(e) { console.warn('Boost inspirant failed', e); }
+            }
         }
 
         // Fallback sans keywords si trop peu de résultats
@@ -887,20 +907,33 @@ Score = 0 FORCÉ pour TOUT film qui correspond à l'un de ces critères, MÊME S
         // Quand mood = émouvant + références romantiques : cibler romance chaleureuse, PAS drame émotionnel
         const sadExcluded = (preferences.exclude || []).includes('sad');
         const isRomanticMood = preferences.mood === '18,10749';
+        const hasReferences = preferences.lastLovedMovies?.length > 0;
+        const isCouple = preferences.context === 'couple';
 
-        const inspiringBiopicWarning = isRomanticMood && preferences.lastLovedMovies?.length > 0
-            ? adnHasRomance && sadExcluded
-                // POLARITÉ A : références romantiques + pas de tristesse → romance chaleureuse ciblée
-                ? `\n💕 POLARITÉ DÉTECTÉE : ROMANCE CHALEUREUSE / FEEL-GOOD (références : ${(likedMovies||[]).map(m=>m.title).join(', ')})
+        // POLARITÉ A active si :
+        //   • des références romantiques sont fournies + sad exclu (ADN-driven)
+        //   • OU pas de références + contexte couple + sad exclu (fallback romance par défaut)
+        const defaultsToRomance = (adnHasRomance && sadExcluded) || (!hasReferences && isCouple && sadExcluded);
+
+        const refLabel = hasReferences ? ` (références : ${(likedMovies||[]).map(m=>m.title).join(', ')})` : ' (aucune référence → défaut romance chaleureuse)';
+
+        const inspiringBiopicWarning = isRomanticMood
+            ? defaultsToRomance
+                // POLARITÉ A : romance chaleureuse ciblée
+                ? `\n💕 POLARITÉ DÉTECTÉE : ROMANCE CHALEUREUSE / FEEL-GOOD${refLabel}
 → L'utilisateur veut une romance POSITIVE, RÉCONFORTANTE, CHALEUREUSE. Pas un drame.
 → FILMS CIBLES PARFAITS : "Crazy Stupid Love", "The Holiday", "Notting Hill", "Marry Me", "Ticket to Paradise", "Serendipity", "Julie & Julia", "Begin Again", "One Day (2023)", "Hitch", "About Time", "La La Land".
 → FILMS INTERDITS DANS CE CONTEXTE (Score = 0) :
+  • Biopics / histoires vraies inspirantes SANS romance centrale : "À la recherche du bonheur", "Le Discours d'un roi", "Eddie the Eagle" → émouvants mais PAS des romances.
   • SF contemplative/intellectuelle sans romance centrale : "Premier Contact (Arrival)", "Interstellar", "Her" → beau mais pas "date movie chaleureux".
   • Drames émotion-maladie : "Mr. Church", "À deux mètres de toi", "Five Feet Apart", "The Fault in Our Stars".
   • Drames humains sans romance : films sur l'amitié, la perte, la mort sans dimension romantique principale.
-→ RÈGLE D'OR : Le genre principal DOIT être Romance (10749). Un film "émouvant" sans romance centrale n'est PAS ce que l'utilisateur cherche ici. Il veut se blottir avec son partenaire devant une belle histoire d'amour — pas pleurer devant un drame.`
-                // POLARITÉ B : références biopics/histoire vraie → dépassement humain
-                : `\n🎯 MOOD "ÉMOUVANT / INSPIRANT" + FILMS DE RÉFÉRENCE : Ce mood couvre deux registres. L'ADN indique lequel : si références = biopics/histoires vraies (Rocky, Judy, Williams...) → favorise le dépassement humain, -45 pts pour les romances sentimentales pures. Si références = romances (The Notebook, Titanic) → les romances sont bienvenues.`
+  • Comédies familiales / feel-good sans romance : "Little Miss Sunshine", "Soul" → charmants mais pas des date movies.
+→ RÈGLE D'OR : Le genre principal DOIT être Romance (10749). Un film "émouvant" sans romance centrale n'est PAS ce que l'utilisateur cherche ici. Il veut se blottir avec son partenaire devant une belle histoire d'amour — pas pleurer devant un drame, pas regarder un biopic.`
+                // POLARITÉ B : références biopics/histoire vraie ou pas de contexte couple → dépassement humain
+                : hasReferences
+                    ? `\n🎯 MOOD "ÉMOUVANT / INSPIRANT" + FILMS DE RÉFÉRENCE : Ce mood couvre deux registres. L'ADN indique lequel : si références = biopics/histoires vraies (Rocky, Judy, Williams...) → favorise le dépassement humain, -45 pts pour les romances sentimentales pures. Si références = romances (The Notebook, Titanic) → les romances sont bienvenues.`
+                    : ''
             : '';
 
         // ── Cast ADN : acteurs issus des films de référence ──

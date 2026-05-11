@@ -1,4 +1,4 @@
-import { tmdbService, openaiService } from './services/api.js?v=58'; // api unchanged
+import { tmdbService, openaiService } from './services/api.js?v=59';
 import { store, getters } from './state/store.js?v=43';
 import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1541,6 +1541,11 @@ const App = {
                 102382, // The Amazing Spider-Man 2 (violence)
                 102926, // Deadpool 2
                 567604, // Deadpool & Wolverine
+                603,    // Matrix (violence intense, ados+)
+                412656, // Chaos Walking (violence, PG-13 serré)
+                37799,  // Project X (contenu adulte)
+                320343, // Venom (violence)
+                335983, // Venom: Let There Be Carnage
             ]);
 
             // IDs TMDB de films sick-lit/drame-maladie/teen-drame — filtrés si exclusion 'sad' ou 'teen' active
@@ -1557,6 +1562,48 @@ const App = {
                 13354,  // P.S. I Love You (deuil romantique)
                 67794,  // Now Is Good (drame maladie ado)
                 228150, // If I Stay (drame maladie ado)
+            ] : []);
+
+            // IDs TMDB de biopics/drames humains sans romance — filtrés quand contexte couple + mood émouvant + sad exclu
+            // Ces films sont émouvants mais ne sont PAS des "date movies" romantiques
+            const isRomanceCoupleContext = store.answers.context === 'couple'
+                && store.answers.mood === '18,10749'
+                && excludesSad;
+            const COUPLE_ROMANCE_BLACKLIST_IDS = new Set(isRomanceCoupleContext ? [
+                1402,   // À la recherche du bonheur (The Pursuit of Happyness)
+                314,    // Forrest Gump (biopic humain)
+                328111, // Eddie the Eagle
+                359724, // Ford v Ferrari
+                9532,   // Le Discours d'un roi
+                76203,  // 12 Years a Slave
+                205596, // The Imitation Game
+                49538,  // The Theory of Everything
+                425,    // Little Miss Sunshine (comédie famille, pas romance)
+            ] : []);
+
+            // IDs TMDB de films gore/torture porn/extrêmes — filtrés quand exclusion 'horror' (Trop violent) active
+            // S'applique MÊME quand le mood est Horreur (l'utilisateur veut horreur psychologique, PAS gore)
+            const excludesViolence = (store.answers.exclude || []).includes('horror');
+            const GORE_HORROR_BLACKLIST_IDS = new Set(excludesViolence ? [
+                19766,  // Antichrist (Lars Von Trier — extrême)
+                176,    // Saw (torture porn)
+                1903,   // Saw II
+                1905,   // Saw III
+                8337,   // Hostel (torture porn)
+                20322,  // Hostel: Part II
+                13580,  // Martyrs (2008 — extrême)
+                614917, // Terrifier
+                889679, // Terrifier 2
+                614916, // Terrifier 3
+                49387,  // The Human Centipede
+                228970, // A Serbian Film
+                397422, // Raw (Grave — cannibalisme)
+                546554, // Fear Street: 1978 (slasher gore)
+                550988, // Fear Street: 1666
+                436270, // Fear Street: 1994
+                12155,  // Inside (À l'intérieur — 2007, extrême)
+                11838,  // Frontier(s) (extrême)
+                10929,  // Haute Tension (gore extrême)
             ] : []);
 
             let safeCandidates = candidates.filter(c => {
@@ -1582,6 +1629,10 @@ const App = {
                 if (store.answers.context === 'family' && FAMILY_BLACKLIST_IDS.has(Number(c.id))) return false;
                 // ⛔ Exclusion sad/teen : blacklist films sick-lit, drame-maladie, teen-drame
                 if (SAD_TEEN_BLACKLIST_IDS.has(Number(c.id))) return false;
+                // ⛔ Contexte couple + mood émouvant + sad exclu : blacklist biopics/drames humains sans romance
+                if (COUPLE_ROMANCE_BLACKLIST_IDS.has(Number(c.id))) return false;
+                // ⛔ Exclusion "Trop violent" : blacklist films gore/torture porn/extrêmes (même si mood = horreur)
+                if (GORE_HORROR_BLACKLIST_IDS.has(Number(c.id))) return false;
 
                 return true;
             });
