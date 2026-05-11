@@ -1907,17 +1907,22 @@ const App = {
                     continue;
                 }
 
-                // ✅ FILTRE PLATEFORME FINAL (garantie absolue)
-                // Même si un film a passé le filtre TMDB, on vérifie qu'il est bien sur la plateforme de l'utilisateur
+                // ✅ FILTRE PLATEFORME FINAL
+                // On ne rejette que si les données providers sont présentes ET confirment l'absence
+                // (Si watch/providers est vide → on fait confiance au filtre TMDB Discover déjà appliqué)
                 const _activePlats = (store.preferredPlatforms || []).filter(p => p !== 'any').map(String);
                 if (_activePlats.length > 0) {
                     const frP = details['watch/providers']?.results?.FR || {};
                     const flatIds = (frP.flatrate || []).map(p => String(p.provider_id));
-                    const isOnPlat = _activePlats.some(id => flatIds.includes(id));
-                    if (!isOnPlat) {
-                        console.log(`⛔ "${details.title}" absent des plateformes sélectionnées (${_activePlats.join(',')}) → rejeté`);
-                        continue;
+                    // Seulement si on a des données provider → vérifier
+                    if (flatIds.length > 0) {
+                        const isOnPlat = _activePlats.some(id => flatIds.includes(id));
+                        if (!isOnPlat) {
+                            console.log(`⛔ "${details.title}" providers FR: [${flatIds.join(',')}] — absent de [${_activePlats.join(',')}] → rejeté`);
+                            continue;
+                        }
                     }
+                    // Si flatIds vide → pas de données providers pour ce film → on accepte (découverte TMDB fait foi)
                 }
 
                 if (!details.overview || details.overview.trim().length < 10) {
