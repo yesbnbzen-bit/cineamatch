@@ -1739,7 +1739,7 @@ const App = {
                 setStep(2, isEn ? '📅 Expanding to all eras...' : '📅 Élargissement toutes époques...');
                 console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque NI langue`);
                 const fb3 = await tmdbService.getAdvancedDiscovery(
-                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude, _userPlatforms: store.preferredPlatforms || [] },
+                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude, _userPlatforms: [] },
                     {}, false, 1, []
                 );
                 for (const f of fb3) {
@@ -1761,7 +1761,7 @@ const App = {
                 console.log(`🚨 Fallback NUCLEAR : genre mood conservé, époque/langue/keywords ignorés`);
                 try {
                     // On garde le genre mood pour rester "dans le même esprit"
-                    const nuclearPrefs = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: store.preferredPlatforms || [] };
+                    const nuclearPrefs = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: [] };
                     const nuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs, {}, false, 1, []);
                     for (const f of nuclear) {
                         const genres = f.genre_ids || [];
@@ -1782,7 +1782,7 @@ const App = {
                 console.warn('🔄 Pool épuisé — reset de l\'historique de session pour débloquer');
                 store.suggestedMovieIds = store.suggestedMovieIds.slice(-6); // Garde seulement les 6 derniers
                 store.suggestedTitles   = store.suggestedTitles.slice(-6);
-                const nuclearPrefs2 = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: store.preferredPlatforms || [] };
+                const nuclearPrefs2 = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: [] };
                 try {
                     const retryNuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs2, {}, false, 1, []);
                     for (const f of retryNuclear) {
@@ -1907,23 +1907,8 @@ const App = {
                     continue;
                 }
 
-                // ✅ FILTRE PLATEFORME FINAL
-                // On ne rejette que si les données providers sont présentes ET confirment l'absence
-                // (Si watch/providers est vide → on fait confiance au filtre TMDB Discover déjà appliqué)
-                const _activePlats = (store.preferredPlatforms || []).filter(p => p !== 'any').map(String);
-                if (_activePlats.length > 0) {
-                    const frP = details['watch/providers']?.results?.FR || {};
-                    const flatIds = (frP.flatrate || []).map(p => String(p.provider_id));
-                    // Seulement si on a des données provider → vérifier
-                    if (flatIds.length > 0) {
-                        const isOnPlat = _activePlats.some(id => flatIds.includes(id));
-                        if (!isOnPlat) {
-                            console.log(`⛔ "${details.title}" providers FR: [${flatIds.join(',')}] — absent de [${_activePlats.join(',')}] → rejeté`);
-                            continue;
-                        }
-                    }
-                    // Si flatIds vide → pas de données providers pour ce film → on accepte (découverte TMDB fait foi)
-                }
+                // Note : le filtre plateforme est appliqué en amont via with_watch_providers=ID sur TMDB Discover.
+                // Pas de filtre dur ici pour éviter les 0 résultats (catalogue Netflix limité).
 
                 if (!details.overview || details.overview.trim().length < 10) {
                     // Pas de synopsis : mettre en réserve, on les utilisera si besoin
