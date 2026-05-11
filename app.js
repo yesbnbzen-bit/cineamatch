@@ -1637,6 +1637,8 @@ const App = {
                 if (lovedMovieIds.includes(Number(c.id))) return false;
                 // Films déjà suggérés → pas de répétition
                 if (store.suggestedMovieIds.includes(Number(c.id))) return false;
+                // Téléfilms (TV Movie genre 10770) → exclus par défaut
+                if (genres.includes(10770)) return false;
                 // Filtre époque → s'applique à toutes les sources
                 if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) return false;
                 // Filtre exclusions genres → s'applique à toutes les sources (animation, horreur, etc.)
@@ -2115,7 +2117,14 @@ const App = {
             const flatrate     = frProviders.flatrate || [];
             const rent         = frProviders.rent     || [];
             const isVOD        = flatrate.length === 0 && rent.length > 0;
-            const displayProviders = flatrate.length > 0 ? flatrate : rent;
+            const rawProviders = flatrate.length > 0 ? flatrate : rent;
+            // Trier : plateformes préférées de l'utilisateur en premier
+            const _userPlats = (store.preferredPlatforms || []).map(p => p.toLowerCase());
+            const displayProviders = [...rawProviders].sort((a, b) => {
+                const aOk = _userPlats.some(p => (a.provider_name || '').toLowerCase().includes(p) || p.includes((a.provider_name || '').toLowerCase()));
+                const bOk = _userPlats.some(p => (b.provider_name || '').toLowerCase().includes(p) || p.includes((b.provider_name || '').toLowerCase()));
+                return (bOk ? 1 : 0) - (aOk ? 1 : 0);
+            });
             const jwSlug = m.title
                 ? encodeURIComponent(m.title.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().replace(/\s+/g,'-'))
                 : '';
