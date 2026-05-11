@@ -5,16 +5,18 @@
 
 const PROFILES = [
 
+  // ── ANCIENS PROFILS (validés) ──────────────────────────────────
+
   {
     id: 'romance-mature',
     name: '💕 Romance mature émouvante mais pas triste',
     answers: {
-      context:  'couple',       // En couple
-      mood:     '18,10749',     // Émouvant / Inspirant
-      language: 'any',          // Peu importe
-      duration: 'any',          // Peu importe
-      exclude:  ['sad', 'slow', 'teen'], // Trop triste / Trop lent / Films d'ados
-      era:      'any',          // Peu importe
+      context:  'couple',
+      mood:     '18,10749',
+      language: 'any',
+      duration: 'any',
+      exclude:  ['sad', 'slow', 'teen'],
+      era:      'any',
     },
     references: ['About Time', 'La La Land', 'Her'],
     expectations: {
@@ -29,11 +31,11 @@ const PROFILES = [
     id: 'sf-familiale',
     name: '🚀 SF familiale feel-good',
     answers: {
-      context:  'family',       // En famille
-      mood:     '878,9648',     // SF / Mystère
-      language: 'en',           // Américain
+      context:  'family',
+      mood:     '878,9648',
+      language: 'en',
       duration: 'any',
-      exclude:  ['complex', 'horror', 'adult'], // Trop complexe / Trop violent / Contenu adulte
+      exclude:  ['complex', 'horror', 'adult'],
       era:      'any',
     },
     references: ['WALL-E', 'Ready Player One', 'Big Hero 6'],
@@ -49,11 +51,11 @@ const PROFILES = [
     id: 'horreur-psychologique',
     name: '😱 Horreur psychologique sans gore',
     answers: {
-      context:  'alone',        // Seul
-      mood:     '27',           // Horreur
+      context:  'alone',
+      mood:     '27',
       language: 'any',
       duration: 'any',
-      exclude:  ['horror'],     // Trop violent (gore)
+      exclude:  ['horror'],
       era:      'any',
     },
     references: ['Hereditary', 'Midsommar', 'The Others'],
@@ -69,11 +71,11 @@ const PROFILES = [
     id: 'thriller-intelligent',
     name: '🕵️ Thriller intelligent mais pas lent',
     answers: {
-      context:  'alone',        // Seul
-      mood:     '53',           // Thriller / Suspense
+      context:  'alone',
+      mood:     '53',
       language: 'any',
       duration: 'any',
-      exclude:  ['slow', 'complex'], // Trop lent / Trop complexe
+      exclude:  ['slow', 'complex'],
       era:      'any',
     },
     references: ['Gone Girl', 'Knives Out', 'Prisoners'],
@@ -89,19 +91,121 @@ const PROFILES = [
     id: 'comedie-francaise',
     name: '🇫🇷 Comédie française entre amis',
     answers: {
-      context:  'friends',      // Entre amis
-      mood:     '35,10751',     // Rire / Comédie
-      language: 'fr',           // Français
+      context:  'friends',
+      mood:     '35,10751',
+      language: 'fr',
       duration: 'any',
-      exclude:  ['sad', 'adult'], // Trop triste / Contenu adulte
+      exclude:  ['sad', 'adult'],
       era:      'any',
     },
-    references: [],             // Pas de références (skip)
+    references: [],
     expectations: {
       shouldContain:    ['humour', 'comédie', 'rire', 'légèreté', 'fun'],
       shouldNotContain: ['violence', 'déprimant', 'tragique'],
       expectedGenres:   ['Comédie'],
       forbiddenGenres:  ['Horreur', 'Thriller'],
+    },
+  },
+
+  // ── NOUVEAUX PROFILS ───────────────────────────────────────────
+
+  {
+    id: 'romance-sans-adn',
+    name: '💑 Romance sans références — fallback couple',
+    answers: {
+      context:  'couple',
+      mood:     '18,10749',
+      language: 'any',
+      duration: 'any',
+      exclude:  ['sad', 'teen'],
+      era:      'any',
+    },
+    references: [],   // ← AUCUNE référence : teste le fallback romance chaleureuse
+    expectations: {
+      shouldContain:    ['romance', 'romantique', 'amour', 'couple', 'feel-good'],
+      shouldNotContain: ['biopic', 'réussite', 'lutte', 'pauvreté', 'tragédie'],
+      expectedGenres:   ['Romance', 'Comédie'],
+      forbiddenGenres:  ['Horreur', 'Thriller', 'Guerre'],
+    },
+  },
+
+  {
+    id: 'biopic-inspirant',
+    name: '🏆 Biopic inspirant dépassement humain',
+    answers: {
+      context:  'alone',
+      mood:     '18,10749',
+      language: 'any',
+      duration: 'any',
+      exclude:  ['slow'],          // Pas d'exclusion "sad" → POLARITÉ B attendue
+      era:      'any',
+    },
+    references: ['Whiplash', 'Rocky', 'Bohemian Rhapsody'],
+    expectations: {
+      shouldContain:    ['dépassement', 'ambition', 'lutte', 'inspirant', 'réussite'],
+      shouldNotContain: ['romance sentimentale', 'comédie romantique'],
+      expectedGenres:   ['Drame', 'Biographie', 'Musique'],
+      forbiddenGenres:  ['Horreur', 'Animation'],
+    },
+  },
+
+  {
+    id: 'thriller-coreeen',
+    name: '🇰🇷 Thriller coréen style Parasite',
+    answers: {
+      context:  'alone',
+      mood:     '53',
+      language: 'any',
+      duration: 'any',
+      exclude:  ['slow'],
+      era:      'any',
+    },
+    references: ['Parasite', 'Oldboy', 'Train to Busan'],
+    expectations: {
+      shouldContain:    ['coréen', 'tension', 'suspense', 'social', 'intense'],
+      shouldNotContain: ['feel-good', 'légèreté', 'comédie'],
+      expectedGenres:   ['Thriller', 'Drame', 'Horreur'],
+      forbiddenGenres:  ['Animation', 'Comédie'],
+    },
+  },
+
+  {
+    id: 'anime-feel-good',
+    name: '🎌 Animé feel-good entre amis',
+    answers: {
+      context:  'friends',
+      mood:     '28,12',           // Action / Aventure
+      language: 'any',
+      duration: 'any',
+      exclude:  ['sad', 'complex'],
+      era:      'any',
+    },
+    references: ['Spirited Away', 'Your Name', 'Princess Mononoke'],
+    expectations: {
+      shouldContain:    ['animation', 'aventure', 'poétique', 'japonais', 'magie'],
+      shouldNotContain: ['gore', 'violence extrême', 'adulte'],
+      expectedGenres:   ['Animation', 'Aventure', 'Fantastique'],
+      forbiddenGenres:  ['Horreur'],
+    },
+  },
+
+  {
+    id: 'action-recente',
+    name: '⚡ Action récente 2020+ solo',
+    answers: {
+      context:  'alone',
+      mood:     '28,12',
+      language: 'en',
+      duration: 'any',
+      exclude:  ['slow', 'complex'],
+      era:      'new',             // Récent (2020+)
+    },
+    references: ['John Wick', 'Mission: Impossible'],
+    expectations: {
+      shouldContain:    ['action', 'adrénaline', 'rythme', 'spectaculaire'],
+      shouldNotContain: ['lent', 'contemplatif', 'années 90', 'années 80'],
+      expectedGenres:   ['Action', 'Aventure', 'Thriller'],
+      forbiddenGenres:  ['Animation', 'Comédie'],
     },
   },
 
