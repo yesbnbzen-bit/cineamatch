@@ -1739,7 +1739,7 @@ const App = {
                 setStep(2, isEn ? '📅 Expanding to all eras...' : '📅 Élargissement toutes époques...');
                 console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque NI langue`);
                 const fb3 = await tmdbService.getAdvancedDiscovery(
-                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude },
+                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude, _userPlatforms: store.preferredPlatforms || [] },
                     {}, false, 1, []
                 );
                 for (const f of fb3) {
@@ -1761,7 +1761,7 @@ const App = {
                 console.log(`🚨 Fallback NUCLEAR : genre mood conservé, époque/langue/keywords ignorés`);
                 try {
                     // On garde le genre mood pour rester "dans le même esprit"
-                    const nuclearPrefs = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')) };
+                    const nuclearPrefs = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: store.preferredPlatforms || [] };
                     const nuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs, {}, false, 1, []);
                     for (const f of nuclear) {
                         const genres = f.genre_ids || [];
@@ -1782,7 +1782,7 @@ const App = {
                 console.warn('🔄 Pool épuisé — reset de l\'historique de session pour débloquer');
                 store.suggestedMovieIds = store.suggestedMovieIds.slice(-6); // Garde seulement les 6 derniers
                 store.suggestedTitles   = store.suggestedTitles.slice(-6);
-                const nuclearPrefs2 = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')) };
+                const nuclearPrefs2 = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: store.preferredPlatforms || [] };
                 try {
                     const retryNuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs2, {}, false, 1, []);
                     for (const f of retryNuclear) {
@@ -1905,6 +1905,19 @@ const App = {
                 if (Number(details.id) !== Number(r.tmdb_id)) {
                     console.warn(`⚠️ TMDB redirect détecté : demandé ${r.tmdb_id}, reçu ${details.id} (${details.title}) — film ignoré`);
                     continue;
+                }
+
+                // ✅ FILTRE PLATEFORME FINAL (garantie absolue)
+                // Même si un film a passé le filtre TMDB, on vérifie qu'il est bien sur la plateforme de l'utilisateur
+                const _activePlats = (store.preferredPlatforms || []).filter(p => p !== 'any').map(String);
+                if (_activePlats.length > 0) {
+                    const frP = details['watch/providers']?.results?.FR || {};
+                    const flatIds = (frP.flatrate || []).map(p => String(p.provider_id));
+                    const isOnPlat = _activePlats.some(id => flatIds.includes(id));
+                    if (!isOnPlat) {
+                        console.log(`⛔ "${details.title}" absent des plateformes sélectionnées (${_activePlats.join(',')}) → rejeté`);
+                        continue;
+                    }
                 }
 
                 if (!details.overview || details.overview.trim().length < 10) {
