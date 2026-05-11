@@ -353,14 +353,29 @@ export const preferencesService = {
     },
 
     loadPlatforms(user) {
+        // Migration : anciens comptes stockaient les noms ("Netflix") → convertir en IDs numériques ("8")
+        const NAME_TO_ID = {
+            'netflix': '8', 'prime video': '119', 'amazon prime video': '119',
+            'disney+': '337', 'disney plus': '337',
+            'apple tv+': '350', 'apple tv': '350',
+            'canal+': '381', 'max': '1899', 'hbo max': '1899',
+            'paramount+': '531', 'crunchyroll': '283'
+        };
+        const normalize = (arr) => arr.map(p => {
+            if (/^\d+$/.test(String(p))) return String(p); // déjà un ID numérique
+            return NAME_TO_ID[String(p).toLowerCase()] || String(p);
+        });
+
         const fromMeta = user?.user_metadata?.streaming_platforms;
         if (fromMeta && Array.isArray(fromMeta) && fromMeta.length > 0) {
-            localStorage.setItem('preferred_platforms', JSON.stringify(fromMeta));
-            return fromMeta;
+            const normalized = normalize(fromMeta);
+            localStorage.setItem('preferred_platforms', JSON.stringify(normalized));
+            return normalized;
         }
         try {
             const stored = localStorage.getItem('preferred_platforms');
-            return stored ? JSON.parse(stored) : [];
+            const parsed = stored ? JSON.parse(stored) : [];
+            return normalize(parsed);
         } catch { return []; }
     },
 
