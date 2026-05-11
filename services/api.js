@@ -959,7 +959,20 @@ ${weightingDescription}
 → Énergie demandée : ${preferences.moodLabel}.
 → Le film correspond-il au rythme, au ton, à l'intensité émotionnelle attendus ?
 → Attention au niveau d'attention : ${preferences.pace === 'easy' ? 'évite les films denses et cryptiques' : preferences.pace === 'mindblow' ? 'favorise les films à multiples couches' : 'Scénario construit OK'}.
-${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exemples parfaits de ce registre : "À la recherche du bonheur", "La Méthode Williams", "Rocky", "Whiplash", "Joy", "Billy Elliot", "8 Mile", "Eddie the Eagle", "The Blind Side", "Soul", "Judy", "Bohemian Rhapsody", "Rocketman", "Clouds", "The Pursuit of Happyness". Donne ${weights.mood} pts aux films qui partagent ce registre (dépassement humain, ambition, résilience, émotion authentique). Pénalise les films qui sont de la pure fiction sentimentale/romantique sans dimension de dépassement ou d'accomplissement personnel.` : ''}
+${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — Ce mood couvre DEUX polarités distinctes selon les références fournies :
+
+  🌟 POLARITÉ A — Émotion POSITIVE/RÉCONFORTANTE (About Time, La La Land, Her, Amelie, Soul, Eternal Sunshine) :
+  → Chaleur émotionnelle, nostalgie douce, amour adulte, humour et émotion mêlés, fin heureuse ou apaisante.
+  → Films cibles : "Crazy Stupid Love", "Marry Me", "The Holiday", "Notting Hill", "Julie & Julia", "Midnight in Paris", "Chef", "Begin Again".
+  → À ÉVITER si ces références : mélodrames lourds, romances tragiques, deuil comme intrigue principale.
+
+  💧 POLARITÉ B — Émotion INSPIRANTE/DÉPASSEMENT (Rocky, Whiplash, À la recherche du bonheur) :
+  → Résilience, ambition, biopic, histoire vraie, dépassement de soi.
+  → Films cibles : "La Méthode Williams", "Eddie the Eagle", "Judy", "Bohemian Rhapsody", "The Pursuit of Happyness".
+
+  ⚠️ RÈGLE : Identifie la polarité depuis les références fournies et score en conséquence.
+  Si les références sont romantiques/poétiques (La La Land, About Time, Her) → POLARITÉ A : donne ${weights.mood} pts aux films chauds/romantiques/réconfortants. Score = 0 pour les mélodrames pleurants (Nicholas Sparks, sick-lit).
+  Si les références sont des biopics/histoires vraies → POLARITÉ B.` : ''}
 
 ⭐ ÉTAPE D — QUALITÉ OBJECTIVE (${weights.quality} pts max)
 → ≥ 8.0 = ${weights.quality} pts | 7.5-8.0 = ${Math.round(weights.quality*0.8)} pts | 7.0-7.5 = ${Math.round(weights.quality*0.6)} pts | < 7.0 = ${Math.round(weights.quality*0.4)} pts.
@@ -972,10 +985,22 @@ ${preferences.mood === '18,10749' ? `→ MOOD "ÉMOUVANT / INSPIRANT" — exempl
 ${preferences.context === 'family' ? '→ Contenu adulte/violent/sexuel avec contexte famille : Score = 0 FORCÉ' : ''}
 ${preferences.exclude?.includes('horror') ? '→ Film d\'horreur (genre 27 : gore, jump-scares, créatures, possession) alors que l\'utilisateur l\'a explicitement exclu : Score = 0 FORCÉ.' : ''}
 ${preferences.exclude?.includes('scary') ? '→ Film d\'horreur pure (Conjuring, Hereditary, Insidious, Annabelle, Sinister...) alors que l\'utilisateur a exclu "qui fait peur" : Score = 0 FORCÉ.\n→ Thriller de suspense intense (Se7en, Silence des Agneaux, Prisoners) : -20 pts — acceptable si c\'est le meilleur match, mais à éviter si des alternatives existent.\n→ Note : un thriller d\'action ou dystopique (American Nightmare, Jason Bourne, Mission Impossible) N\'EST PAS "qui fait peur" — ne pas pénaliser.' : ''}
-${preferences.exclude?.includes('sad') ? '→ Film déprimant/lourd/à fin tragique alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
+${preferences.exclude?.includes('sad') ? `→ Film déprimant/lourd/à fin tragique alors que l'utilisateur l'a exclu : Score = 0 FORCÉ.
+→ ARCHÉTYPES INTERDITS avec exclusion "trop triste" :
+  • Romances-tragédie / Nicholas Sparks style : "Une seconde chance (The Best of Me)", "N'oublie jamais (The Notebook)", "Là où tu es (Message in a Bottle)", "Chère John", "The Longest Ride" → Score = 0.
+  • Sick-lit / romance maladie : "À deux mètres de toi (Five Feet Apart)", "Nos étoiles contraires (The Fault in Our Stars)", "Avant toi (Me Before You)", "Everything, Everything", "À deux c'est mieux" → Score = 0.
+  • Drames de deuil, séparation, perte d'un être cher comme intrigue principale → Score = 0.
+  • POLARITÉ ÉMOTIONNELLE : "émouvant" ne signifie PAS "douloureux". L'utilisateur veut de l'émotion POSITIVE, de la chaleur, du réconfort — pas des larmes de tristesse. Films cibles : "About Time", "La La Land", "Soul", "Toy Story 3", "Crazy Stupid Love", "Marry Me", non pas des mélodrames déchirants.` : ''}
 ${preferences.exclude?.includes('adult') ? '→ Film avec nudité/contenu sexuel explicite alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
 ${preferences.exclude?.includes('animation') ? '→ Film d\'animation alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ.' : ''}
-${preferences.exclude?.includes('teen') ? '→ Film dont le public cible est clairement adolescent (lycée, coming-of-age, romance ado, teen drama) alors que l\'utilisateur l\'a exclu : Score = 0 FORCÉ. Critères : personnages principaux en lycée/collège, intrigue centrée sur l\'adolescence, public visé 13-17 ans. Exemples exclus : "À tous les garçons que j\'ai aimés", "Clueless", "The Kissing Booth", "Twilight", "The Fault in Our Stars", "Divergente". Un film comme "The Breakfast Club" ou "Stand by Me" peut être exclu également.' : ''}
+${preferences.exclude?.includes('teen') ? `→ Film dont le public cible est clairement adolescent (lycée, coming-of-age, romance ado, teen drama) alors que l'utilisateur l'a exclu : Score = 0 FORCÉ.
+→ Critères d'exclusion : personnages principaux ≤ 18 ans, intrigue centrée sur l'adolescence, public visé 13-17 ans, romance lycéenne/collégienne.
+→ LISTE D'EXEMPLES INTERDITS (Score = 0) :
+  • Romances ado : "À tous les garçons que j'ai aimés", "The Kissing Booth", "Twilight", "Bande de filles", "Mes premiers pas"
+  • Sick-lit ado : "À deux mètres de toi (Five Feet Apart)", "Nos étoiles contraires", "Everything, Everything", "Avant toi" (protagoniste pas ado mais vibe similaire)
+  • Coming-of-age : "Divergente", "The Maze Runner", "Hunger Games", "The Breakfast Club", "Juno", "Lady Bird"
+  • Dramas lycée : "13 Reasons Why", "Euphoria", "Sex Education", "Skins"
+→ ATTENTION : un film avec de jeunes adultes (20-25 ans) n'est PAS forcément "teen". Critère clé = est-ce que le lycée/l'adolescence est le CADRE CENTRAL de l'histoire ?` : ''}
 ${preferences.exclude?.includes('slow') ? '→ Film au rythme contemplatif/très lent avec exclusion "lenteur" demandée : -30 pts. Privilégie un rythme soutenu, des scènes qui avancent.' : ''}
 ${preferences.exclude?.includes('complex') ? '→ Film à scénario alambiqué/cryptique/non-linéaire difficile à suivre alors que l\'utilisateur veut du simple : -30 pts. Favorise des récits clairs et accessibles.' : ''}
 
