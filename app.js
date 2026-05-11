@@ -1661,11 +1661,13 @@ const App = {
                 console.log(`📡 Pool L1 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 2 : on lâche le filtre langue (garde époque + exclusions genres)
+            // Niveau 2 : on lâche le filtre langue UNIQUEMENT si pas de langue auto-détectée depuis ADN
+            // Si langue détectée depuis références (ex: Parasite → ko), on garde le filtre pour respecter l'intention
             if (safeCandidates.length < 6) {
-                store._relaxedSearch = 'langue';
+                const keepLangInL2 = !!detectedLanguage && store.answers.language === 'any';
+                if (!keepLangInL2) store._relaxedSearch = 'langue';
                 setStep(2, isEn ? '🌍 Expanding to all languages...' : '🌍 Élargissement toutes langues...');
-                console.log(`⚠️ Pool toujours petit, fallback L2 sans filtre langue`);
+                console.log(`⚠️ Pool toujours petit, fallback L2 ${keepLangInL2 ? '(langue ADN conservée)' : 'sans filtre langue'}`);
                 const fb2 = await tmdbService.getAdvancedDiscovery({ ...store.answers }, {}, false, 1, []);
                 for (const f of fb2) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
@@ -1674,6 +1676,8 @@ const App = {
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
+                    // Si langue auto-détectée depuis ADN → conserver le filtre même en L2
+                    if (keepLangInL2 && langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
                 }

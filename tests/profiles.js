@@ -125,7 +125,8 @@ const PROFILES = [
       shouldContain:    ['romance', 'romantique', 'amour', 'couple', 'feel-good'],
       shouldNotContain: ['biopic', 'réussite', 'lutte', 'pauvreté', 'tragédie'],
       expectedGenres:   ['Romance', 'Comédie'],
-      forbiddenGenres:  ['Horreur', 'Thriller', 'Guerre'],
+      // Thriller toléré si romance est aussi présent (ex: Sueurs froides/Vertigo = romance + suspense)
+      forbiddenGenres:  ['Horreur', 'Guerre'],
     },
   },
 
