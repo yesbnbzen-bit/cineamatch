@@ -878,13 +878,29 @@ Score = 0 FORCÉ pour TOUT film qui correspond à l'un de ces critères, MÊME S
         // contient toujours les genres du mood. Le vrai signal = est-ce que les films de référence eux-mêmes
         // sont romantiques ? Si mood inclut romance MAIS films de référence ne le sont pas → warning.
         const adnHasRomance = (likedMovies || []).some(m => (m.genre_ids || []).includes(10749));
+        const adnIsBiopic = (likedMovies || []).some(m => (m.genre_ids || []).includes(36) || (m.genre_ids || []).includes(18) && !(m.genre_ids || []).includes(10749));
         const romanceWarning = !adnHasRomance && preferences.mood?.includes('10749')
-            ? `\n⛔ ROMANCE NON CONFIRMÉE PAR L'ADN : Le mood inclut la Romance/Émotion mais les films de référence ne sont PAS des films romantiques. Si les films de référence sont des biopics, histoires vraies, comédies ou films d'action, cherche des films émouvants dans ces registres — PAS des romances sentimentales pures. Score = 0 pour tout film dont le genre DOMINANT est Romance sans dimension de dépassement humain, biopic, ou humour.`
+            ? `\n⛔ ROMANCE NON CONFIRMÉE PAR L'ADN : Le mood inclut la Romance/Émotion mais les films de référence ne sont PAS des films romantiques. Cherche des films émouvants dans le registre des références — PAS des romances sentimentales pures. Score = 0 pour tout film dont le genre DOMINANT est Romance sans dimension de dépassement humain, biopic, ou humour.`
             : '';
 
-        // Avertissement biopic/inspirant : pénalise les romances érotiques quand l'ADN est une histoire vraie
-        const inspiringBiopicWarning = preferences.mood === '18,10749' && preferences.lastLovedMovies?.length > 0
-            ? `\n🎯 MOOD "ÉMOUVANT / INSPIRANT" + FILM(S) DE RÉFÉRENCE FOURNI(S) : Ce mood couvre DEUX registres distincts — (A) biopics/histoires vraies/dépassement humain et (B) romances/drames sentimentaux. L'ADN calibre lequel l'utilisateur cherche. Si les films de référence sont des biopics ou histoires vraies (ex: La Méthode Williams, À la recherche du bonheur, Rocky, Judy...) → pénalise FORTEMENT les romances érotiques/sentimentales pures (ex: romans d'amour érotiques, histoires de séduction, soft erotica) : -45 pts. Au contraire, si les films de référence sont des romances (ex: The Notebook, Titanic) → ils sont bienvenus.`
+        // ── Détection polarité émotionnelle selon les références ──
+        // Quand mood = émouvant + références romantiques : cibler romance chaleureuse, PAS drame émotionnel
+        const sadExcluded = (preferences.exclude || []).includes('sad');
+        const isRomanticMood = preferences.mood === '18,10749';
+
+        const inspiringBiopicWarning = isRomanticMood && preferences.lastLovedMovies?.length > 0
+            ? adnHasRomance && sadExcluded
+                // POLARITÉ A : références romantiques + pas de tristesse → romance chaleureuse ciblée
+                ? `\n💕 POLARITÉ DÉTECTÉE : ROMANCE CHALEUREUSE / FEEL-GOOD (références : ${(likedMovies||[]).map(m=>m.title).join(', ')})
+→ L'utilisateur veut une romance POSITIVE, RÉCONFORTANTE, CHALEUREUSE. Pas un drame.
+→ FILMS CIBLES PARFAITS : "Crazy Stupid Love", "The Holiday", "Notting Hill", "Marry Me", "Ticket to Paradise", "Serendipity", "Julie & Julia", "Begin Again", "One Day (2023)", "Hitch", "About Time", "La La Land".
+→ FILMS INTERDITS DANS CE CONTEXTE (Score = 0) :
+  • SF contemplative/intellectuelle sans romance centrale : "Premier Contact (Arrival)", "Interstellar", "Her" → beau mais pas "date movie chaleureux".
+  • Drames émotion-maladie : "Mr. Church", "À deux mètres de toi", "Five Feet Apart", "The Fault in Our Stars".
+  • Drames humains sans romance : films sur l'amitié, la perte, la mort sans dimension romantique principale.
+→ RÈGLE D'OR : Le genre principal DOIT être Romance (10749). Un film "émouvant" sans romance centrale n'est PAS ce que l'utilisateur cherche ici. Il veut se blottir avec son partenaire devant une belle histoire d'amour — pas pleurer devant un drame.`
+                // POLARITÉ B : références biopics/histoire vraie → dépassement humain
+                : `\n🎯 MOOD "ÉMOUVANT / INSPIRANT" + FILMS DE RÉFÉRENCE : Ce mood couvre deux registres. L'ADN indique lequel : si références = biopics/histoires vraies (Rocky, Judy, Williams...) → favorise le dépassement humain, -45 pts pour les romances sentimentales pures. Si références = romances (The Notebook, Titanic) → les romances sont bienvenues.`
             : '';
 
         // ── Cast ADN : acteurs issus des films de référence ──

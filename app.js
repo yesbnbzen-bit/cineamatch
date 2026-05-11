@@ -1543,6 +1543,22 @@ const App = {
                 567604, // Deadpool & Wolverine
             ]);
 
+            // IDs TMDB de films sick-lit/drame-maladie/teen-drame — filtrés si exclusion 'sad' ou 'teen' active
+            const excludesSad  = (store.answers.exclude || []).includes('sad');
+            const excludesTeen = (store.answers.exclude || []).includes('teen');
+            const SAD_TEEN_BLACKLIST_IDS = new Set(excludesSad || excludesTeen ? [
+                531309, // À deux mètres de toi (Five Feet Apart)
+                264644, // Nos étoiles contraires (The Fault in Our Stars)
+                296096, // The Best of Me (Une seconde chance)
+                345922, // Me Before You (Avant toi)
+                398181, // Everything, Everything
+                298695, // Mr. Church
+                410118, // À la vie (drame maladie)
+                13354,  // P.S. I Love You (deuil romantique)
+                67794,  // Now Is Good (drame maladie ado)
+                228150, // If I Stay (drame maladie ado)
+            ] : []);
+
             let safeCandidates = candidates.filter(c => {
                 const year = parseInt(c.release_date?.split('-')[0]) || 0;
                 const genres = c.genre_ids || [];
@@ -1564,6 +1580,8 @@ const App = {
                 if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) return false;
                 // ⛔ Contexte famille : blacklist films dark/adultes même si genre = Animation ou SF
                 if (store.answers.context === 'family' && FAMILY_BLACKLIST_IDS.has(Number(c.id))) return false;
+                // ⛔ Exclusion sad/teen : blacklist films sick-lit, drame-maladie, teen-drame
+                if (SAD_TEEN_BLACKLIST_IDS.has(Number(c.id))) return false;
 
                 return true;
             });
