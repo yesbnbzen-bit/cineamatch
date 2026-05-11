@@ -208,23 +208,12 @@ export const tmdbService = {
         let url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', without_genres: `10770${excludeDocumentary}` });
 
         // ── Filtre plateformes de streaming (FR) ──
-        // Mapping nom plateforme → ID TMDB provider
-        const PROVIDER_IDS = {
-            'netflix': 8, 'amazon prime video': 119, 'amazon prime': 119,
-            'disney+': 337, 'disney plus': 337,
-            'apple tv+': 350, 'apple tv': 350,
-            'canal+': 381, 'canal': 381,
-            'max': 384, 'hbo max': 384,
-            'paramount+': 531, 'paramount plus': 531,
-            'crunchyroll': 283, 'salto': 26, 'ocs': 56
-        };
-        const userPlatforms = (preferences._userPlatforms || []);
-        const providerIds = userPlatforms
-            .map(p => PROVIDER_IDS[p.toLowerCase()])
-            .filter(Boolean);
+        // Les plateformes sont stockées en tant qu'IDs TMDB numériques (ex: "8" pour Netflix)
+        const userPlatforms = (preferences._userPlatforms || []).filter(p => p !== 'any');
+        const providerIds = userPlatforms.map(p => String(p)).filter(Boolean);
         if (providerIds.length > 0) {
             url += `&watch_region=FR&with_watch_monetization_types=flatrate&with_watch_providers=${providerIds.join('|')}`;
-            console.log(`📺 Provider filter: ${userPlatforms.join(', ')} → IDs ${providerIds.join('|')}`);
+            console.log(`📺 Provider filter actif : IDs ${providerIds.join('|')} (${userPlatforms.join(', ')})`);
         }
         
         // Add with_cast parameter if we have cast IDs from loved movies
