@@ -114,8 +114,8 @@ export const authUI = {
         // Mettre à jour la navbar
         const authBtn = document.getElementById('auth-btn');
         const userMenu = document.getElementById('user-menu');
-        if (authBtn) authBtn.classList.add('nav-hidden');
-        if (userMenu) userMenu.classList.add('nav-visible');
+        if (authBtn) { authBtn.style.display = 'none'; authBtn.classList.add('nav-hidden'); }
+        if (userMenu) { userMenu.style.display = 'flex'; userMenu.classList.add('nav-visible'); }
         const userAvatar = document.getElementById('user-avatar');
         const userName   = document.getElementById('user-name');
         if (userAvatar) userAvatar.textContent = initials;
@@ -516,8 +516,8 @@ export const authUI = {
 
         const authBtn = document.getElementById('auth-btn');
         const userMenu = document.getElementById('user-menu');
-        if (authBtn) authBtn.classList.remove('nav-hidden');
-        if (userMenu) userMenu.classList.remove('nav-visible');
+        if (authBtn) { authBtn.style.display = ''; authBtn.classList.remove('nav-hidden'); }
+        if (userMenu) { userMenu.style.display = 'none'; userMenu.classList.remove('nav-visible'); }
 
         // Masquer les boutons connecté-only
         const prefsBtn = document.getElementById('prefs-nav-btn');
