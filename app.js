@@ -1410,12 +1410,12 @@ const App = {
             // SOURCE 2b : Discovery par acteurs ADN — Think Like a Man → Kevin Hart → Ride Along, Girls Trip...
             const [discovered, castDiscoveredRaw] = await Promise.all([
                 tmdbService.getAdvancedDiscovery(
-                    { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds },
+                    { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds, _userPlatforms: store.preferredPlatforms || [] },
                     metadata, isReroll, store.rerollCount + 1, []
                 ),
                 adnCastIds.length > 0
                     ? tmdbService.getAdvancedDiscovery(
-                        { ...store.answers, detectedLanguage, blendedGenreIds },
+                        { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: store.preferredPlatforms || [] },
                         {}, false, 1, adnCastIds
                       )
                     : Promise.resolve([])
@@ -1671,7 +1671,8 @@ const App = {
             // Niveau 1 : Discovery large sans keywords (filtres époque + langue + exclusions conservés)
             if (safeCandidates.length < 6) {
                 console.log(`⚠️ Pool trop petit (${safeCandidates.length}), fallback L1 Discovery large`);
-                const fb1 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage }, {}, false, 1, []);
+                // Fallback L1 : pas de filtre plateforme (évite un pool vide en fallback)
+                const fb1 = await tmdbService.getAdvancedDiscovery({ ...store.answers, detectedLanguage, _userPlatforms: [] }, {}, false, 1, []);
                 for (const f of fb1) {
                     const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
