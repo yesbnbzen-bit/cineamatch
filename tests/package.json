@@ -1,0 +1,13 @@
+{
+  "name": "cinematch-tests",
+  "version": "1.0.0",
+  "description": "Agent de test automatisé Playwright pour CineaMatch",
+  "scripts": {
+    "test": "node runner.js",
+    "test:profile": "node runner.js --profile",
+    "install:browsers": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0"
+  }
+}
