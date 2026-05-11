@@ -1,11 +1,10 @@
 // ─────────────────────────────────────────────────────────────────
 //  CINEMATCH — Profils de test automatisés
 //  Chaque profil correspond à un scénario utilisateur réel
+//  Valeurs "any" réduites au minimum — profils aussi spécifiques que de vrais utilisateurs
 // ─────────────────────────────────────────────────────────────────
 
 const PROFILES = [
-
-  // ── ANCIENS PROFILS (validés) ──────────────────────────────────
 
   {
     id: 'romance-mature',
@@ -13,10 +12,10 @@ const PROFILES = [
     answers: {
       context:  'couple',
       mood:     '18,10749',
-      language: 'any',
+      language: 'en',          // Films anglophones (références About Time, La La Land, Her)
       duration: 'any',
       exclude:  ['sad', 'slow', 'teen'],
-      era:      'any',
+      era:      'modern',      // Moderne 2000-2020 (cohérent avec les références)
     },
     references: ['About Time', 'La La Land', 'Her'],
     expectations: {
@@ -34,9 +33,9 @@ const PROFILES = [
       context:  'family',
       mood:     '878,9648',
       language: 'en',
-      duration: 'any',
+      duration: 'short',       // Film court (<1h45) pour les enfants
       exclude:  ['complex', 'horror', 'adult'],
-      era:      'any',
+      era:      'new',         // Récent (2020+) : préférence famille pour du neuf
     },
     references: ['WALL-E', 'Ready Player One', 'Big Hero 6'],
     expectations: {
@@ -56,7 +55,7 @@ const PROFILES = [
       language: 'any',
       duration: 'any',
       exclude:  ['horror'],
-      era:      'any',
+      era:      'modern',      // Films récents ou modernes pour l'horreur
     },
     references: ['Hereditary', 'Midsommar', 'The Others'],
     expectations: {
@@ -74,7 +73,7 @@ const PROFILES = [
       context:  'alone',
       mood:     '53',
       language: 'any',
-      duration: 'any',
+      duration: 'long',        // Thrillers souvent longs (>2h) — l'utilisateur est partant
       exclude:  ['slow', 'complex'],
       era:      'any',
     },
@@ -94,7 +93,7 @@ const PROFILES = [
       context:  'friends',
       mood:     '35,10751',
       language: 'fr',
-      duration: 'any',
+      duration: 'short',       // Soirée entre amis → film court
       exclude:  ['sad', 'adult'],
       era:      'any',
     },
@@ -107,25 +106,23 @@ const PROFILES = [
     },
   },
 
-  // ── NOUVEAUX PROFILS ───────────────────────────────────────────
-
   {
     id: 'romance-sans-adn',
     name: '💑 Romance sans références — fallback couple',
     answers: {
       context:  'couple',
       mood:     '18,10749',
-      language: 'any',
-      duration: 'any',
+      language: 'en',          // Américain, couple mainstream
+      duration: 'short',       // Soirée détente → film pas trop long
       exclude:  ['sad', 'teen'],
-      era:      'any',
+      era:      'modern',      // Moderne 2000-2020
     },
     references: [],   // ← AUCUNE référence : teste le fallback romance chaleureuse
     expectations: {
       shouldContain:    ['romance', 'romantique', 'amour', 'couple', 'feel-good'],
       shouldNotContain: ['biopic', 'réussite', 'lutte', 'pauvreté', 'tragédie'],
       expectedGenres:   ['Romance', 'Comédie'],
-      // Thriller toléré si romance est aussi présent (ex: Sueurs froides/Vertigo = romance + suspense)
+      // Thriller toléré si romance est aussi présent (ex: Sueurs froides = romance + suspense)
       forbiddenGenres:  ['Horreur', 'Guerre'],
     },
   },
@@ -136,10 +133,10 @@ const PROFILES = [
     answers: {
       context:  'alone',
       mood:     '18,10749',
-      language: 'any',
-      duration: 'any',
-      exclude:  ['slow'],          // Pas d'exclusion "sad" → POLARITÉ B attendue
-      era:      'any',
+      language: 'en',          // Références anglophones (Whiplash, Rocky, Bohemian Rhapsody)
+      duration: 'long',        // Biopics généralement >2h
+      exclude:  ['slow'],
+      era:      'any',         // Rocky (1976) jusqu'à Bohemian Rhapsody (2018) → any
     },
     references: ['Whiplash', 'Rocky', 'Bohemian Rhapsody'],
     expectations: {
@@ -156,14 +153,14 @@ const PROFILES = [
     answers: {
       context:  'alone',
       mood:     '53',
-      language: 'any',
+      language: 'ko',          // 🌏 Asiatique — explicitement choisi pour forcer films coréens/asiatiques
       duration: 'any',
       exclude:  ['slow'],
       era:      'any',
     },
     references: ['Parasite', 'Oldboy', 'Train to Busan'],
     expectations: {
-      shouldContain:    ['coréen', 'tension', 'suspense', 'social', 'intense'],
+      shouldContain:    ['tension', 'suspense', 'social', 'intense', 'coréen'],
       shouldNotContain: ['feel-good', 'légèreté', 'comédie'],
       expectedGenres:   ['Thriller', 'Drame', 'Horreur'],
       forbiddenGenres:  ['Animation', 'Comédie'],
@@ -175,9 +172,9 @@ const PROFILES = [
     name: '🎌 Animé feel-good entre amis',
     answers: {
       context:  'friends',
-      mood:     '28,12',           // Action / Aventure
-      language: 'any',
-      duration: 'any',
+      mood:     '28,12',
+      language: 'any',         // Références japonaises → auto-détection depuis ADN
+      duration: 'short',       // Soirée entre amis → pas trop long
       exclude:  ['sad', 'complex'],
       era:      'any',
     },
@@ -197,9 +194,9 @@ const PROFILES = [
       context:  'alone',
       mood:     '28,12',
       language: 'en',
-      duration: 'any',
+      duration: 'long',        // Action épique → films longs
       exclude:  ['slow', 'complex'],
-      era:      'new',             // Récent (2020+)
+      era:      'new',         // Récent (2020+)
     },
     references: ['John Wick', 'Mission: Impossible'],
     expectations: {
