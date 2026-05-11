@@ -1585,7 +1585,7 @@ const App = {
             // S'applique MÊME quand le mood est Horreur (l'utilisateur veut horreur psychologique, PAS gore)
             const excludesViolence = (store.answers.exclude || []).includes('horror');
             const GORE_HORROR_BLACKLIST_IDS = new Set(excludesViolence ? [
-                19766,  // Antichrist (Lars Von Trier — extrême)
+                17609,  // Antichrist (Lars Von Trier — extrême)
                 176,    // Saw (torture porn)
                 1903,   // Saw II
                 1905,   // Saw III
@@ -1598,9 +1598,9 @@ const App = {
                 49387,  // The Human Centipede
                 228970, // A Serbian Film
                 397422, // Raw (Grave — cannibalisme)
-                546554, // Fear Street: 1978 (slasher gore)
-                550988, // Fear Street: 1666
-                436270, // Fear Street: 1994
+                591274, // Fear Street: 1978 (slasher gore)
+                750822, // Fear Street: 1666
+                545611, // Fear Street: 1994
                 12155,  // Inside (À l'intérieur — 2007, extrême)
                 11838,  // Frontier(s) (extrême)
                 10929,  // Haute Tension (gore extrême)
