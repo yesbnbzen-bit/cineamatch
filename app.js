@@ -1397,8 +1397,11 @@ const App = {
             };
 
             // SOURCE 1 : Recommendations TMDb depuis les films de référence
-            // "Les gens qui ont aimé Get Out aiment aussi Nope, Barbarian, etc."
-            if (store.answers.lastLovedMovies?.length > 0) {
+            // Si l'utilisateur a des plateformes sélectionnées → skip Source 1
+            // (/recommendations TMDB ne supporte pas with_watch_providers)
+            // → Source 2 couvre déjà ce rôle avec le filtre plateforme + blendedGenreIds
+            const hasProviderFilter = (store.preferredPlatforms || []).length > 0;
+            if (!hasProviderFilter && store.answers.lastLovedMovies?.length > 0) {
                 const refIds = store.answers.lastLovedMovies.map(m => m.id);
                 const tmdbRecs = await tmdbService.getRecommendations(refIds);
                 addUnique(tmdbRecs);
@@ -1407,18 +1410,26 @@ const App = {
 
             // SOURCE 2 + 2b en PARALLÈLE (A3-fix : séquentiel → Promise.all = -2s de temps)
             // SOURCE 2 : Discovery générale (genre blend + époque + langue + keywords)
-            // SOURCE 2b : Discovery par acteurs ADN — Think Like a Man → Kevin Hart → Ride Along, Girls Trip...
+            // SOURCE 2b : si plateformes sélectionnées → 2e appel avec page différente pour enrichir le pool
+            //             sinon → Discovery par acteurs ADN
+            const userPlatforms = store.preferredPlatforms || [];
             const [discovered, castDiscoveredRaw] = await Promise.all([
                 tmdbService.getAdvancedDiscovery(
-                    { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds, _userPlatforms: store.preferredPlatforms || [] },
+                    { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds, _userPlatforms: userPlatforms },
                     metadata, isReroll, store.rerollCount + 1, []
                 ),
-                adnCastIds.length > 0
+                hasProviderFilter
+                    // Plateformes actives : 2e passe Discovery avec page aléatoire pour + de variété
                     ? tmdbService.getAdvancedDiscovery(
-                        { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: store.preferredPlatforms || [] },
-                        {}, false, 1, adnCastIds
+                        { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: userPlatforms, rerollVariant: 'different_angle' },
+                        {}, true, Math.floor(Math.random() * 4) + 2, []
                       )
-                    : Promise.resolve([])
+                    : adnCastIds.length > 0
+                        ? tmdbService.getAdvancedDiscovery(
+                            { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: [] },
+                            {}, false, 1, adnCastIds
+                          )
+                        : Promise.resolve([])
             ]);
             addUnique(discovered);
             if (castDiscoveredRaw.length > 0) {
