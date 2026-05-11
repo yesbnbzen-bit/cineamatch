@@ -2141,11 +2141,11 @@ const App = {
             const rent         = frProviders.rent     || [];
             const isVOD        = flatrate.length === 0 && rent.length > 0;
             const rawProviders = flatrate.length > 0 ? flatrate : rent;
-            // Trier : plateformes préférées de l'utilisateur en premier
-            const _userPlats = (store.preferredPlatforms || []).map(p => p.toLowerCase());
+            // Trier : plateformes préférées de l'utilisateur en premier (comparaison par ID numérique)
+            const _userPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
             const displayProviders = [...rawProviders].sort((a, b) => {
-                const aOk = _userPlats.some(p => (a.provider_name || '').toLowerCase().includes(p) || p.includes((a.provider_name || '').toLowerCase()));
-                const bOk = _userPlats.some(p => (b.provider_name || '').toLowerCase().includes(p) || p.includes((b.provider_name || '').toLowerCase()));
+                const aOk = _userPlatIds.has(String(a.provider_id));
+                const bOk = _userPlatIds.has(String(b.provider_id));
                 return (bOk ? 1 : 0) - (aOk ? 1 : 0);
             });
             const jwSlug = m.title
