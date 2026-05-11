@@ -140,6 +140,22 @@ const App = {
         const prefsBtn = document.getElementById('prefs-nav-btn');
         if (prefsBtn) prefsBtn.addEventListener('click', () => this.showPreferences());
 
+        // ── Toggle dropdown user-menu au clic (en plus du hover) ──
+        const userMenu = document.getElementById('user-menu');
+        if (userMenu) {
+            userMenu.addEventListener('click', (e) => {
+                // Si le clic est sur le bouton déconnexion, laisser son onclick gérer
+                if (e.target.closest('.btn-signout-drop')) return;
+                userMenu.classList.toggle('open');
+            });
+            // Fermer si on clique ailleurs
+            document.addEventListener('click', (e) => {
+                if (!userMenu.contains(e.target)) {
+                    userMenu.classList.remove('open');
+                }
+            });
+        }
+
         // Navbar : fondu progressif selon scroll (0→80px = transparent→sombre)
         const navbar = document.querySelector('.navbar');
         const _handleNavbarScroll = () => {
@@ -202,6 +218,13 @@ const App = {
                     this.startDuoFlow();
                 }
             });
+        }
+
+        // ── Retour depuis Stripe Checkout ──
+        const premiumParam = new URLSearchParams(location.search).get('premium');
+        if (premiumParam === 'success' || premiumParam === 'cancel') {
+            // Attendre que l'auth soit initialisée avant d'afficher le toast
+            setTimeout(() => this.handleStripeReturn(premiumParam), 1500);
         }
 
         // ── Détection URL Personne B (?duo=BASE64) ──
@@ -3221,7 +3244,7 @@ const App = {
             if (icon)    icon.textContent    = '⚡';
             if (title)   title.textContent   = 'Rerolls illimités';
             if (sub)     sub.textContent     = 'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite.';
-            if (ctaPrim) { ctaPrim.textContent = t('paywall.premium'); ctaPrim.onclick = () => { this.hidePaywallModal(); /* TODO: open pricing page */ }; }
+            if (ctaPrim) { ctaPrim.textContent = t('paywall.premium'); ctaPrim.onclick = () => { this.hidePaywallModal(); this.showPricingModal(); }; }
             if (ctaSec)  ctaSec.style.display = 'none';
         }
 
@@ -3234,6 +3257,123 @@ const App = {
         if (!modal) return;
         modal.classList.remove('visible');
         setTimeout(() => { modal.style.display = 'none'; }, 300);
+    },
+
+    // ══════════════════════════════════════════
+    //  PRICING — Modale plans Premium
+    // ══════════════════════════════════════════
+    showPricingModal() {
+        const modal = document.getElementById('pricing-modal-overlay');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('visible'), 10);
+    },
+
+    hidePricingModal() {
+        const modal = document.getElementById('pricing-modal-overlay');
+        if (!modal) return;
+        modal.classList.remove('visible');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+    },
+
+    // ══════════════════════════════════════════
+    //  STRIPE — Lancer le checkout
+    // ══════════════════════════════════════════
+    async startCheckout(plan) {
+        if (!store.currentUser) {
+            // Utilisateur non connecté → ouvrir la modale d'inscription d'abord
+            this.hidePricingModal();
+            document.getElementById('auth-btn')?.click();
+            return;
+        }
+
+        // Désactiver les boutons pendant la redirection
+        document.querySelectorAll('.pricing-cta').forEach(btn => {
+            btn.disabled = true;
+            btn.textContent = 'Chargement...';
+        });
+
+        try {
+            const res = await fetch('/api/stripe-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    plan,
+                    userId: store.currentUser.id,
+                    email:  store.currentUser.email,
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.url) {
+                throw new Error(data.error || 'Erreur lors de la création du paiement');
+            }
+
+            // Rediriger vers Stripe Checkout
+            window.location.href = data.url;
+
+        } catch (err) {
+            console.error('Checkout error:', err);
+            // Réactiver les boutons en cas d'erreur
+            document.querySelectorAll('.pricing-cta').forEach((btn, i) => {
+                btn.disabled = false;
+                btn.textContent = i === 1 ? 'Choisir' : 'Choisir'; // reset label
+            });
+            // Afficher un message d'erreur simple
+            const footer = document.querySelector('.pricing-footer');
+            if (footer) {
+                footer.textContent = `Erreur : ${err.message}`;
+                footer.style.color = '#E50914';
+            }
+        }
+    },
+
+    // ══════════════════════════════════════════
+    //  STRIPE — Gérer le retour après paiement
+    // ══════════════════════════════════════════
+    async handleStripeReturn(status) {
+        // Nettoyer l'URL sans recharger la page
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        if (status === 'success') {
+            // Recharger la session utilisateur pour récupérer is_premium mis à jour
+            try {
+                const { authService } = await import('./services/supabase.js?v=8');
+                await authService.refreshSession();
+            } catch { /* non bloquant */ }
+
+            // Toast de succès
+            this._showToast('🎉 Bienvenue dans Premium ! Tes rerolls sont désormais illimités.', 'success', 6000);
+        } else if (status === 'cancel') {
+            this._showToast('Paiement annulé. Tu peux reprendre quand tu veux !', 'info', 4000);
+        }
+    },
+
+    // Helper toast simple
+    _showToast(message, type = 'success', duration = 4000) {
+        const existing = document.getElementById('stripe-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.id = 'stripe-toast';
+        toast.style.cssText = `
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: ${type === 'success' ? '#16a34a' : type === 'info' ? '#1d4ed8' : '#E50914'};
+            color: #fff; padding: 12px 24px; border-radius: 10px;
+            font-size: 0.9rem; font-weight: 600; z-index: 9999;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            animation: fadeInUp 0.3s ease both;
+            max-width: 90vw; text-align: center;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.4s';
+            setTimeout(() => toast.remove(), 400);
+        }, duration);
     }
 };
 

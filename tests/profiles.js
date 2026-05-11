@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────────
 //  CINEMATCH — Profils de test automatisés
 //  Chaque profil correspond à un scénario utilisateur réel
-//  Valeurs "any" réduites au minimum — profils aussi spécifiques que de vrais utilisateurs
+//  Aucun 'any' — chaque profil sélectionne une réponse précise
+//  Références : 1 ou 2 films maximum par profil
 // ─────────────────────────────────────────────────────────────────
 
 const PROFILES = [
@@ -12,12 +13,12 @@ const PROFILES = [
     answers: {
       context:  'couple',
       mood:     '18,10749',
-      language: 'en',          // Films anglophones (références About Time, La La Land, Her)
-      duration: 'any',
+      language: 'en',          // Américain — La La Land, Her
+      duration: 'long',        // Romances matures souvent >2h
       exclude:  ['sad', 'slow', 'teen'],
-      era:      'modern',      // Moderne 2000-2020 (cohérent avec les références)
+      era:      'modern',      // Moderne 2000-2020
     },
-    references: ['About Time', 'La La Land', 'Her'],
+    references: ['La La Land', 'Her'],
     expectations: {
       shouldContain:    ['romance', 'romantique', 'couple', 'amour', 'feel-good'],
       shouldNotContain: ['tragique', 'maladie', 'mort', 'deuil', 'ado', 'lycée'],
@@ -35,9 +36,9 @@ const PROFILES = [
       language: 'en',
       duration: 'short',       // Film court (<1h45) pour les enfants
       exclude:  ['complex', 'horror', 'adult'],
-      era:      'new',         // Récent (2020+) : préférence famille pour du neuf
+      era:      'new',         // Récent (2020+)
     },
-    references: ['WALL-E', 'Ready Player One', 'Big Hero 6'],
+    references: ['WALL-E', 'Big Hero 6'],
     expectations: {
       shouldContain:    ['famille', 'aventure', 'accessible', 'fun', 'enfant'],
       shouldNotContain: ['violence', 'gore', 'adulte', 'sombre', 'dark'],
@@ -52,12 +53,12 @@ const PROFILES = [
     answers: {
       context:  'alone',
       mood:     '27',
-      language: 'any',
-      duration: 'any',
+      language: 'en',          // Références anglophones
+      duration: 'long',        // Hereditary, The Others > 1h45
       exclude:  ['horror'],
-      era:      'modern',      // Films récents ou modernes pour l'horreur
+      era:      'modern',      // Moderne 2000-2020
     },
-    references: ['Hereditary', 'Midsommar', 'The Others'],
+    references: ['Hereditary', 'The Others'],
     expectations: {
       shouldContain:    ['atmosphère', 'psychologique', 'tension', 'angoisse'],
       shouldNotContain: ['gore', 'sang', 'slasher', 'torture'],
@@ -72,12 +73,12 @@ const PROFILES = [
     answers: {
       context:  'alone',
       mood:     '53',
-      language: 'any',
-      duration: 'long',        // Thrillers souvent longs (>2h) — l'utilisateur est partant
+      language: 'en',          // Gone Girl, Knives Out — anglophones
+      duration: 'long',        // Thrillers souvent longs (>2h)
       exclude:  ['slow', 'complex'],
-      era:      'any',
+      era:      'modern',      // Moderne 2000-2020
     },
-    references: ['Gone Girl', 'Knives Out', 'Prisoners'],
+    references: ['Gone Girl', 'Knives Out'],
     expectations: {
       shouldContain:    ['suspense', 'tension', 'enquête', 'retournement', 'rythme'],
       shouldNotContain: ['contemplatif', 'lent', 'incompréhensible'],
@@ -95,7 +96,7 @@ const PROFILES = [
       language: 'fr',
       duration: 'short',       // Soirée entre amis → film court
       exclude:  ['sad', 'adult'],
-      era:      'any',
+      era:      'modern',      // Moderne 2000-2020
     },
     references: [],
     expectations: {
@@ -122,7 +123,6 @@ const PROFILES = [
       shouldContain:    ['romance', 'romantique', 'amour', 'couple', 'feel-good'],
       shouldNotContain: ['biopic', 'réussite', 'lutte', 'pauvreté', 'tragédie'],
       expectedGenres:   ['Romance', 'Comédie'],
-      // Thriller toléré si romance est aussi présent (ex: Sueurs froides = romance + suspense)
       forbiddenGenres:  ['Horreur', 'Guerre'],
     },
   },
@@ -133,12 +133,12 @@ const PROFILES = [
     answers: {
       context:  'alone',
       mood:     '18,10749',
-      language: 'en',          // Références anglophones (Whiplash, Rocky, Bohemian Rhapsody)
+      language: 'en',          // Whiplash, Bohemian Rhapsody — anglophones
       duration: 'long',        // Biopics généralement >2h
       exclude:  ['slow'],
-      era:      'any',         // Rocky (1976) jusqu'à Bohemian Rhapsody (2018) → any
+      era:      'modern',      // Moderne 2000-2020 (Whiplash 2014, Bohemian 2018)
     },
-    references: ['Whiplash', 'Rocky', 'Bohemian Rhapsody'],
+    references: ['Whiplash', 'Bohemian Rhapsody'],
     expectations: {
       shouldContain:    ['dépassement', 'ambition', 'lutte', 'inspirant', 'réussite'],
       shouldNotContain: ['romance sentimentale', 'comédie romantique'],
@@ -153,12 +153,12 @@ const PROFILES = [
     answers: {
       context:  'alone',
       mood:     '53',
-      language: 'ko',          // 🌏 Asiatique — explicitement choisi pour forcer films coréens/asiatiques
-      duration: 'any',
+      language: 'ko',          // 🌏 Asiatique — coréen/japonais/chinois
+      duration: 'long',        // Thrillers coréens souvent >2h
       exclude:  ['slow'],
-      era:      'any',
+      era:      'modern',      // Parasite (2019), Oldboy (2003) → Moderne
     },
-    references: ['Parasite', 'Oldboy', 'Train to Busan'],
+    references: ['Parasite', 'Oldboy'],
     expectations: {
       shouldContain:    ['tension', 'suspense', 'social', 'intense', 'coréen'],
       shouldNotContain: ['feel-good', 'légèreté', 'comédie'],
@@ -173,12 +173,12 @@ const PROFILES = [
     answers: {
       context:  'friends',
       mood:     '28,12',
-      language: 'any',         // Références japonaises → auto-détection depuis ADN
+      language: 'ko',          // 🌏 Asiatique — couvre japonais (Ghibli, Your Name)
       duration: 'short',       // Soirée entre amis → pas trop long
       exclude:  ['sad', 'complex'],
-      era:      'any',
+      era:      'modern',      // Spirited Away (2001), Your Name (2016) → Moderne
     },
-    references: ['Spirited Away', 'Your Name', 'Princess Mononoke'],
+    references: ['Spirited Away', 'Your Name'],
     expectations: {
       shouldContain:    ['animation', 'aventure', 'poétique', 'japonais', 'magie'],
       shouldNotContain: ['gore', 'violence extrême', 'adulte'],

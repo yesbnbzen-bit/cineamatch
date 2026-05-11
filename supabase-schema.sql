@@ -101,3 +101,24 @@ create policy "Historique personnel" on history
 -- Ratings
 create policy "Notations personnelles" on ratings
     for all using (auth.uid() = user_id);
+
+
+-- ═══════════════════════════════════════════════════════════
+--  5. ABONNEMENTS PREMIUM
+--  Mis à jour automatiquement par les webhooks Stripe
+-- ═══════════════════════════════════════════════════════════
+
+create table if not exists subscriptions (
+    id                     bigserial primary key,
+    user_id                uuid references auth.users(id) on delete cascade not null unique,
+    is_premium             boolean default false,
+    plan                   text check (plan in ('monthly', 'yearly', 'lifetime')),
+    stripe_customer_id     text,
+    stripe_subscription_id text,   -- null pour les achats à vie (one-time)
+    updated_at             timestamptz default now()
+);
+
+alter table subscriptions enable row level security;
+
+create policy "Lecture abonnement personnel" on subscriptions
+    for select using (auth.uid() = user_id);

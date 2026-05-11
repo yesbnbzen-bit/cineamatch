@@ -776,6 +776,78 @@
         </div>
     </div>
 
+    <!-- ══ MODAL PRICING PREMIUM ══ -->
+    <div id="pricing-modal-overlay" class="auth-overlay" style="display:none;z-index:1200;"
+         onclick="if(event.target===this) App.hidePricingModal()">
+        <div class="pricing-modal" onclick="event.stopPropagation()">
+            <button class="auth-close" onclick="App.hidePricingModal()">✕</button>
+            <div class="pricing-header">
+                <div class="pricing-icon">⚡</div>
+                <h2 class="pricing-title">CineaMatch Premium</h2>
+                <p class="pricing-sub">Recommandations sans limite · IA ultra-personnalisée · Historique &amp; watchlist</p>
+            </div>
+            <div class="pricing-plans">
+
+                <!-- Mensuel -->
+                <div class="pricing-card" data-plan="monthly">
+                    <div class="pricing-card-name">Mensuel</div>
+                    <div class="pricing-card-price">
+                        <span class="pricing-amount">4,99€</span>
+                        <span class="pricing-period">/mois</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>✓ Rerolls illimités</li>
+                        <li>✓ Historique complet</li>
+                        <li>✓ Watchlist illimitée</li>
+                        <li>✓ IA calibrée sur tes notes</li>
+                    </ul>
+                    <button class="pricing-cta" onclick="App.startCheckout('monthly')">Choisir</button>
+                    <p class="pricing-cancel">Annulable à tout moment</p>
+                </div>
+
+                <!-- Annuel — mis en avant -->
+                <div class="pricing-card pricing-card--featured" data-plan="yearly">
+                    <div class="pricing-badge">Meilleure offre</div>
+                    <div class="pricing-card-name">Annuel</div>
+                    <div class="pricing-card-price">
+                        <span class="pricing-amount">39,99€</span>
+                        <span class="pricing-period">/an</span>
+                    </div>
+                    <div class="pricing-saving">soit 3,33€/mois · économise 33%</div>
+                    <ul class="pricing-features">
+                        <li>✓ Rerolls illimités</li>
+                        <li>✓ Historique complet</li>
+                        <li>✓ Watchlist illimitée</li>
+                        <li>✓ IA calibrée sur tes notes</li>
+                    </ul>
+                    <button class="pricing-cta pricing-cta--featured" onclick="App.startCheckout('yearly')">Choisir</button>
+                    <p class="pricing-cancel">Annulable à tout moment</p>
+                </div>
+
+                <!-- À vie -->
+                <div class="pricing-card" data-plan="lifetime">
+                    <div class="pricing-badge pricing-badge--lifetime">Paiement unique</div>
+                    <div class="pricing-card-name">À vie</div>
+                    <div class="pricing-card-price">
+                        <span class="pricing-amount">89,99€</span>
+                        <span class="pricing-period">une fois</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>✓ Rerolls illimités</li>
+                        <li>✓ Historique complet</li>
+                        <li>✓ Watchlist illimitée</li>
+                        <li>✓ IA calibrée sur tes notes</li>
+                        <li>✓ Toutes les futures fonctionnalités</li>
+                    </ul>
+                    <button class="pricing-cta" onclick="App.startCheckout('lifetime')">Choisir</button>
+                    <p class="pricing-cancel">Accès permanent · sans abonnement</p>
+                </div>
+
+            </div>
+            <p class="pricing-footer">Paiement sécurisé par Stripe · Sans engagement pour les abonnements</p>
+        </div>
+    </div>
+
     <!-- Modal Bande-Annonce -->
     <div id="trailer-modal" class="trailer-modal"
         onclick="this.style.display='none'; document.getElementById('trailer-frame').src=''">
@@ -818,7 +890,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=381"></script>
+    <script type="module" src="app.js?v=383"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=20';
         authUI.init();
