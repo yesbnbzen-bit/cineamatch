@@ -50,7 +50,8 @@ export const store = {
 
     // Pool de candidats + historique session
     recommendationPool: [],
-    suggestedMovieIds: [],   // IDs déjà proposés dans la session
+    suggestedMovieIds: [],   // IDs déjà proposés dans la session (cap FIFO 45)
+    seenRatedMovieIds: [],   // IDs vus/notés depuis la DB — exclusion PERMANENTE sans cap
     suggestedTitles: [],     // Titres déjà proposés (pour le prompt IA)
     rerollCount: 0,
 
