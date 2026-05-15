@@ -1919,8 +1919,29 @@ const App = {
                     continue;
                 }
 
-                // Note : le filtre plateforme est appliqué en amont via with_watch_providers=ID sur TMDB Discover.
-                // Pas de filtre dur ici pour éviter les 0 résultats (catalogue Netflix limité).
+                // ✅ Filtre plateforme final (vérification sur les vraies données watch/providers)
+                // TMDB Discover peut retourner de faux positifs → on vérifie les données réelles du film.
+                // Logique : si providers FR disponibles et AUCUN ne correspond aux plateformes user → rejet.
+                //           si providers FR vides (données TMDB incomplètes) → on garde (bénéfice du doute).
+                const _finalPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
+                if (_finalPlatIds.size > 0) {
+                    const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
+                    const frFlatAndFree = [
+                        ...(details['watch/providers']?.results?.FR?.flatrate || []),
+                        ...(details['watch/providers']?.results?.FR?.free || []),
+                        ...(details['watch/providers']?.results?.FR?.ads || [])
+                    ];
+                    if (frFlatrate.length > 0) {
+                        // Données disponibles → vérification stricte
+                        const filmProvIds = new Set(frFlatAndFree.map(p => String(p.provider_id)));
+                        const matchesPlatform = [..._finalPlatIds].some(id => filmProvIds.has(id));
+                        if (!matchesPlatform) {
+                            console.warn(\`⛔ Filtre final : \${details.title} non confirmé sur tes plateformes (providers: \${[...filmProvIds].join(',')}) — ignoré\`);
+                            continue;
+                        }
+                    }
+                    // Si frFlatrate vide → bénéfice du doute (données TMDB incomplètes pour ce film)
+                }
 
                 if (!details.overview || details.overview.trim().length < 10) {
                     // Pas de synopsis : mettre en réserve, on les utilisera si besoin
