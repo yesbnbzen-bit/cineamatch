@@ -1,5 +1,5 @@
 import { tmdbService, openaiService } from './services/api.js?v=59';
-import { store, getters } from './state/store.js?v=43';
+import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=8';
@@ -1119,7 +1119,7 @@ const App = {
                     // Exclure tous les films déjà recommandés ou marqués vus
                     const allSeenIds = [...new Set([...seenHistory, ...seenRatings])];
                     // ⚠️ seenRatedMovieIds = exclusion PERMANENTE (pas de cap FIFO) — jamais recommandés
-                    store.seenRatedMovieIds = [...new Set([...store.seenRatedMovieIds, ...allSeenIds])];
+                    store.seenRatedMovieIds = [...new Set([...(store.seenRatedMovieIds || []), ...allSeenIds])];
                     // Stocker les genres favoris pour le prompt IA
                     store.answers._userFavGenres = favGenres;
                     // Stocker le profil d'apprentissage (films adorés/détestés) pour le prompt IA
@@ -1660,7 +1660,7 @@ const App = {
                 // Films déjà suggérés cette session → pas de répétition
                 if (store.suggestedMovieIds.includes(Number(c.id))) return false;
                 // Films vus/notés dans la DB → exclusion PERMANENTE (sans cap FIFO)
-                if (store.seenRatedMovieIds.includes(Number(c.id))) return false;
+                if ((store.seenRatedMovieIds || []).includes(Number(c.id))) return false;
                 // Téléfilms (TV Movie genre 10770) → exclus par défaut
                 if (genres.includes(10770)) return false;
                 // Filtre époque → s'applique à toutes les sources
@@ -1702,7 +1702,7 @@ const App = {
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                    if (store.seenRatedMovieIds.includes(Number(f.id))) continue;
+                    if ((store.seenRatedMovieIds || []).includes(Number(f.id))) continue;
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
@@ -1726,7 +1726,7 @@ const App = {
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                    if (store.seenRatedMovieIds.includes(Number(f.id))) continue;
+                    if ((store.seenRatedMovieIds || []).includes(Number(f.id))) continue;
                     if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     // Si langue auto-détectée depuis ADN → conserver le filtre même en L2
@@ -1751,7 +1751,7 @@ const App = {
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                    if (store.seenRatedMovieIds.includes(Number(f.id))) continue;
+                    if ((store.seenRatedMovieIds || []).includes(Number(f.id))) continue;
                     // L3 : NI époque NI langue — uniquement mood + exclusions absolues
                     if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
@@ -1773,7 +1773,7 @@ const App = {
                         const genres = f.genre_ids || [];
                         if (lovedMovieIds.includes(Number(f.id))) continue;
                         if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                        if (store.seenRatedMovieIds.includes(Number(f.id))) continue;
+                        if ((store.seenRatedMovieIds || []).includes(Number(f.id))) continue;
                         // Garde au moins le filtre genre requis et les exclusions
                         if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                         if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
@@ -1796,7 +1796,7 @@ const App = {
                         const genres = f.genre_ids || [];
                         if (lovedMovieIds.includes(Number(f.id))) continue;
                         if (store.suggestedMovieIds.includes(Number(f.id))) continue;
-                        if (store.seenRatedMovieIds.includes(Number(f.id))) continue;
+                        if ((store.seenRatedMovieIds || []).includes(Number(f.id))) continue;
                         if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                         if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                         if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);
