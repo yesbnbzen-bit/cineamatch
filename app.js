@@ -1901,50 +1901,51 @@ const App = {
             // Construire un Set des IDs candidats valides (anti-hallucination IA)
             const validCandidateIds = new Set(safeCandidates.map(c => Number(c.id)));
 
+            // ── Filtre plateforme final — calculé une fois pour les deux passes ──
+            const _finalPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
+            const _checkPlatform = (details) => {
+                if (_finalPlatIds.size === 0) return true;
+                const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
+                if (frFlatrate.length === 0) return true; // données TMDB incomplètes → bénéfice du doute
+                const frAll = [
+                    ...(details['watch/providers']?.results?.FR?.flatrate || []),
+                    ...(details['watch/providers']?.results?.FR?.free || []),
+                    ...(details['watch/providers']?.results?.FR?.ads || [])
+                ].map(p => String(p.provider_id));
+                const filmProvIds = new Set(frAll);
+                return [..._finalPlatIds].some(id => filmProvIds.has(id));
+            };
+
+            // Réserves : no-synopsis et films rejetés par plateforme (dernier recours anti-crash)
+            const platformRejected = [];
+
+            // ── PASSE 1 : sélection parmi les films classés par l'IA ──
             for (const r of rankedDeduped) {
                 if (finalMovies.length >= 3) break;
 
                 // ✅ Anti-hallucination : vérifier que l'IA n'a pas inventé un ID hors candidats
                 if (!validCandidateIds.has(Number(r.tmdb_id))) {
-                    console.warn(`⚠️ ID ${r.tmdb_id} ("${r.match_reason?.substring(0,40)}...") absent des candidats — hallucination IA ignorée`);
+                    console.warn(`⚠️ ID ${r.tmdb_id} absent des candidats — hallucination IA ignorée`);
                     continue;
                 }
 
                 const details = await tmdbService.getMovieDetails(r.tmdb_id);
                 if (!details) continue;
 
-                // ✅ Anti-redirect TMDB : vérifier que l'ID retourné correspond bien à celui demandé
+                // ✅ Anti-redirect TMDB
                 if (Number(details.id) !== Number(r.tmdb_id)) {
-                    console.warn(`⚠️ TMDB redirect détecté : demandé ${r.tmdb_id}, reçu ${details.id} (${details.title}) — film ignoré`);
+                    console.warn(`⚠️ TMDB redirect : demandé ${r.tmdb_id}, reçu ${details.id} — ignoré`);
                     continue;
                 }
 
-                // ✅ Filtre plateforme final (vérification sur les vraies données watch/providers)
-                // TMDB Discover peut retourner de faux positifs → on vérifie les données réelles du film.
-                // Logique : si providers FR disponibles et AUCUN ne correspond aux plateformes user → rejet.
-                //           si providers FR vides (données TMDB incomplètes) → on garde (bénéfice du doute).
-                const _finalPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
-                if (_finalPlatIds.size > 0) {
-                    const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
-                    const frFlatAndFree = [
-                        ...(details['watch/providers']?.results?.FR?.flatrate || []),
-                        ...(details['watch/providers']?.results?.FR?.free || []),
-                        ...(details['watch/providers']?.results?.FR?.ads || [])
-                    ];
-                    if (frFlatrate.length > 0) {
-                        // Données disponibles → vérification stricte
-                        const filmProvIds = new Set(frFlatAndFree.map(p => String(p.provider_id)));
-                        const matchesPlatform = [..._finalPlatIds].some(id => filmProvIds.has(id));
-                        if (!matchesPlatform) {
-                            console.warn("⛔ Filtre final : " + details.title + " non confirmé sur tes plateformes — ignoré");
-                            continue;
-                        }
-                    }
-                    // Si frFlatrate vide → bénéfice du doute (données TMDB incomplètes pour ce film)
+                // ✅ Filtre plateforme final
+                if (!_checkPlatform(details)) {
+                    console.warn("⛔ Filtre final : " + details.title + " non confirmé sur tes plateformes — mis en réserve");
+                    platformRejected.push({ ...details, ...r });
+                    continue;
                 }
 
                 if (!details.overview || details.overview.trim().length < 10) {
-                    // Pas de synopsis : mettre en réserve, on les utilisera si besoin
                     noSynopsisReserve.push({ ...details, ...r });
                 } else {
                     finalMovies.push({ ...details, ...r });
@@ -1959,6 +1960,42 @@ const App = {
                 finalMovies.push(fill);
                 store.suggestedMovieIds.push(Number(fill.tmdb_id));
                 store.suggestedTitles.push(fill.title);
+            }
+
+            // ── PASSE 2 (rescue) : si encore < 3, parcourir les candidats non-classés ──
+            if (finalMovies.length < 3) {
+                console.log(`🔍 Rescue pass : ${finalMovies.length}/3 films trouvés, exploration des candidats restants...`);
+                const usedIds = new Set([
+                    ...rankedDeduped.map(r => Number(r.tmdb_id)),
+                    ...finalMovies.map(f => Number(f.id))
+                ]);
+                for (const c of safeCandidates) {
+                    if (finalMovies.length >= 3) break;
+                    if (usedIds.has(Number(c.id))) continue;
+                    if (store.suggestedMovieIds.includes(Number(c.id))) continue;
+                    if ((store.seenRatedMovieIds || []).includes(Number(c.id))) continue;
+                    const details = await tmdbService.getMovieDetails(c.id);
+                    if (!details || Number(details.id) !== Number(c.id)) continue;
+                    if (!_checkPlatform(details)) { platformRejected.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 }); continue; }
+                    if (!details.overview?.trim()) continue;
+                    finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
+                    store.suggestedMovieIds.push(Number(c.id));
+                    store.suggestedTitles.push(details.title);
+                    usedIds.add(Number(c.id));
+                }
+            }
+
+            // ── DERNIER RECOURS : si toujours < 3, utiliser les films rejetés (évite le crash) ──
+            // Ces films viennent du pool TMDB discover (probablement sur plateforme) même si providers vide
+            if (finalMovies.length < 3 && platformRejected.length > 0) {
+                console.warn("⚠️ Dernier recours : utilisation de " + platformRejected.length + " film(s) à plateforme non confirmée");
+                while (finalMovies.length < 3 && platformRejected.length > 0) {
+                    const fill = platformRejected.shift();
+                    if (store.suggestedMovieIds.includes(Number(fill.tmdb_id || fill.id))) continue;
+                    finalMovies.push(fill);
+                    store.suggestedMovieIds.push(Number(fill.tmdb_id || fill.id));
+                    store.suggestedTitles.push(fill.title);
+                }
             }
 
             // C-fix : FIFO cap — max 45 IDs gardés (≈15 rerolls × 3 films)
