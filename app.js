@@ -1744,7 +1744,7 @@ const App = {
                 setStep(2, isEn ? '📅 Expanding to all eras...' : '📅 Élargissement toutes époques...');
                 console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque NI langue`);
                 const fb3 = await tmdbService.getAdvancedDiscovery(
-                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude, _userPlatforms: [] },
+                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude, _userPlatforms: store.preferredPlatforms || [] },
                     {}, false, 1, []
                 );
                 for (const f of fb3) {
@@ -1767,7 +1767,7 @@ const App = {
                 console.log(`🚨 Fallback NUCLEAR : genre mood conservé, époque/langue/keywords ignorés`);
                 try {
                     // On garde le genre mood pour rester "dans le même esprit"
-                    const nuclearPrefs = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: [] };
+                    const nuclearPrefs = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: store.preferredPlatforms || [] };
                     const nuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs, {}, false, 1, []);
                     for (const f of nuclear) {
                         const genres = f.genre_ids || [];
@@ -1789,7 +1789,7 @@ const App = {
                 console.warn('🔄 Pool épuisé — reset de l\'historique de session pour débloquer');
                 store.suggestedMovieIds = store.suggestedMovieIds.slice(-6); // Garde seulement les 6 derniers
                 store.suggestedTitles   = store.suggestedTitles.slice(-6);
-                const nuclearPrefs2 = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: [] };
+                const nuclearPrefs2 = { mood: store.answers.mood, blendedGenreIds: String(moodGenresArray.join(',')), _userPlatforms: store.preferredPlatforms || [] };
                 try {
                     const retryNuclear = await tmdbService.getAdvancedDiscovery(nuclearPrefs2, {}, false, 1, []);
                     for (const f of retryNuclear) {
@@ -1809,7 +1809,11 @@ const App = {
             if (safeCandidates.length === 0) {
                 stopTips();
                 console.warn('🚨 Aucun candidat après tous les fallbacks — erreur réseau probable');
-                this.renderError(getLang() === 'en' ? 'Network issue — please try again' : 'Problème réseau — réessaie dans un instant');
+                const _hasPlatFilter = (store.preferredPlatforms || []).length > 0;
+                const _noResultMsg = _hasPlatFilter
+                    ? (getLang() === 'en' ? 'No films found on your streaming platforms for this search. Try changing your mood or platforms.' : 'Aucun film trouvé sur tes plateformes pour cette recherche. Essaie un autre mood ou change tes plateformes.')
+                    : (getLang() === 'en' ? 'Network issue — please try again' : 'Problème réseau — réessaie dans un instant');
+                this.renderError(_noResultMsg);
                 return;
             }
 
