@@ -1906,7 +1906,7 @@ const App = {
             const _checkPlatform = (details) => {
                 if (_finalPlatIds.size === 0) return true;
                 const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
-                if (frFlatrate.length === 0) return true; // données TMDB incomplètes → bénéfice du doute
+                if (frFlatrate.length === 0) return false; // ⛔ strict : pas de données = film rejeté
                 const frAll = [
                     ...(details['watch/providers']?.results?.FR?.flatrate || []),
                     ...(details['watch/providers']?.results?.FR?.free || []),
@@ -1985,17 +1985,10 @@ const App = {
                 }
             }
 
-            // ── DERNIER RECOURS : si toujours < 3, utiliser les films rejetés (évite le crash) ──
-            // Ces films viennent du pool TMDB discover (probablement sur plateforme) même si providers vide
-            if (finalMovies.length < 3 && platformRejected.length > 0) {
-                console.warn("⚠️ Dernier recours : utilisation de " + platformRejected.length + " film(s) à plateforme non confirmée");
-                while (finalMovies.length < 3 && platformRejected.length > 0) {
-                    const fill = platformRejected.shift();
-                    if (store.suggestedMovieIds.includes(Number(fill.tmdb_id || fill.id))) continue;
-                    finalMovies.push(fill);
-                    store.suggestedMovieIds.push(Number(fill.tmdb_id || fill.id));
-                    store.suggestedTitles.push(fill.title);
-                }
+            // ── Si < 3 films confirmés sur plateforme : on affiche ce qu'on a (1 ou 2 c'est OK)
+            // Jamais de film sans plateforme confirmée — l'utilisateur voit seulement ce qui est disponible
+            if (finalMovies.length < 3 && _finalPlatIds.size > 0) {
+                console.log("📺 " + finalMovies.length + "/3 films confirmés sur tes plateformes — affichage partiel");
             }
 
             // C-fix : FIFO cap — max 45 IDs gardés (≈15 rerolls × 3 films)
