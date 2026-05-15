@@ -1936,7 +1936,7 @@ const App = {
                         const filmProvIds = new Set(frFlatAndFree.map(p => String(p.provider_id)));
                         const matchesPlatform = [..._finalPlatIds].some(id => filmProvIds.has(id));
                         if (!matchesPlatform) {
-                            console.warn(\`⛔ Filtre final : \${details.title} non confirmé sur tes plateformes (providers: \${[...filmProvIds].join(',')}) — ignoré\`);
+                            console.warn("⛔ Filtre final : " + details.title + " non confirmé sur tes plateformes — ignoré");
                             continue;
                         }
                     }
