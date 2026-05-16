@@ -2425,7 +2425,7 @@ const App = {
                     </p>` : ''}
                 ${!isLastRoll
                     ? `<button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
-                        ${t('results.reroll')}${rerollsLeft <= activeLimit && !isPremium
+                        ${t('results.reroll')}${!isLoggedIn
                             ? ` <span class="reroll-counter">${rerollsLeft} restant${rerollsLeft > 1 ? 's' : ''}</span>`
                             : (store.rerollCount > 0 ? ` (${store.rerollCount}×)` : '')}
                        </button>
@@ -3148,7 +3148,7 @@ const App = {
 
     // ── Profil cinéphile ──
     async showProfile() {
-        const { authUI } = await import('./modules/auth.js?v=17');
+        const { authUI } = await import('./modules/auth.js?v=22');
         authUI.showHistory();
     },
 
