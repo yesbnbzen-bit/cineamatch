@@ -129,6 +129,13 @@ export const authUI = {
         const profileNavBtn = document.getElementById('profile-nav-btn');
         if (profileNavBtn) profileNavBtn.style.display = 'flex';
 
+        // Bouton Premium : visible seulement si non premium
+        const isPremium = user.user_metadata?.is_premium === true;
+        const premiumNavBtn  = document.getElementById('premium-nav-btn');
+        const premiumDropBtn = document.getElementById('premium-drop-btn');
+        if (premiumNavBtn)  premiumNavBtn.style.display  = isPremium ? 'none' : 'flex';
+        if (premiumDropBtn) premiumDropBtn.style.display = isPremium ? 'none' : 'block';
+
 
         // Onboarding uniquement au premier login de cet utilisateur
         const onbKey = `cineamatch_onboarded_${user.id}`;
@@ -524,6 +531,8 @@ export const authUI = {
         if (prefsBtn) prefsBtn.style.display = 'none';
         const profileNavBtn = document.getElementById('profile-nav-btn');
         if (profileNavBtn) profileNavBtn.style.display = 'none';
+        const premiumNavBtn = document.getElementById('premium-nav-btn');
+        if (premiumNavBtn) premiumNavBtn.style.display = 'none';
 
         // Vider la watchlist en mémoire (repassage en localStorage)
         store.watchlist = JSON.parse(localStorage.getItem('watchlist') || '[]');

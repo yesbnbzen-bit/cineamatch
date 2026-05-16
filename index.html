@@ -166,6 +166,10 @@
                 <button id="profile-nav-btn" class="btn-config btn-profile-nav" style="display:none" title="Mes Films">🎬 <span class="btn-label">Mes Films</span></button>
                 <button id="prefs-nav-btn" class="btn-config" style="display:none" title="Mon espace">⊞ <span class="btn-label" data-i18n="nav.prefs">MON ESPACE</span></button>
                 <button id="config-btn" class="btn-config" style="display:none">⚙ <span class="btn-label" data-i18n="nav.config">CONFIG</span></button>
+                <!-- Bouton Premium (visible si connecté + non premium) -->
+                <button id="premium-nav-btn" class="btn-premium-nav" style="display:none;" onclick="App.showPricingModal()">
+                    ⚡ <span class="btn-label">Premium</span>
+                </button>
                 <!-- Bouton connexion (visible si non connecté) -->
                 <button id="auth-btn" class="btn-config btn-auth">👤 <span class="btn-label" data-i18n="nav.connect">Se connecter</span></button>
                 <!-- Menu utilisateur (visible si connecté) -->
@@ -173,6 +177,9 @@
                     <div class="user-avatar" id="user-avatar">??</div>
                     <span class="user-name" id="user-name"></span>
                     <div class="user-dropdown">
+                        <button class="btn-premium-drop" onclick="App.showPricingModal()" id="premium-drop-btn">
+                            ⚡ Passer Premium
+                        </button>
                         <button class="btn-signout-drop"
                             onclick="import('./modules/auth.js?v=22').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>

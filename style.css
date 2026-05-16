@@ -4855,6 +4855,49 @@ body.duo-active {
     transform: translateY(0);
 }
 
+/* Bouton Premium navbar */
+.btn-premium-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #f5c518 0%, #e6a800 100%);
+    color: #111;
+    border: none;
+    border-radius: 100px;
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+}
+.btn-premium-nav:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(245, 197, 24, 0.4);
+}
+
+/* Lien Premium dans le dropdown */
+.btn-premium-drop {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #f5c518;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.55rem 0.9rem;
+    text-align: left;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    margin-bottom: 4px;
+}
+.btn-premium-drop:hover {
+    background: rgba(245, 197, 24, 0.1);
+    color: #ffe066;
+}
+
 .btn-signout-drop {
     width: 100%;
     background: none;
