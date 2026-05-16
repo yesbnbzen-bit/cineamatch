@@ -2390,11 +2390,11 @@ const App = {
 
         // ── Bouton reroll avec % décroissant + limite free ──
         const nextPct      = getNextScore(store.rerollCount);
-        const isAdmin      = ['yesbnbzen@gmail.com','lalycapslaly@hotmail.fr'].includes((store.currentUser?.email || '').toLowerCase());
-        const isPremium    = isAdmin || store.currentUser?.user_metadata?.is_premium === true;
+        const isPremium    = store.currentUser?.user_metadata?.is_premium === true;
         const isLoggedIn   = !!store.currentUser;
-        // Limites par palier : admin/premium=10, connecté gratuit=3, anonyme=2
-        const activeLimit  = isPremium ? REROLL_PREMIUM_LIMIT : (isLoggedIn ? REROLL_LOGGED_LIMIT : REROLL_FREE_LIMIT);
+        // Limites : connecté (gratuit ou premium) = 10 rerolls, anonyme = 2
+        // Stripe non encore configuré → tous les comptes connectés ont la limite premium
+        const activeLimit  = isLoggedIn ? REROLL_PREMIUM_LIMIT : REROLL_FREE_LIMIT;
         const isLastRoll   = store.rerollCount >= REROLL_MAX_SCORES.length - 1;
         const rerollsLeft  = Math.max(0, activeLimit - store.rerollCount);
         const hitLimit     = store.rerollCount >= activeLimit;
