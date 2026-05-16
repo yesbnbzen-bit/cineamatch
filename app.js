@@ -1830,7 +1830,7 @@ const App = {
             // ── B-fix : enrichir les 15 meilleurs candidats avec cast + réalisateur ──
             // → l'IA verra "Réal: Tim Story | Avec: Kevin Hart, Taraji P. Henson" dans le pool
             // → appels /credits en parallèle (~150ms) sur les 15 films les mieux notés
-            const enrichedSafeCandidates = await tmdbService.enrichCandidatesWithCast(safeCandidates, 15);
+            const enrichedSafeCandidates = await tmdbService.enrichCandidatesWithCast(safeCandidates, 25);
             console.log(`🎬 Candidats enrichis avec cast : ${enrichedSafeCandidates.filter(c => c._credits).length}/15`);
 
             // ── ÉTAPE 3 : OpenAI score et classe les candidats ──
@@ -3028,14 +3028,14 @@ const App = {
         const mood = moodLabelsShare[store.answers.mood] || (getLang() === 'en' ? 'cinema' : 'cinéma');
         const titles = movies.map((m, i) => `${i+1}. ${m.title} (${m.release_date?.split('-')[0]||''}) — ${m.match_score}% match`).join('\n');
         const text = getLang() === 'en'
-            ? `🎬 CineMatch IA recommended tonight for a ${mood} evening:\n\n${titles}\n\n→ Find your perfect film on CineMatch IA`
-            : `🎬 CineMatch IA m'a recommandé ce soir pour une soirée ${mood} :\n\n${titles}\n\n→ Trouve ton film parfait sur CineMatch IA`;
+            ? `🎬 CineaMatch IA recommended tonight for a ${mood} evening:\n\n${titles}\n\n→ Find your perfect film on CineaMatch IA`
+            : `🎬 CineaMatch IA m'a recommandé ce soir pour une soirée ${mood} :\n\n${titles}\n\n→ Trouve ton film parfait sur CineaMatch IA`;
 
         const btn = document.getElementById('share-btn');
 
         // Web Share API (mobile) ou fallback clipboard (desktop)
         if (navigator.share) {
-            navigator.share({ title: 'CineMatch IA — ' + (getLang() === 'en' ? 'My recommendations' : 'Mes recommandations'), text })
+            navigator.share({ title: 'CineaMatch IA — ' + (getLang() === 'en' ? 'My recommendations' : 'Mes recommandations'), text })
                 .catch(() => {});
         } else {
             navigator.clipboard.writeText(text).then(() => {
