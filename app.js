@@ -61,8 +61,10 @@ function getQuestions() {
 // ─────────────────────────────────────────────────────────────────
 //  Score de match décroissant selon le nombre de rerolls
 // ─────────────────────────────────────────────────────────────────
-const REROLL_MAX_SCORES  = [95, 87, 79, 71, 64, 58];
-const REROLL_FREE_LIMIT  = 2;   // 1ère reco + 2 rerolls = 3 suggestions au total, ensuite paywall
+const REROLL_MAX_SCORES     = [95, 87, 79, 71, 64, 58, 54, 50, 47, 45, 43];
+const REROLL_FREE_LIMIT     = 2;   // non-connecté : 2 rerolls max
+const REROLL_LOGGED_LIMIT   = 3;   // connecté gratuit : 3 rerolls max
+const REROLL_PREMIUM_LIMIT  = 10;  // abonné payant : 10 rerolls max
 
 function getMaxScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount, REROLL_MAX_SCORES.length - 1)];
@@ -2388,10 +2390,14 @@ const App = {
 
         // ── Bouton reroll avec % décroissant + limite free ──
         const nextPct      = getNextScore(store.rerollCount);
+        const isAdmin      = store.currentUser?.email === 'yesbnbzen@gmail.com';
+        const isPremium    = isAdmin || store.currentUser?.user_metadata?.is_premium === true;
+        const isLoggedIn   = !!store.currentUser;
+        // Limites par palier : admin/premium=10, connecté gratuit=3, anonyme=2
+        const activeLimit  = isPremium ? REROLL_PREMIUM_LIMIT : (isLoggedIn ? REROLL_LOGGED_LIMIT : REROLL_FREE_LIMIT);
         const isLastRoll   = store.rerollCount >= REROLL_MAX_SCORES.length - 1;
-        const isPremium    = store.currentUser?.user_metadata?.is_premium === true;
-        const rerollsLeft  = isPremium ? Infinity : Math.max(0, REROLL_FREE_LIMIT - store.rerollCount);
-        const hitLimit     = !isPremium && store.rerollCount >= REROLL_FREE_LIMIT;
+        const rerollsLeft  = Math.max(0, activeLimit - store.rerollCount);
+        const hitLimit     = store.rerollCount >= activeLimit;
 
         const rerollContainer = document.createElement('div');
         rerollContainer.style.cssText = 'text-align:center;width:100%;margin-top:1.5rem;margin-bottom:2.5rem;display:flex;flex-direction:column;align-items:center;gap:14px;';
@@ -2419,7 +2425,7 @@ const App = {
                     </p>` : ''}
                 ${!isLastRoll
                     ? `<button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
-                        ${t('results.reroll')}${!isPremium && rerollsLeft <= REROLL_FREE_LIMIT
+                        ${t('results.reroll')}${rerollsLeft <= activeLimit && !isPremium
                             ? ` <span class="reroll-counter">${rerollsLeft} restant${rerollsLeft > 1 ? 's' : ''}</span>`
                             : (store.rerollCount > 0 ? ` (${store.rerollCount}×)` : '')}
                        </button>
