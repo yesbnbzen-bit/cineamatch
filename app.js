@@ -2390,7 +2390,7 @@ const App = {
 
         // ── Bouton reroll avec % décroissant + limite free ──
         const nextPct      = getNextScore(store.rerollCount);
-        const isAdmin      = ['yesbnbzen@gmail.com','lalycapslaly@hotmail.fr'].includes(store.currentUser?.email);
+        const isAdmin      = ['yesbnbzen@gmail.com','lalycapslaly@hotmail.fr'].includes((store.currentUser?.email || '').toLowerCase());
         const isPremium    = isAdmin || store.currentUser?.user_metadata?.is_premium === true;
         const isLoggedIn   = !!store.currentUser;
         // Limites par palier : admin/premium=10, connecté gratuit=3, anonyme=2
