@@ -1976,7 +1976,14 @@ const App = {
                     if ((store.seenRatedMovieIds || []).includes(Number(c.id))) continue;
                     const details = await tmdbService.getMovieDetails(c.id);
                     if (!details || Number(details.id) !== Number(c.id)) continue;
-                    if (!_checkPlatform(details)) { platformRejected.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 }); continue; }
+                    // Rescue pass : semi-strict — si providers vides (données TMDB manquantes),
+                    // on accepte le film (il vient du pool TMDB discover platform-filtré, donc probablement correct)
+                    // Seuls les films avec providers confirmés sur MAUVAISE plateforme sont rejetés
+                    if (!_checkPlatform(details)) {
+                        const _frFlatRescue = details['watch/providers']?.results?.FR?.flatrate || [];
+                        if (_frFlatRescue.length > 0) continue; // Confirmé sur mauvaise plateforme → skip
+                        // Providers vides → bénéfice du doute en rescue (vient du discover platform-filtré)
+                    }
                     if (!details.overview?.trim()) continue;
                     finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
                     store.suggestedMovieIds.push(Number(c.id));
@@ -2329,7 +2336,7 @@ const App = {
                                 color:var(--primary-color);margin-bottom:5px;opacity:0.9;">
                                 ${t('results.why')}
                             </p>
-                            <p class="ai-reason">"${escapeHtml(m.match_reason)}"</p>
+                            <p class="ai-reason">${m.match_reason ? `"${escapeHtml(m.match_reason)}"` : `<em style="opacity:0.5;font-style:italic;font-size:0.85em">${getLang()==="en" ? "A strong match for your profile." : "Un choix qui correspond à ton profil."}</em>`}</p>
                         </div>
                         <!-- Notation & Déjà vu (si connecté) -->
                         <div class="rating-row" id="rating-row-${m.id}" style="display:none;">
@@ -2359,6 +2366,9 @@ const App = {
         });
 
         // ── Bouton Partager — sous la grille, aligné à droite ──
+        // Nettoyer l'ancien bouton si déjà présent (évite les duplicates au reroll)
+        const _existingShare = document.getElementById('share-btn');
+        if (_existingShare) _existingShare.closest('div')?.remove();
         const shareContainer = document.createElement('div');
         shareContainer.style.cssText = 'display:flex;justify-content:flex-end;width:100%;margin-top:10px;padding-right:4px;';
         const shareIcon = document.createElement('button');
