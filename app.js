@@ -3568,3 +3568,14 @@ const App = {
 window.App = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
+// Réinitialiser les boutons de checkout si l'utilisateur revient en arrière (bfcache)
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+        document.querySelectorAll('.pricing-cta').forEach(btn => {
+            btn.disabled = false;
+            btn.innerHTML = 'Choisir';
+            btn.classList.remove('pricing-cta--loading');
+        });
+    }
+});
