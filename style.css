@@ -171,18 +171,17 @@ body {
 }
 
 .logo .logo-ia {
-    font-size: 0.55rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: #E50914;
-    background: rgba(229,9,20,0.12);
-    border: 1px solid rgba(229,9,20,0.3);
-    border-radius: 4px;
-    padding: 1px 5px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #fff;
+    background: #E50914;
+    border-radius: 5px;
+    padding: 2px 7px;
     vertical-align: middle;
-    margin-left: 4px;
+    margin-left: 6px;
     position: relative;
-    top: -2px;
+    top: -3px;
 }
 
 .nav-actions {
