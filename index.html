@@ -31,6 +31,48 @@
     <link rel="icon" type="image/png" sizes="64x64" href="https://cineamatch.com/favicon-64.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://cineamatch.com/favicon-32.png">
     <link rel="apple-touch-icon" href="https://cineamatch.com/favicon-192.png">
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+    <!-- JSON-LD : données structurées pour Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "CineaMatch",
+      "url": "https://cineamatch.com",
+      "description": "CineaMatch analyse tes goûts et te recommande le film parfait grâce à l'intelligence artificielle. Gratuit, sans inscription.",
+      "applicationCategory": "EntertainmentApplication",
+      "operatingSystem": "Web",
+      "inLanguage": "fr-FR",
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Gratuit",
+          "price": "0",
+          "priceCurrency": "EUR"
+        },
+        {
+          "@type": "Offer",
+          "name": "Premium Mensuel",
+          "price": "4.99",
+          "priceCurrency": "EUR",
+          "billingIncrement": "P1M"
+        },
+        {
+          "@type": "Offer",
+          "name": "Premium Annuel",
+          "price": "39.99",
+          "priceCurrency": "EUR",
+          "billingIncrement": "P1Y"
+        }
+      ],
+      "creator": {
+        "@type": "Organization",
+        "name": "CineaMatch",
+        "url": "https://cineamatch.com"
+      }
+    }
+    </script>
     <link rel="stylesheet" href="style.css?v=367">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

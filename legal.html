@@ -1,192 +1,558 @@
-<\!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mentions légales & CGU — CineaMatch IA</title>
+  <title>Mentions légales & CGU — CineaMatch</title>
+  <meta name="description" content="Mentions légales, conditions générales d'utilisation, politique de confidentialité et informations sur les abonnements Premium de CineaMatch.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://cineamatch.com/legal">
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Inter',system-ui,sans-serif;background:#0d0d0d;color:#e5e5e5;line-height:1.7}
-    .container{max-width:780px;margin:0 auto;padding:4rem 1.5rem}
-    header{display:flex;align-items:center;justify-content:space-between;padding:1.5rem;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;background:#0d0d0d;z-index:10}
-    .logo{font-size:1.3rem;font-weight:800;color:#fff;text-decoration:none;letter-spacing:-0.5px}
-    .logo span{color:#E50914}
-    .back{font-size:0.85rem;color:rgba(255,255,255,0.5);text-decoration:none;transition:color 0.2s}
-    .back:hover{color:#fff}
-    h1{font-size:2rem;font-weight:800;margin-bottom:0.4rem}
-    .updated{font-size:0.8rem;color:rgba(255,255,255,0.35);margin-bottom:3rem}
-    .toc{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:3rem}
-    .toc h3{font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.35);margin-bottom:0.75rem}
-    .toc a{display:block;color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.88rem;padding:0.2rem 0;transition:color 0.15s}
-    .toc a:hover{color:#E50914}
-    section{margin-bottom:3rem}
-    h2{font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(255,255,255,0.07)}
-    h3{font-size:1rem;font-weight:600;color:rgba(255,255,255,0.85);margin:1.25rem 0 0.5rem}
-    p{color:rgba(255,255,255,0.65);margin-bottom:0.75rem;font-size:0.93rem}
-    ul{color:rgba(255,255,255,0.65);padding-left:1.4rem;font-size:0.93rem;margin-bottom:0.75rem}
-    li{margin-bottom:0.3rem}
-    a{color:#E50914;text-decoration:none}
-    a:hover{text-decoration:underline}
-    .highlight{background:rgba(229,9,20,0.08);border-left:3px solid #E50914;border-radius:0 8px 8px 0;padding:0.75rem 1rem;margin:1rem 0;font-size:0.88rem;color:rgba(255,255,255,0.75)}
-    footer{text-align:center;padding:2rem;color:rgba(255,255,255,0.2);font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.06)}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #E50914;
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: rgba(255,255,255,0.07);
+      --text: rgba(255,255,255,0.82);
+      --muted: rgba(255,255,255,0.4);
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(13,13,13,0.95);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--red); }
+    .back {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .back:hover { color: #fff; border-color: rgba(255,255,255,0.2); }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, rgba(229,9,20,0.08) 0%, transparent 60%);
+      border-bottom: 1px solid var(--border);
+      padding: 3.5rem 2rem 3rem;
+      text-align: center;
+    }
+    .hero-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--red);
+      background: rgba(229,9,20,0.12);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.03em;
+    }
+    .hero-meta { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── Layout ── */
+    .layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: sticky;
+      top: 80px;
+    }
+    .sidebar-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .toc-list a {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+    .toc-list a:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.05);
+      border-left-color: var(--red);
+    }
+
+    /* ── Content ── */
+    .content { min-width: 0; }
+
+    section {
+      margin-bottom: 4rem;
+      scroll-margin-top: 90px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(229,9,20,0.12);
+      color: var(--red);
+      font-size: 0.8rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+
+    h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      margin: 1.5rem 0 0.6rem;
+    }
+
+    p {
+      color: var(--text);
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    a { color: var(--red); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong { color: rgba(255,255,255,0.9); font-weight: 600; }
+
+    /* ── Cards ── */
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 0;
+    }
+    .info-card p, .info-card li { color: rgba(255,255,255,0.65); }
+
+    .highlight {
+      background: rgba(229,9,20,0.07);
+      border-left: 3px solid var(--red);
+      border-radius: 0 8px 8px 0;
+      padding: 0.85rem 1.1rem;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .rights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .right-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    .right-item strong { display: block; font-size: 0.85rem; margin-bottom: 0.25rem; }
+    .right-item span { font-size: 0.8rem; color: var(--muted); }
+
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .plan-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+    .plan-card .plan-name { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.4rem; }
+    .plan-card .plan-price { font-size: 1.4rem; font-weight: 800; color: #fff; }
+    .plan-card .plan-price span { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+    .plan-card.featured { border-color: var(--red); background: rgba(229,9,20,0.06); }
+
+    /* ── Contact ── */
+    .contact-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .contact-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(229,9,20,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { padding: 1rem 1.25rem; }
+      .hero { padding: 2.5rem 1.25rem 2rem; }
+      .layout { grid-template-columns: 1fr; padding: 2rem 1.25rem; gap: 0; }
+      .sidebar { display: none; }
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <a class="logo" href="/">CINEA<span>MATCH</span> IA</a>
+  <a class="logo" href="/">CINEA<span>MATCH</span></a>
   <a class="back" href="/">← Retour au site</a>
 </header>
 
-<div class="container">
+<div class="hero">
+  <div class="hero-label">Documents légaux</div>
   <h1>Mentions légales & CGU</h1>
-  <p class="updated">Dernière mise à jour : avril 2026</p>
-
-  <div class="toc">
-    <h3>Sommaire</h3>
-    <a href="#mentions">1. Mentions légales</a>
-    <a href="#service">2. Description du service</a>
-    <a href="#cgu">3. Conditions générales d'utilisation</a>
-    <a href="#donnees">4. Données personnelles (RGPD)</a>
-    <a href="#cookies">5. Cookies</a>
-    <a href="#propriete">6. Propriété intellectuelle</a>
-    <a href="#responsabilite">7. Limitation de responsabilité</a>
-    <a href="#contact">8. Contact</a>
-  </div>
-
-  <\!-- 1. Mentions légales -->
-  <section id="mentions">
-    <h2>1. Mentions légales</h2>
-    <p><strong>Nom du service :</strong> CineaMatch IA</p>
-    <p><strong>Site web :</strong> <a href="https://cineamatch.com">cineamatch.com</a></p>
-    <p><strong>Hébergeur :</strong> Cloudflare Pages, 101 Townsend St, San Francisco, CA 94107, États-Unis</p>
-    <p><strong>APIs tierces utilisées :</strong></p>
-    <ul>
-      <li>The Movie Database (TMDB) — données films, affiches, bande-annonces</li>
-      <li>OpenAI — moteur de recommandation IA</li>
-      <li>Supabase — authentification et stockage des données utilisateurs</li>
-    </ul>
-  </section>
-
-  <\!-- 2. Description du service -->
-  <section id="service">
-    <h2>2. Description du service</h2>
-    <p>CineaMatch IA est un service de recommandation de films par intelligence artificielle. Il analyse les préférences de l'utilisateur via un questionnaire et propose des films personnalisés grâce à l'API OpenAI et la base de données TMDB.</p>
-    <p>Le service est accessible :</p>
-    <ul>
-      <li><strong>Sans compte</strong> pour un nombre limité de recommandations</li>
-      <li><strong>Avec compte gratuit</strong> pour un accès étendu et la sauvegarde de l'historique</li>
-    </ul>
-  </section>
-
-  <\!-- 3. CGU -->
-  <section id="cgu">
-    <h2>3. Conditions générales d'utilisation</h2>
-
-    <h3>3.1 Acceptation des CGU</h3>
-    <p>L'utilisation de CineaMatch IA implique l'acceptation pleine et entière des présentes CGU. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le service.</p>
-
-    <h3>3.2 Conditions d'accès</h3>
-    <p>L'accès au service est réservé aux personnes âgées d'au moins <strong>13 ans</strong>. En créant un compte, vous certifiez avoir l'âge requis ou disposer de l'autorisation parentale nécessaire.</p>
-
-    <h3>3.3 Utilisation du service</h3>
-    <p>Vous vous engagez à :</p>
-    <ul>
-      <li>Fournir des informations exactes lors de votre inscription</li>
-      <li>Ne pas tenter de contourner les limites du service</li>
-      <li>Ne pas utiliser le service à des fins commerciales sans autorisation préalable</li>
-      <li>Ne pas porter atteinte au bon fonctionnement du service</li>
-    </ul>
-
-    <h3>3.4 Compte utilisateur</h3>
-    <p>Vous êtes responsable de la confidentialité de vos identifiants de connexion. Toute activité réalisée depuis votre compte vous est attribuée. En cas de compromission de votre compte, contactez-nous immédiatement.</p>
-
-    <h3>3.5 Modifications du service</h3>
-    <p>CineaMatch IA se réserve le droit de modifier, suspendre ou interrompre le service à tout moment, avec ou sans préavis. Les présentes CGU peuvent également être modifiées ; la date de mise à jour figurera en haut de cette page.</p>
-  </section>
-
-  <\!-- 4. RGPD -->
-  <section id="donnees">
-    <h2>4. Données personnelles (RGPD)</h2>
-
-    <div class="highlight">
-      Conformément au Règlement Général sur la Protection des Données (RGPD — UE 2016/679), vous disposez de droits sur vos données personnelles.
-    </div>
-
-    <h3>4.1 Données collectées</h3>
-    <p>Nous collectons uniquement les données nécessaires au fonctionnement du service :</p>
-    <ul>
-      <li><strong>Adresse email</strong> — pour la création de compte et l'authentification</li>
-      <li><strong>Prénom</strong> — pour personnaliser votre expérience</li>
-      <li><strong>Date de naissance</strong> — pour adapter les recommandations à votre tranche d'âge</li>
-      <li><strong>Films notés et vus</strong> — pour améliorer la pertinence des recommandations</li>
-      <li><strong>Préférences de streaming</strong> — pour filtrer les films disponibles sur vos plateformes</li>
-    </ul>
-
-    <h3>4.2 Finalités du traitement</h3>
-    <ul>
-      <li>Authentification et gestion de votre compte</li>
-      <li>Personnalisation des recommandations de films</li>
-      <li>Amélioration du service</li>
-    </ul>
-
-    <h3>4.3 Durée de conservation</h3>
-    <p>Vos données sont conservées tant que votre compte est actif. En cas de suppression de compte, l'ensemble de vos données est supprimé dans un délai de 30 jours.</p>
-
-    <h3>4.4 Vos droits</h3>
-    <p>Conformément au RGPD, vous disposez des droits suivants :</p>
-    <ul>
-      <li><strong>Droit d'accès</strong> — consulter les données que nous détenons</li>
-      <li><strong>Droit de rectification</strong> — corriger des données inexactes</li>
-      <li><strong>Droit à l'effacement</strong> — supprimer votre compte et vos données</li>
-      <li><strong>Droit à la portabilité</strong> — recevoir vos données dans un format standard</li>
-      <li><strong>Droit d'opposition</strong> — vous opposer au traitement de vos données</li>
-    </ul>
-    <p>Pour exercer ces droits, contactez-nous à : <a href="mailto:yesbnbzen@gmail.com">yesbnbzen@gmail.com</a></p>
-
-    <h3>4.5 Sous-traitants</h3>
-    <p>Vos données sont hébergées chez Supabase (base de données et authentification) dont les serveurs sont situés dans l'Union Européenne. Supabase est conforme au RGPD.</p>
-
-    <h3>4.6 Réclamation</h3>
-    <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de la <a href="https://www.cnil.fr" target="_blank">CNIL</a>.</p>
-  </section>
-
-  <\!-- 5. Cookies -->
-  <section id="cookies">
-    <h2>5. Cookies</h2>
-    <p>CineaMatch IA utilise uniquement des cookies strictement nécessaires au fonctionnement du service :</p>
-    <ul>
-      <li><strong>Session d'authentification</strong> — pour maintenir votre connexion</li>
-      <li><strong>Préférences</strong> — langue, plateformes de streaming sélectionnées</li>
-    </ul>
-    <p>Aucun cookie publicitaire ou de tracking tiers n'est utilisé.</p>
-  </section>
-
-  <\!-- 6. Propriété intellectuelle -->
-  <section id="propriete">
-    <h2>6. Propriété intellectuelle</h2>
-    <p>Le nom, le logo et le code source de CineaMatch IA sont protégés. Toute reproduction ou utilisation commerciale sans autorisation est interdite.</p>
-    <p>Les données films (affiches, titres, synopsis) sont fournies par <a href="https://www.themoviedb.org" target="_blank">TMDB</a> sous leur licence respective.</p>
-  </section>
-
-  <\!-- 7. Responsabilité -->
-  <section id="responsabilite">
-    <h2>7. Limitation de responsabilité</h2>
-    <p>CineaMatch IA est un service de recommandation basé sur l'intelligence artificielle. Les suggestions proposées sont générées automatiquement et ne constituent pas une garantie de qualité ou d'adéquation aux goûts de l'utilisateur.</p>
-    <p>Le service est fourni "tel quel", sans garantie de disponibilité continue. Nous ne saurions être tenus responsables des interruptions de service liées aux APIs tierces (TMDB, OpenAI).</p>
-  </section>
-
-  <\!-- 8. Contact -->
-  <section id="contact">
-    <h2>8. Contact</h2>
-    <p>Pour toute question relative aux présentes CGU, à vos données personnelles ou au service :</p>
-    <p>📧 <a href="mailto:yesbnbzen@gmail.com">yesbnbzen@gmail.com</a></p>
-    <p>🌐 <a href="https://cineamatch.com">cineamatch.com</a></p>
-  </section>
-
+  <p class="hero-meta">Dernière mise à jour : mai 2026</p>
 </div>
 
-<footer>© 2026 CineaMatch IA — Tous droits réservés</footer>
+<div class="layout">
+
+  <!-- Sidebar navigation -->
+  <aside class="sidebar">
+    <p class="sidebar-title">Sommaire</p>
+    <ul class="toc-list">
+      <li><a href="#mentions">1. Mentions légales</a></li>
+      <li><a href="#service">2. Description du service</a></li>
+      <li><a href="#cgu">3. Conditions d'utilisation</a></li>
+      <li><a href="#abonnements">4. Abonnements & paiements</a></li>
+      <li><a href="#donnees">5. Données personnelles</a></li>
+      <li><a href="#cookies">6. Cookies</a></li>
+      <li><a href="#propriete">7. Propriété intellectuelle</a></li>
+      <li><a href="#responsabilite">8. Limitation de responsabilité</a></li>
+      <li><a href="#contact">9. Contact</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main content -->
+  <main class="content">
+
+    <!-- 1. Mentions légales -->
+    <section id="mentions">
+      <div class="section-header">
+        <div class="section-number">1</div>
+        <h2>Mentions légales</h2>
+      </div>
+
+      <div class="info-card">
+        <p><strong>Nom du service :</strong> CineaMatch</p>
+        <p><strong>Site web :</strong> <a href="https://cineamatch.com">cineamatch.com</a></p>
+        <p><strong>Contact :</strong> <a href="mailto:yesbnbzen@gmail.com">yesbnbzen@gmail.com</a></p>
+        <p style="margin-bottom:0"><strong>Hébergeur :</strong> Cloudflare Pages — 101 Townsend St, San Francisco, CA 94107, États-Unis</p>
+      </div>
+
+      <h3>Services tiers utilisés</h3>
+      <ul>
+        <li><strong>The Movie Database (TMDB)</strong> — données films, affiches, disponibilités plateformes</li>
+        <li><strong>OpenAI</strong> — moteur de recommandation par intelligence artificielle</li>
+        <li><strong>Supabase</strong> — authentification et base de données utilisateurs</li>
+        <li><strong>Stripe</strong> — traitement des paiements et gestion des abonnements</li>
+      </ul>
+    </section>
+
+    <!-- 2. Description -->
+    <section id="service">
+      <div class="section-header">
+        <div class="section-number">2</div>
+        <h2>Description du service</h2>
+      </div>
+      <p>CineaMatch est un service de recommandation de films par intelligence artificielle. Il analyse vos préférences via un questionnaire interactif et propose des films personnalisés en tenant compte de vos plateformes de streaming, de votre historique et de vos notes.</p>
+      <p>Le service est accessible selon trois niveaux :</p>
+      <ul>
+        <li><strong>Anonyme</strong> — recommandations limitées, sans sauvegarde</li>
+        <li><strong>Compte gratuit</strong> — accès étendu, historique et watchlist</li>
+        <li><strong>Premium</strong> — recommandations illimitées, IA ultra-personnalisée</li>
+      </ul>
+    </section>
+
+    <!-- 3. CGU -->
+    <section id="cgu">
+      <div class="section-header">
+        <div class="section-number">3</div>
+        <h2>Conditions générales d'utilisation</h2>
+      </div>
+
+      <h3>3.1 Acceptation</h3>
+      <p>L'utilisation de CineaMatch implique l'acceptation pleine et entière des présentes conditions. Si vous n'acceptez pas ces termes, veuillez ne pas utiliser le service.</p>
+
+      <h3>3.2 Âge minimum</h3>
+      <p>L'accès est réservé aux personnes âgées d'au moins <strong>13 ans</strong>. En créant un compte, vous certifiez avoir l'âge requis ou disposer de l'autorisation parentale nécessaire.</p>
+
+      <h3>3.3 Engagements de l'utilisateur</h3>
+      <ul>
+        <li>Fournir des informations exactes lors de l'inscription</li>
+        <li>Ne pas tenter de contourner les limites ou protections du service</li>
+        <li>Ne pas utiliser le service à des fins commerciales sans autorisation</li>
+        <li>Ne pas perturber le bon fonctionnement de la plateforme</li>
+      </ul>
+
+      <h3>3.4 Sécurité du compte</h3>
+      <p>Vous êtes responsable de la confidentialité de vos identifiants. Toute activité depuis votre compte vous est attribuée. En cas de compromission, contactez-nous immédiatement.</p>
+
+      <h3>3.5 Évolutions du service</h3>
+      <p>CineaMatch se réserve le droit de modifier, suspendre ou interrompre le service à tout moment. Les présentes CGU peuvent également évoluer ; la date de mise à jour sera indiquée en haut de cette page.</p>
+    </section>
+
+    <!-- 4. Abonnements -->
+    <section id="abonnements">
+      <div class="section-header">
+        <div class="section-number">4</div>
+        <h2>Abonnements & paiements</h2>
+      </div>
+
+      <div class="highlight">
+        Les paiements sont traités de manière sécurisée par <strong>Stripe</strong>. CineaMatch ne stocke jamais vos coordonnées bancaires.
+      </div>
+
+      <h3>4.1 Offres Premium</h3>
+      <div class="plan-grid">
+        <div class="plan-card">
+          <div class="plan-name">Mensuel</div>
+          <div class="plan-price">4,99€ <span>/ mois</span></div>
+        </div>
+        <div class="plan-card featured">
+          <div class="plan-name">Annuel</div>
+          <div class="plan-price">39,99€ <span>/ an</span></div>
+        </div>
+      </div>
+
+      <h3>4.2 Facturation</h3>
+      <p>L'abonnement est renouvelé automatiquement à la date anniversaire (mensuelle ou annuelle). Vous recevrez un email de confirmation avant chaque renouvellement.</p>
+
+      <h3>4.3 Annulation</h3>
+      <p>Vous pouvez annuler votre abonnement à tout moment depuis votre espace compte. L'annulation prend effet à la fin de la période en cours — vous conservez l'accès Premium jusqu'à cette date, sans remboursement au prorata.</p>
+
+      <h3>4.4 Remboursement</h3>
+      <p>Conformément à la législation européenne sur les services numériques, vous disposez d'un <strong>droit de rétractation de 14 jours</strong> à compter de la date de souscription, sauf si le service a été utilisé pendant cette période. Pour toute demande de remboursement, contactez-nous à <a href="mailto:yesbnbzen@gmail.com">yesbnbzen@gmail.com</a>.</p>
+
+      <h3>4.5 Échec de paiement</h3>
+      <p>En cas d'échec de paiement lors du renouvellement, vous serez notifié par email et votre accès Premium sera suspendu jusqu'à régularisation de la situation.</p>
+    </section>
+
+    <!-- 5. RGPD -->
+    <section id="donnees">
+      <div class="section-header">
+        <div class="section-number">5</div>
+        <h2>Données personnelles (RGPD)</h2>
+      </div>
+
+      <div class="highlight">
+        Conformément au RGPD (UE 2016/679), vous disposez de droits sur vos données personnelles. Nous nous engageons à les traiter avec transparence.
+      </div>
+
+      <h3>5.1 Données collectées</h3>
+      <ul>
+        <li><strong>Adresse email</strong> — création de compte et authentification</li>
+        <li><strong>Films notés et vus</strong> — personnalisation des recommandations</li>
+        <li><strong>Préférences de streaming</strong> — filtrage par plateforme disponible</li>
+        <li><strong>Données de paiement</strong> — gérées exclusivement par Stripe (nous n'y avons pas accès)</li>
+      </ul>
+
+      <h3>5.2 Finalités du traitement</h3>
+      <ul>
+        <li>Authentification et gestion de votre compte</li>
+        <li>Personnalisation des recommandations de films</li>
+        <li>Gestion des abonnements et des paiements</li>
+        <li>Amélioration du service</li>
+      </ul>
+
+      <h3>5.3 Durée de conservation</h3>
+      <p>Vos données sont conservées tant que votre compte est actif. En cas de suppression, l'ensemble de vos données est effacé dans un délai de <strong>30 jours</strong>.</p>
+
+      <h3>5.4 Vos droits</h3>
+      <div class="rights-grid">
+        <div class="right-item">
+          <strong>Accès</strong>
+          <span>Consulter vos données</span>
+        </div>
+        <div class="right-item">
+          <strong>Rectification</strong>
+          <span>Corriger des inexactitudes</span>
+        </div>
+        <div class="right-item">
+          <strong>Effacement</strong>
+          <span>Supprimer votre compte</span>
+        </div>
+        <div class="right-item">
+          <strong>Portabilité</strong>
+          <span>Exporter vos données</span>
+        </div>
+        <div class="right-item">
+          <strong>Opposition</strong>
+          <span>Refuser un traitement</span>
+        </div>
+      </div>
+      <p>Pour exercer ces droits : <a href="mailto:yesbnbzen@gmail.com">yesbnbzen@gmail.com</a></p>
+
+      <h3>5.5 Hébergement des données</h3>
+      <p>Vos données sont hébergées chez <strong>Supabase</strong> (serveurs dans l'Union Européenne, conforme RGPD). Les paiements sont traités par <strong>Stripe</strong> (certifié PCI-DSS).</p>
+
+      <h3>5.6 Réclamation</h3>
+      <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de la <a href="https://www.cnil.fr" target="_blank">CNIL</a>.</p>
+    </section>
+
+    <!-- 6. Cookies -->
+    <section id="cookies">
+      <div class="section-header">
+        <div class="section-number">6</div>
+        <h2>Cookies</h2>
+      </div>
+      <p>CineaMatch utilise uniquement des cookies <strong>strictement nécessaires</strong> au fonctionnement du service :</p>
+      <ul>
+        <li><strong>Session d'authentification</strong> — maintenir votre connexion</li>
+        <li><strong>Préférences</strong> — plateformes de streaming sélectionnées</li>
+      </ul>
+      <div class="highlight">
+        Aucun cookie publicitaire, aucun tracker tiers, aucune régie publicitaire.
+      </div>
+    </section>
+
+    <!-- 7. Propriété intellectuelle -->
+    <section id="propriete">
+      <div class="section-header">
+        <div class="section-number">7</div>
+        <h2>Propriété intellectuelle</h2>
+      </div>
+      <p>Le nom CineaMatch, son logo et son code source sont protégés. Toute reproduction ou utilisation commerciale sans autorisation préalable est interdite.</p>
+      <p>Les données films (affiches, titres, synopsis, disponibilités) sont fournies par <a href="https://www.themoviedb.org" target="_blank">TMDB</a> sous licence Creative Commons. CineaMatch n'est pas certifié ou approuvé par TMDB.</p>
+    </section>
+
+    <!-- 8. Responsabilité -->
+    <section id="responsabilite">
+      <div class="section-header">
+        <div class="section-number">8</div>
+        <h2>Limitation de responsabilité</h2>
+      </div>
+      <p>CineaMatch est un service de recommandation basé sur l'intelligence artificielle. Les suggestions générées sont automatiques et ne constituent pas une garantie d'adéquation aux goûts de l'utilisateur.</p>
+      <p>Le service est fourni <em>"tel quel"</em>, sans garantie de disponibilité continue. Nous ne pouvons être tenus responsables des interruptions liées aux services tiers (TMDB, OpenAI, Stripe, Supabase).</p>
+    </section>
+
+    <!-- 9. Contact -->
+    <section id="contact">
+      <div class="section-header">
+        <div class="section-number">9</div>
+        <h2>Contact</h2>
+      </div>
+      <p>Pour toute question relative aux présentes CGU, à vos données personnelles, à votre abonnement ou au service en général :</p>
+      <div class="contact-box">
+        <div class="contact-item">
+          <div class="contact-icon">✉️</div>
+          <a href="mailto:yesbnbzen@gmail.com">yesbnbzen@gmail.com</a>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🌐</div>
+          <a href="https://cineamatch.com">cineamatch.com</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>© 2026 CineaMatch — Tous droits réservés · <a href="/">Retour au site</a></footer>
 
 </body>
 </html>
