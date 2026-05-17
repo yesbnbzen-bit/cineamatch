@@ -1150,10 +1150,15 @@ const App = {
                     // Ces films servent de calibrage → ils ne doivent JAMAIS être recommandés
                     const refMovies = store.answers.lastLovedMovies || [];
                     if (refMovies.length > 0) {
-                        await Promise.allSettled(
-                            refMovies.map(m => ratingsService.rate(store.currentUser.id, m, 5, true))
-                        );
-                        console.log(`⭐ ${refMovies.length} film(s) de référence sauvegardés avec 5★ dans l'historique`);
+                        await Promise.allSettled([
+                            // Sauvegarder dans ratings (seen=true + 5★) pour exclusion future
+                            ...refMovies.map(m => ratingsService.rate(store.currentUser.id, m, 5, true)),
+                            // Sauvegarder dans history pour apparaître dans "Mes films vus"
+                            ...refMovies.map(m => historyService.save(
+                                store.currentUser.id, m, 'référence', 100
+                            ))
+                        ]);
+                        console.log(`⭐ ${refMovies.length} film(s) de référence sauvegardés dans ratings + history`);
                     }
 
                     const [seenHistory, seenRatings, favGenres, ratingProfile] = await Promise.all([
