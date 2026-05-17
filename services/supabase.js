@@ -63,6 +63,13 @@ export const authService = {
         if (error) throw error;
     },
 
+    // Forcer le rechargement de la session (ex: après paiement Stripe)
+    async refreshSession() {
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error) throw error;
+        return data?.user || null;
+    },
+
     // Déconnexion
     async signOut() {
         const { error } = await supabase.auth.signOut();

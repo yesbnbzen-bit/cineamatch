@@ -2,7 +2,7 @@ import { tmdbService, openaiService } from './services/api.js?v=59';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=8';
+import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=9';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=345';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
@@ -3262,8 +3262,15 @@ const App = {
         }
     },
 
-    // ── Préférences utilisateur ──
+    // ── Préférences utilisateur (Premium uniquement) ──
     showPreferences() {
+        // Gate Premium
+        const isPremium = store.currentUser?.user_metadata?.is_premium === true;
+        if (!store.currentUser || !isPremium) {
+            this.showPricingModal();
+            return;
+        }
+
         const modal = document.getElementById('preferences-modal');
         if (!modal) return;
 
@@ -3342,7 +3349,7 @@ const App = {
         btn.textContent = '⏳ Mise à jour...';
 
         try {
-            const { authService } = await import('./services/supabase.js?v=8');
+            const { authService } = await import('./services/supabase.js?v=9');
             await authService.updatePassword(newPwd);
             showMsg('✅ Mot de passe mis à jour avec succès !', '#46d369');
             document.getElementById('profil-pwd-new').value     = '';
@@ -3539,9 +3546,16 @@ const App = {
         if (status === 'success') {
             // Recharger la session utilisateur pour récupérer is_premium mis à jour
             try {
-                const { authService } = await import('./services/supabase.js?v=8');
-                await authService.refreshSession();
-            } catch { /* non bloquant */ }
+                const { authService } = await import('./services/supabase.js?v=9');
+                const freshUser = await authService.refreshSession();
+                if (freshUser) {
+                    // Mettre à jour le store avec les nouvelles métadonnées
+                    store.currentUser = freshUser;
+                    // Rafraîchir l'UI (navbar, boutons premium, avatar...)
+                    const { authUI } = await import('./modules/auth.js?v=23');
+                    authUI.onLogin(freshUser);
+                }
+            } catch (e) { console.warn('Session refresh error:', e); }
 
             // Toast de succès
             this._showToast('🎉 Bienvenue dans Premium ! Tes rerolls sont désormais illimités.', 'success', 6000);
