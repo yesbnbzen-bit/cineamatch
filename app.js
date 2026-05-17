@@ -1965,6 +1965,7 @@ const App = {
             }
 
             // ── PASSE 2 (rescue) : si encore < 3, parcourir les candidats non-classés ──
+            // Filtre STRICT : pas de bénéfice du doute — un film sans data providers FR est rejeté
             if (finalMovies.length < 3) {
                 console.log(`🔍 Rescue pass : ${finalMovies.length}/3 films trouvés, exploration des candidats restants...`);
                 const usedIds = new Set([
@@ -1978,14 +1979,8 @@ const App = {
                     if ((store.seenRatedMovieIds || []).includes(Number(c.id))) continue;
                     const details = await tmdbService.getMovieDetails(c.id);
                     if (!details || Number(details.id) !== Number(c.id)) continue;
-                    // Rescue pass : semi-strict — si providers vides (données TMDB manquantes),
-                    // on accepte le film (il vient du pool TMDB discover platform-filtré, donc probablement correct)
-                    // Seuls les films avec providers confirmés sur MAUVAISE plateforme sont rejetés
-                    if (!_checkPlatform(details)) {
-                        const _frFlatRescue = details['watch/providers']?.results?.FR?.flatrate || [];
-                        if (_frFlatRescue.length > 0) continue; // Confirmé sur mauvaise plateforme → skip
-                        // Providers vides → bénéfice du doute en rescue (vient du discover platform-filtré)
-                    }
+                    // Strict : même règle que passe 1 — providers vides = rejeté
+                    if (!_checkPlatform(details)) continue;
                     if (!details.overview?.trim()) continue;
                     finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
                     store.suggestedMovieIds.push(Number(c.id));
@@ -1994,8 +1989,40 @@ const App = {
                 }
             }
 
-            // ── Si < 3 films confirmés sur plateforme : on affiche ce qu'on a (1 ou 2 c'est OK)
-            // Jamais de film sans plateforme confirmée — l'utilisateur voit seulement ce qui est disponible
+            // ── PASSE 3 (discover frais) : pool épuisé → nouveau discover plateforme ──
+            // Évite d'afficher des films sans plateforme confirmée quand le pool initial est trop petit
+            if (finalMovies.length < 3 && _finalPlatIds.size > 0) {
+                console.log(`🔄 Pool épuisé (${finalMovies.length}/3) — nouveau discover plateforme...`);
+                try {
+                    const _extraPage = Math.floor(Math.random() * 5) + 2;
+                    const _extraCandidates = await tmdbService.getAdvancedDiscovery(
+                        { mood: store.answers.mood, blendedGenreIds, _userPlatforms: store.preferredPlatforms || [] },
+                        {}, false, _extraPage, []
+                    );
+                    const _usedIds3 = new Set([
+                        ...finalMovies.map(f => Number(f.id)),
+                        ...store.suggestedMovieIds.map(Number)
+                    ]);
+                    for (const c of _extraCandidates) {
+                        if (finalMovies.length >= 3) break;
+                        if (_usedIds3.has(Number(c.id))) continue;
+                        if ((store.seenRatedMovieIds || []).includes(Number(c.id))) continue;
+                        const details = await tmdbService.getMovieDetails(c.id);
+                        if (!details || Number(details.id) !== Number(c.id)) continue;
+                        if (!_checkPlatform(details)) continue; // strict
+                        if (!details.overview?.trim()) continue;
+                        finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 });
+                        store.suggestedMovieIds.push(Number(c.id));
+                        store.suggestedTitles.push(details.title);
+                        _usedIds3.add(Number(c.id));
+                    }
+                    console.log(`📡 Passe 3 : ${finalMovies.length}/3 films après discover frais`);
+                } catch(_e) {
+                    console.warn('Passe 3 discover échoué :', _e);
+                }
+            }
+
+            // ── Affichage partiel si malgré tout < 3 confirmés sur plateforme ──
             if (finalMovies.length < 3 && _finalPlatIds.size > 0) {
                 console.log("📺 " + finalMovies.length + "/3 films confirmés sur tes plateformes — affichage partiel");
             }
