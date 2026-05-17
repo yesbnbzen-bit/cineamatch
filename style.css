@@ -1947,6 +1947,70 @@ h1 {
     transform: none;
 }
 
+/* Badge coche ✓ — affiché uniquement en mode multi */
+.options-grid--multi .option-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    background: #E50914;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 22px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(229,9,20,0.5);
+    animation: checkmark-pop 0.18s ease-out both;
+    z-index: 10;
+}
+@keyframes checkmark-pop {
+    0%   { transform: scale(0); opacity: 0; }
+    70%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1);  opacity: 1; }
+}
+
+/* Bouton Continuer actif (multi) */
+.btn-multi-next {
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s !important;
+}
+.btn-multi-next.has-selection {
+    background: #E50914 !important;
+    box-shadow: 0 4px 20px rgba(229,9,20,0.45) !important;
+}
+.btn-multi-next.has-selection:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 28px rgba(229,9,20,0.55) !important;
+}
+
+/* Hint multi-select */
+.multi-hint {
+    text-align: center;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    min-height: 1.1em;
+    transition: color 0.3s;
+}
+.multi-hint.complete {
+    color: rgba(80, 200, 120, 0.9);
+    font-weight: 600;
+}
+.multi-hint-pulse {
+    animation: hint-glow 0.4s ease-out;
+}
+@keyframes hint-glow {
+    0%   { color: #fff; }
+    50%  { color: rgba(255,255,255,0.9); }
+    100% { color: rgba(255,255,255,0.45); }
+}
+
 .option-card .icon {
     font-size: 1.8rem;
     filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.15));

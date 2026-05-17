@@ -835,8 +835,8 @@ const App = {
     // ── Question à options (simple ou multi) ──
     renderOptions(q) {
         const grid    = document.createElement('div');
-        grid.className = 'options-grid';
         const isMulti = q.type === 'options-multi';
+        grid.className = isMulti ? 'options-grid options-grid--multi' : 'options-grid';
 
         // En mode duo, masquer l'option "Seul" (on est forcément avec quelqu'un)
         const filteredOptions = (store.duoMode && q.key === 'context')
@@ -878,6 +878,14 @@ const App = {
                         grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
                         card.classList.add('selected');
                         _updateMultiCounter(grid, q, 0);
+                        // "Rien ne me dérange" → avance automatiquement comme une question simple
+                        grid.querySelectorAll('.option-card').forEach(c => {
+                            c.style.opacity = '0.4';
+                            c.style.pointerEvents = 'none';
+                        });
+                        card.style.opacity = '1';
+                        setTimeout(() => this.nextStep(), 260);
+                        return;
                     } else {
                         const cleaned = arr.filter(id => id !== 'none' && id !== 'any');
                         const idx = cleaned.indexOf(opt.id);
@@ -898,6 +906,27 @@ const App = {
                             if (c.dataset.id === 'none' || c.dataset.id === 'any') c.classList.remove('selected');
                         });
                         _updateMultiCounter(grid, q, cleaned.length);
+                        // Mettre à jour le bouton + hint
+                        const _nextBtn = document.getElementById('multi-next-btn');
+                        const _hint    = document.getElementById('multi-hint');
+                        if (_nextBtn) {
+                            if (cleaned.length > 0) _nextBtn.classList.add('has-selection');
+                            else _nextBtn.classList.remove('has-selection');
+                        }
+                        if (_hint) {
+                            const left = maxSelect - cleaned.length;
+                            if (cleaned.length === 0) {
+                                _hint.textContent = `Choisis jusqu'à ${maxSelect} · ou passe directement`;
+                                _hint.className = 'multi-hint';
+                            } else if (left === 0) {
+                                _hint.textContent = `✓ Sélection complète — appuie sur Continuer`;
+                                _hint.className = 'multi-hint complete';
+                            } else {
+                                _hint.textContent = `${cleaned.length} sélectionné${cleaned.length > 1 ? 's' : ''} · encore ${left} possible${left > 1 ? 's' : ''}`;
+                                _hint.className = 'multi-hint multi-hint-pulse';
+                                setTimeout(() => { if (_hint) _hint.className = 'multi-hint'; }, 400);
+                            }
+                        }
                     }
                 } else {
                     store.answers[q.key] = opt.id;
@@ -916,23 +945,38 @@ const App = {
 
         if (isMulti) {
             const maxSelect = q.maxSelect || null;
+            const current = (store.answers[q.key] || []).filter(id => id !== 'none' && id !== 'any').length;
 
-            // Compteur de sélections (affiché seulement si maxSelect défini)
-            if (maxSelect) {
-                const counter = document.createElement('p');
-                counter.id = 'multi-counter';
-                counter.style.cssText = 'text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.4);margin-top:0.75rem;margin-bottom:0;';
-                const current = (store.answers[q.key] || []).filter(id => id !== 'none' && id !== 'any').length;
-                counter.textContent = `${current} / ${maxSelect} sélectionné${current > 1 ? 's' : ''}`;
-                ui.dom.questionContainer.appendChild(counter);
+            // Hint dynamique (remplace l'ancien compteur statique)
+            const hint = document.createElement('p');
+            hint.id = 'multi-hint';
+            hint.className = 'multi-hint';
+            if (current === 0) {
+                hint.textContent = maxSelect
+                    ? `Choisis jusqu'à ${maxSelect} · ou passe directement`
+                    : 'Sélectionne tes choix';
+            } else {
+                const left = (maxSelect || 0) - current;
+                hint.textContent = left > 0
+                    ? `${current} sélectionné${current > 1 ? 's' : ''} · encore ${left} possible${left > 1 ? 's' : ''}`
+                    : `✓ Sélection complète — appuie sur Continuer`;
+                if (left === 0) hint.classList.add('complete');
             }
+            // Conserver l'ancien compteur masqué pour la fonction _updateMultiCounter
+            const counter = document.createElement('p');
+            counter.id = 'multi-counter';
+            counter.style.display = 'none';
+            ui.dom.questionContainer.appendChild(counter);
+            ui.dom.questionContainer.appendChild(hint);
 
             const nextWrap = document.createElement('div');
-            nextWrap.style.cssText = 'width:100%;display:flex;justify-content:center;margin-top:1rem;';
+            nextWrap.style.cssText = 'width:100%;display:flex;justify-content:center;margin-top:1.25rem;';
             const nextBtn = document.createElement('button');
-            nextBtn.className = 'btn-primary';
+            nextBtn.id = 'multi-next-btn';
+            nextBtn.className = 'btn-primary btn-multi-next';
             nextBtn.style.cssText = 'width:auto;min-width:160px;max-width:260px;';
             nextBtn.textContent = t('q.validate');
+            if (current > 0) nextBtn.classList.add('has-selection');
             nextBtn.onclick = () => this.nextStep();
             nextWrap.appendChild(nextBtn);
             ui.dom.questionContainer.appendChild(nextWrap);
