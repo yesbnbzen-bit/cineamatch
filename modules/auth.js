@@ -125,9 +125,9 @@ export const authUI = {
         const prefsBtn = document.getElementById('prefs-nav-btn');
         if (prefsBtn) prefsBtn.style.display = 'flex';
 
-        // Afficher bouton "Mes Films" (profil cinéphile)
+        // Afficher bouton "Mes Films" uniquement pour les utilisateurs Premium
         const profileNavBtn = document.getElementById('profile-nav-btn');
-        if (profileNavBtn) profileNavBtn.style.display = 'flex';
+        if (profileNavBtn) profileNavBtn.style.display = isPremium ? 'flex' : 'none';
 
         // Bouton Premium : visible seulement si non premium
         const isPremium = user.user_metadata?.is_premium === true;
@@ -280,6 +280,15 @@ export const authUI = {
 
     // ── Afficher la page "Mes Films" (notés + déjà vus uniquement) ──
     async showHistory() {
+        if (!store.currentUser) return;
+
+        // Gate Premium : rediriger vers la modale pricing si non premium
+        const isPremium = store.currentUser.user_metadata?.is_premium === true;
+        if (!isPremium) {
+            window.App?.showPricingModal();
+            return;
+        }
+
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         const histView = document.getElementById('history-view');
         if (histView) histView.classList.add('active');
@@ -292,7 +301,7 @@ export const authUI = {
         const statsRow  = document.getElementById('profile-stats-row');
         const tabs      = document.getElementById('profile-tabs');
 
-        if (!grid || !store.currentUser) return;
+        if (!grid) return;
 
         // État de chargement
         grid.innerHTML = `<p style="color:rgba(255,255,255,0.3);text-align:center;padding:3rem;grid-column:1/-1">${t('profile.loading')}</p>`;

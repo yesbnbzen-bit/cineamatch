@@ -3170,6 +3170,13 @@ const App = {
     },
 
     showWatchlist() {
+        // Gate Premium
+        const isPremium = store.currentUser?.user_metadata?.is_premium === true;
+        if (!store.currentUser || !isPremium) {
+            this.showPricingModal();
+            return;
+        }
+
         ui.switchView('watchlist-view');
         const grid = ui.dom.watchlistGrid;
         if (!grid) return;
