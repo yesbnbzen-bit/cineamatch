@@ -774,6 +774,14 @@ ${rerollVariant === 'hidden_gem' ? `💎 VARIANTE PÉPITES : L'utilisateur cherc
 ${rerollVariant === 'different_angle' ? `🔀 VARIANTE ANGLE DIFFÉRENT : Assure-toi que le top 3 explore un registre/sous-genre/époque DIFFÉRENT des suggestions précédentes. Si les 1ères étaient des comédies romantiques américaines récentes, propose maintenant des films d'un autre style (comédie d'action, drame léger, film européen, vintage...). Même émotion cible, chemin différent.` : ''}`
             : '';
 
+        // ── Mapping genres TMDB → noms lisibles (déclaré ici pour éviter TDZ) ──
+        const GENRE_ID_NAMES = {
+            18: 'Drame', 10749: 'Romance', 28: 'Action', 12: 'Aventure',
+            53: 'Thriller', 27: 'Horreur', 35: 'Comédie', 10751: 'Famille',
+            878: 'Science-Fiction', 9648: 'Mystère', 16: 'Animation',
+            36: 'Histoire', 80: 'Crime', 99: 'Documentaire', 10402: 'Musique'
+        };
+
         // ── Personnalisation depuis l'historique CineaMatch IA ──
         const userFavGenres = preferences._userFavGenres || [];
         const userPersonalization = userFavGenres.length > 0
@@ -895,12 +903,6 @@ Score = 0 FORCÉ pour TOUT film qui correspond à l'un de ces critères, MÊME S
         const familyWarning = contextImpact; // compatibilité avec le template
 
         // ── Traduire blendedGenreIds en noms lisibles pour le prompt ──
-        const GENRE_ID_NAMES = {
-            18: 'Drame', 10749: 'Romance', 28: 'Action', 12: 'Aventure',
-            53: 'Thriller', 27: 'Horreur', 35: 'Comédie', 10751: 'Famille',
-            878: 'Science-Fiction', 9648: 'Mystère', 16: 'Animation',
-            36: 'Histoire', 80: 'Crime', 99: 'Documentaire', 10402: 'Musique'
-        };
         const blendedIds = (preferences.blendedGenreIds || '').split(',').map(Number).filter(Boolean);
         const blendedNames = blendedIds.map(id => GENRE_ID_NAMES[id] || id).join(', ');
         // A2-fix : l'ancien check (blendedGenreIds.includes(10749)) était toujours vrai car blendedGenreIds
