@@ -3464,7 +3464,7 @@ const App = {
     // ══════════════════════════════════════════
     //  STRIPE — Lancer le checkout
     // ══════════════════════════════════════════
-    async startCheckout(plan) {
+    async startCheckout(plan, clickedBtn) {
         if (!store.currentUser) {
             // Utilisateur non connecté → ouvrir la modale d'inscription d'abord
             this.hidePricingModal();
@@ -3472,11 +3472,11 @@ const App = {
             return;
         }
 
-        // Désactiver les boutons pendant la redirection
-        document.querySelectorAll('.pricing-cta').forEach(btn => {
-            btn.disabled = true;
-            btn.textContent = 'Chargement...';
-        });
+        // Désactiver uniquement le bouton cliqué pendant la redirection
+        if (clickedBtn) {
+            clickedBtn.disabled = true;
+            clickedBtn.textContent = 'Chargement...';
+        }
 
         try {
             const res = await fetch('/api/stripe-checkout', {
@@ -3500,11 +3500,11 @@ const App = {
 
         } catch (err) {
             console.error('Checkout error:', err);
-            // Réactiver les boutons en cas d'erreur
-            document.querySelectorAll('.pricing-cta').forEach((btn, i) => {
-                btn.disabled = false;
-                btn.textContent = i === 1 ? 'Choisir' : 'Choisir'; // reset label
-            });
+            // Réactiver le bouton cliqué en cas d'erreur
+            if (clickedBtn) {
+                clickedBtn.disabled = false;
+                clickedBtn.textContent = 'Choisir';
+            }
             // Afficher un message d'erreur simple
             const footer = document.querySelector('.pricing-footer');
             if (footer) {

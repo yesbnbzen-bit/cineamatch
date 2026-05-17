@@ -808,7 +808,7 @@
                         <li>✓ Watchlist illimitée</li>
                         <li>✓ IA calibrée sur tes notes</li>
                     </ul>
-                    <button class="pricing-cta" onclick="App.startCheckout('monthly')">Choisir</button>
+                    <button class="pricing-cta" onclick="App.startCheckout('monthly', this)">Choisir</button>
                     <p class="pricing-cancel">Annulable à tout moment</p>
                 </div>
 
@@ -827,28 +827,10 @@
                         <li>✓ Watchlist illimitée</li>
                         <li>✓ IA calibrée sur tes notes</li>
                     </ul>
-                    <button class="pricing-cta pricing-cta--featured" onclick="App.startCheckout('yearly')">Choisir</button>
+                    <button class="pricing-cta pricing-cta--featured" onclick="App.startCheckout('yearly', this)">Choisir</button>
                     <p class="pricing-cancel">Annulable à tout moment</p>
                 </div>
 
-                <!-- À vie -->
-                <div class="pricing-card" data-plan="lifetime">
-                    <div class="pricing-badge pricing-badge--lifetime">Paiement unique</div>
-                    <div class="pricing-card-name">À vie</div>
-                    <div class="pricing-card-price">
-                        <span class="pricing-amount">89,99€</span>
-                        <span class="pricing-period">une fois</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li>✓ Rerolls illimités</li>
-                        <li>✓ Historique complet</li>
-                        <li>✓ Watchlist illimitée</li>
-                        <li>✓ IA calibrée sur tes notes</li>
-                        <li>✓ Toutes les futures fonctionnalités</li>
-                    </ul>
-                    <button class="pricing-cta" onclick="App.startCheckout('lifetime')">Choisir</button>
-                    <p class="pricing-cancel">Accès permanent · sans abonnement</p>
-                </div>
 
             </div>
             <p class="pricing-footer">Paiement sécurisé par Stripe · Sans engagement pour les abonnements</p>
@@ -897,7 +879,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=409"></script>
+    <script type="module" src="app.js?v=410"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=22';
         authUI.init();
