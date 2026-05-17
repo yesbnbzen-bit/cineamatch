@@ -3544,21 +3544,32 @@ const App = {
         window.history.replaceState({}, document.title, cleanUrl);
 
         if (status === 'success') {
-            // Recharger la session utilisateur pour récupérer is_premium mis à jour
-            try {
-                const { authService } = await import('./services/supabase.js?v=9');
-                const freshUser = await authService.refreshSession();
-                if (freshUser) {
-                    // Mettre à jour le store avec les nouvelles métadonnées
-                    store.currentUser = freshUser;
-                    // Rafraîchir l'UI (navbar, boutons premium, avatar...)
-                    const { authUI } = await import('./modules/auth.js?v=23');
-                    authUI.onLogin(freshUser);
-                }
-            } catch (e) { console.warn('Session refresh error:', e); }
+            // Toast immédiat
+            this._showToast('🎉 Paiement confirmé ! Activation du Premium en cours...', 'success', 4000);
 
-            // Toast de succès
-            this._showToast('🎉 Bienvenue dans Premium ! Tes rerolls sont désormais illimités.', 'success', 6000);
+            // Attendre que le webhook Stripe ait mis à jour Supabase (jusqu'à 5s)
+            let attempts = 0;
+            const pollPremium = async () => {
+                attempts++;
+                try {
+                    const { authService } = await import('./services/supabase.js?v=9');
+                    // getUser() force une lecture fraîche depuis le serveur
+                    const freshUser = await authService.getUser();
+                    if (freshUser?.user_metadata?.is_premium === true) {
+                        store.currentUser = freshUser;
+                        const { authUI } = await import('./modules/auth.js?v=24');
+                        await authUI.onLogin(freshUser);
+                        this._showToast('⚡ Premium activé ! Bienvenue dans CineaMatch Premium.', 'success', 5000);
+                    } else if (attempts < 5) {
+                        // Réessayer dans 2 secondes
+                        setTimeout(pollPremium, 2000);
+                    } else {
+                        // Après 10s, recharger la page pour forcer
+                        window.location.reload();
+                    }
+                } catch (e) { console.warn('Premium poll error:', e); }
+            };
+            setTimeout(pollPremium, 2000);
         } else if (status === 'cancel') {
             this._showToast('Paiement annulé. Tu peux reprendre quand tu veux !', 'info', 4000);
         }

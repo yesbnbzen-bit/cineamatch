@@ -121,6 +121,9 @@ export const authUI = {
         if (userAvatar) userAvatar.textContent = initials;
         if (userName)   userName.textContent   = name;
 
+        // Statut Premium (déclaré ici pour être utilisé partout ensuite)
+        const isPremium = user.user_metadata?.is_premium === true;
+
         // Afficher bouton "Mon Espace" (remplace MES FILMS + MA LISTE + PERSONNALISATION)
         const prefsBtn = document.getElementById('prefs-nav-btn');
         if (prefsBtn) prefsBtn.style.display = 'flex';
@@ -130,7 +133,6 @@ export const authUI = {
         if (profileNavBtn) profileNavBtn.style.display = isPremium ? 'flex' : 'none';
 
         // Bouton Premium : visible seulement si non premium
-        const isPremium = user.user_metadata?.is_premium === true;
         const premiumNavBtn  = document.getElementById('premium-nav-btn');
         const premiumDropBtn = document.getElementById('premium-drop-btn');
         if (premiumNavBtn)  premiumNavBtn.style.display  = isPremium ? 'none' : 'flex';
