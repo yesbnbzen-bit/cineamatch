@@ -3475,7 +3475,8 @@ const App = {
         // Désactiver uniquement le bouton cliqué pendant la redirection
         if (clickedBtn) {
             clickedBtn.disabled = true;
-            clickedBtn.textContent = 'Chargement...';
+            clickedBtn.innerHTML = '<span class="btn-spinner"></span><span>Redirection...</span>';
+            clickedBtn.classList.add('pricing-cta--loading');
         }
 
         try {
@@ -3503,7 +3504,8 @@ const App = {
             // Réactiver le bouton cliqué en cas d'erreur
             if (clickedBtn) {
                 clickedBtn.disabled = false;
-                clickedBtn.textContent = 'Choisir';
+                clickedBtn.innerHTML = 'Choisir';
+                clickedBtn.classList.remove('pricing-cta--loading');
             }
             // Afficher un message d'erreur simple
             const footer = document.querySelector('.pricing-footer');
