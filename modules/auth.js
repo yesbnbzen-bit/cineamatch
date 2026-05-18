@@ -200,6 +200,12 @@ export const authUI = {
             }
         }
 
+        // ── Rafraîchir le bouton reroll si les résultats sont affichés ──
+        // (ex : utilisateur se connecte après avoir vu les 3 films anonymes)
+        if (document.getElementById('results')?.classList.contains('active') && store._lastMovies?.length) {
+            window.App?.renderResults(store._lastMovies);
+        }
+
         this.hideModal();
         console.log(`✅ Connecté : ${name}`);
     },

@@ -2478,22 +2478,10 @@ const App = {
         rerollContainer.style.cssText = 'text-align:center;width:100%;margin-top:1.5rem;margin-bottom:2.5rem;display:flex;flex-direction:column;align-items:center;gap:14px;';
 
         if (hitLimit) {
-            // Sans compte → invite à s'inscrire ; compte gratuit → invite à passer premium
-            const lockMsg   = !isLoggedIn
-                ? '✨ Crée un compte gratuit pour continuer à explorer'
-                : '⚡ Passe Premium pour des suggestions illimitées';
-            const lockLabel = !isLoggedIn
-                ? '🎬 Créer un compte — c\'est gratuit'
-                : '🔒 Débloquer le Premium';
+            // Garder le même bouton, le popup s'ouvre au clic
             rerollContainer.innerHTML = `
-                <p style="font-size:0.82rem;color:#9ca3af;margin:0;max-width:320px;text-align:center;line-height:1.5">
-                    ${lockMsg}
-                </p>
-                <button class="btn-reroll-main btn-reroll-locked" id="reroll-btn"
-                    style="margin:0 auto;background:#E50914;color:#fff;border:none;
-                           padding:0.75rem 2rem;border-radius:50px;font-size:0.95rem;
-                           font-weight:700;cursor:pointer;letter-spacing:0.02em;">
-                    ${lockLabel}
+                <button class="btn-secondary btn-reroll-main btn-reroll-locked" id="reroll-btn" style="margin:0 auto;opacity:0.7;">
+                    ${t('results.reroll')}
                 </button>`;
         } else {
             rerollContainer.innerHTML = `
@@ -2528,13 +2516,7 @@ const App = {
         const rerollBtn = document.getElementById('reroll-btn');
         if (rerollBtn) {
             if (hitLimit) {
-                if (!isLoggedIn) {
-                    // Sans compte → modale inscription
-                    rerollBtn.onclick = () => document.getElementById('auth-btn')?.click();
-                } else {
-                    // Compte gratuit → modale premium
-                    rerollBtn.onclick = () => App.showPricingModal();
-                }
+                rerollBtn.onclick = () => this._showRerollGate(!isLoggedIn ? 'signup' : 'premium');
             } else if (!isLastRoll) {
                 rerollBtn.onclick = () => this.processResults(true);
             }
@@ -3424,6 +3406,102 @@ const App = {
     // ══════════════════════════════════════════
     //  PAYWALL — Modale limite rerolls
     // ══════════════════════════════════════════
+    // ── Popup gate reroll (signup ou premium) ──
+    _showRerollGate(type) {
+        // Supprimer un éventuel popup existant
+        document.getElementById('reroll-gate-overlay')?.remove();
+
+        const isSignup = type === 'signup';
+        const overlay  = document.createElement('div');
+        overlay.id     = 'reroll-gate-overlay';
+        overlay.style.cssText = `
+            position:fixed;inset:0;z-index:9999;
+            background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);
+            display:flex;align-items:center;justify-content:center;
+            padding:1rem;animation:fadeIn 0.2s ease;`;
+
+        overlay.innerHTML = `
+            <div style="
+                background:#111;border:1px solid rgba(255,255,255,0.1);
+                border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;
+                text-align:center;position:relative;
+                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+                <button id="reroll-gate-close" style="
+                    position:absolute;top:1rem;right:1rem;background:none;
+                    border:none;color:rgba(255,255,255,0.4);font-size:1.3rem;
+                    cursor:pointer;line-height:1;">✕</button>
+
+                <div style="font-size:2.8rem;margin-bottom:1rem;">
+                    ${isSignup ? '🎬' : '⚡'}
+                </div>
+
+                <h3 style="font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 0.6rem;">
+                    ${isSignup
+                        ? 'Tu veux voir plus de films ?'
+                        : 'Tu as atteint ta limite'}
+                </h3>
+
+                <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;margin:0 0 2rem;">
+                    ${isSignup
+                        ? 'Crée un compte gratuit en 30 secondes et obtiens <strong style="color:#fff">2 suggestions supplémentaires</strong> à chaque session.'
+                        : 'Les membres Premium ont accès à <strong style="color:#fff">des suggestions illimitées</strong>, l\'historique complet et bien plus.'}
+                </p>
+
+                ${isSignup ? `
+                <button id="reroll-gate-cta" style="
+                    width:100%;padding:0.9rem;background:#E50914;color:#fff;
+                    border:none;border-radius:12px;font-size:1rem;font-weight:800;
+                    cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
+                    Créer un compte gratuit
+                </button>
+                <button id="reroll-gate-login" style="
+                    width:100%;padding:0.75rem;background:transparent;
+                    color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
+                    border-radius:12px;font-size:0.9rem;cursor:pointer;">
+                    J'ai déjà un compte
+                </button>` : `
+                <button id="reroll-gate-cta" style="
+                    width:100%;padding:0.9rem;background:#E50914;color:#fff;
+                    border:none;border-radius:12px;font-size:1rem;font-weight:800;
+                    cursor:pointer;margin-bottom:0.75rem;">
+                    Passer Premium — 4,99€/mois
+                </button>
+                <button id="reroll-gate-login" style="
+                    width:100%;padding:0.75rem;background:transparent;
+                    color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
+                    border-radius:12px;font-size:0.9rem;cursor:pointer;">
+                    Voir les offres
+                </button>`}
+            </div>`;
+
+        document.body.appendChild(overlay);
+
+        // Fermeture
+        const close = () => overlay.remove();
+        document.getElementById('reroll-gate-close').onclick = close;
+        overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+        // CTA principal
+        document.getElementById('reroll-gate-cta').onclick = () => {
+            close();
+            if (isSignup) {
+                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signup'));
+            } else {
+                this.showPricingModal();
+            }
+        };
+
+        // Lien secondaire
+        document.getElementById('reroll-gate-login').onclick = () => {
+            close();
+            if (isSignup) {
+                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signin'));
+            } else {
+                this.showPricingModal();
+            }
+        };
+    },
+
     showPaywallModal() {
         const modal = document.getElementById('paywall-modal-overlay');
         if (!modal) return;
