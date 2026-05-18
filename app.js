@@ -612,6 +612,23 @@ const App = {
 
     // ── Démarrage du questionnaire ──
     startFlow(keepDuoState = false) {
+        // ── Gate anonyme : 1 recherche par jour ──
+        if (!keepDuoState && !store.currentUser) {
+            const today     = new Date().toISOString().slice(0, 10); // "2026-05-18"
+            const lastDate  = localStorage.getItem('anon_search_date');
+            const lastCount = parseInt(localStorage.getItem('anon_search_count') || '0', 10);
+
+            if (lastDate === today && lastCount >= 1) {
+                // Déjà utilisé aujourd'hui → popup
+                this._showSearchGate();
+                return;
+            }
+
+            // Enregistrer la recherche
+            localStorage.setItem('anon_search_date',  today);
+            localStorage.setItem('anon_search_count', lastDate === today ? lastCount + 1 : 1);
+        }
+
         // Fermer l'onboarding s'il est encore affiché
         const onbOverlay   = document.getElementById('onboarding-overlay');
         const onbHighlight = document.getElementById('onboarding-highlight');
@@ -3519,6 +3536,73 @@ const App = {
             } else {
                 this.showPricingModal();
             }
+        };
+    },
+
+    // ── Popup gate nouvelle recherche (anonyme) ──
+    _showSearchGate() {
+        document.getElementById('search-gate-overlay')?.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id    = 'search-gate-overlay';
+        overlay.style.cssText = `
+            position:fixed;inset:0;z-index:9999;
+            background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);
+            display:flex;align-items:center;justify-content:center;
+            padding:1rem;animation:fadeIn 0.2s ease;`;
+
+        overlay.innerHTML = `
+            <div style="
+                background:#111;border:1px solid rgba(255,255,255,0.1);
+                border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;
+                text-align:center;position:relative;
+                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+                <button id="sg-close" style="
+                    position:absolute;top:1rem;right:1rem;background:none;
+                    border:none;color:rgba(255,255,255,0.4);font-size:1.3rem;
+                    cursor:pointer;line-height:1;">✕</button>
+
+                <div style="font-size:2.8rem;margin-bottom:1rem;">🎬</div>
+
+                <h3 style="font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 0.6rem;">
+                    Tu as utilisé ta recherche du jour
+                </h3>
+
+                <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;margin:0 0 2rem;">
+                    Crée un compte gratuit pour accéder à
+                    <strong style="color:#fff">plus de recherches</strong>
+                    et retrouver tes films sauvegardés.
+                    <br><br>
+                    <span style="font-size:0.8rem;opacity:0.6">Ou reviens demain — la limite se remet à zéro chaque jour.</span>
+                </p>
+
+                <button id="sg-signup" style="
+                    width:100%;padding:0.9rem;background:#E50914;color:#fff;
+                    border:none;border-radius:12px;font-size:1rem;font-weight:800;
+                    cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
+                    Créer un compte gratuit
+                </button>
+                <button id="sg-login" style="
+                    width:100%;padding:0.75rem;background:transparent;
+                    color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
+                    border-radius:12px;font-size:0.9rem;cursor:pointer;">
+                    J'ai déjà un compte
+                </button>
+            </div>`;
+
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        document.getElementById('sg-close').onclick = close;
+        overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+        document.getElementById('sg-signup').onclick = () => {
+            close();
+            import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signup'));
+        };
+        document.getElementById('sg-login').onclick = () => {
+            close();
+            import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signin'));
         };
     },
 
