@@ -667,10 +667,16 @@ ${userAnswers.rerollVariant === 'different_angle' ? `
 L'utilisateur a déjà vu des suggestions. Il veut explorer un REGISTRE DIFFÉRENT du même mood.
 → Change l'époque : si les 1ères suggestions étaient récentes, propose du vintage ou inversement.
 → Change le sous-genre : si les 1ères étaient des comédies romantiques, propose des comédies d'action ou dramatiques.
-→ Change la nationalité : si les 1ères étaient américaines, cherche européen ou asiatique.
+${(userAnswers.language && userAnswers.language !== 'any') ? `→ ⛔ LANGUE VERROUILLÉE : L'utilisateur a choisi "${({fr:'Films français',en:'Films américains/anglais',ko:'Films asiatiques',es:'Films hispaniques'}[userAnswers.language] || userAnswers.language)}". NE CHANGE JAMAIS la langue/nationalité. Reste dans cette langue.` : `→ Change la nationalité : explore un cinéma différent (européen, asiatique, latino…).`}
 → L'objectif : même émotion cible, chemin complètement différent.` : ''}
 
 ${userAnswers.context === 'family' ? '⛔ CONTRAINTE ABSOLUE : Contexte famille = ZÉRO contenu adulte/violent. Exclure genre_ids : 27 (horreur), 53 (thriller intense), 18 (drames lourds).' : ''}
+
+${(userAnswers.language && userAnswers.language !== 'any') ? `⛔ RÈGLE LANGUE ABSOLUE — NE PAS CONTOURNER :
+L'utilisateur a sélectionné "${({fr:'Films français',en:'Films américains/anglais',ko:'Films asiatiques',es:'Films hispaniques'}[userAnswers.language] || userAnswers.language)}".
+→ Tous tes titres dans "specific_suggestions" DOIVENT être dans cette langue originale.
+→ Pour "Films américains/anglais" : UNIQUEMENT des films en anglais (original_language = "en"). JAMAIS de films espagnols, français, coréens, latins ou autres.
+→ Cette règle est ABSOLUE. Elle prime sur toute logique de variété ou d'exploration culturelle.` : ''}
 
 ⛔ RÈGLE PAR DÉFAUT — AUDIENCE ADULTE :
 Sauf si l'utilisateur mentionne explicitement des films d'animation, des films pour enfants/ados, ou un contexte famille : ne propose JAMAIS de films d'animation (genre_ids: 16), de films familiaux (genre_ids: 10751), ou de films clairement destinés aux moins de 15 ans (ex: films Disney classiques, Pixar, DreamWorks, films de super-héros pour enfants).
@@ -1016,6 +1022,7 @@ PROFIL SPECTATEUR
 ${rerollContext}${familyWarning}${ageContext}${duoContext}${userPersonalization}${streamingContext}${recoPrefsContext}
 
 ⚠️ IMPORTANT: Ces films candidats ont DÉJÀ été pré-filtrés pour correspondre à la demande. Si l'utilisateur mentionne un acteur, TOUS ces films le contiennent (même si ce n'est pas précisé dans le synopsis court). Ne pénalise pas un film pour ça.
+${(preferences.language && preferences.language !== 'any') ? `⛔ RÈGLE LANGUE ABSOLUE : L'utilisateur a choisi "${({fr:'Films français',en:'Films américains/anglais',ko:'Films asiatiques',es:'Films hispaniques'}[preferences.language] || preferences.language)}". Si un film candidat n'est PAS dans cette langue originale, attribue-lui un score de 0 et ne le sélectionne JAMAIS dans ton top 3.` : ''}
 
 ═══════════════════════════════════════════
 SYSTÈME DE SCORING DYNAMIQUE (100 pts)
