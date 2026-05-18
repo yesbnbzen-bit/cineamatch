@@ -205,12 +205,14 @@ export const tmdbService = {
         // 10770 = Téléfilm | 99 = Documentaire — exclus par défaut sauf si mood documentaire
         // 16 = Animation | 10751 = Famille — exclus par défaut sauf si l'utilisateur les demande explicitement
         const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
-        const excludeDocumentary = !moodStr.includes('99') ? ',99' : '';
         const userWantsAnimation = moodStr.includes('16') || preferences.context === 'family'
             || (preferences.exclude || []).includes('animation')
             || (preferences.blendedGenreIds || '').includes('16');
-        const excludeAnimation = userWantsAnimation ? '' : ',16,10751';
-        let url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', without_genres: `10770${excludeDocumentary}${excludeAnimation}` });
+        // On construit withoutGenres comme un Set pour éviter les doublons et les params dupliqués
+        const withoutGenres = new Set([10770]); // Téléfilms toujours exclus
+        if (!moodStr.includes('99')) withoutGenres.add(99); // Documentaires
+        if (!userWantsAnimation) { withoutGenres.add(16); withoutGenres.add(10751); } // Animation + Famille
+        let url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', without_genres: [...withoutGenres].join(',') });
 
         // ── Filtre plateformes de streaming (FR) ──
         // Les plateformes sont stockées en tant qu'IDs TMDB numériques (ex: "8" pour Netflix)
@@ -285,15 +287,22 @@ export const tmdbService = {
             });
         }
         // Filtrer les conflits : si un genre est dans with_genres, ne pas le mettre dans without_genres
+        // Fusionner avec withoutGenres (Set) pour éviter les params dupliqués qui s'écrasent mutuellement
         if (excluded.length > 0) {
-            const safeExcluded = excluded.join(',').split(',').map(Number).filter(id => !withGenresList.includes(id));
-            if (safeExcluded.length > 0) url += `&without_genres=${safeExcluded.join(',')}`;
+            excluded.join(',').split(',').map(Number).forEach(id => {
+                if (id && !withGenresList.includes(id)) withoutGenres.add(id);
+            });
         }
+        // Réécrire le paramètre without_genres dans l'URL avec la valeur fusionnée finale
+        url = url.replace(/(without_genres=)[^&]+/, `$1${[...withoutGenres].filter(id => !withGenresList.includes(id)).join(',')}`);
 
         // 3. Social Context Filter
         if (preferences.context === 'family') {
             // Famille = certification max 12, pas de violence/horreur, pas de romance adulte
-            url += `&certification_country=FR&certification.lte=12&without_genres=27,53,10749&include_adult=false`;
+            // Fusionner les exclusions famille dans withoutGenres (pas de param dupliqué)
+            [27, 53, 10749].forEach(id => withoutGenres.add(id));
+            url = url.replace(/(without_genres=)[^&]+/, `$1${[...withoutGenres].filter(id => !withGenresList.includes(id)).join(',')}`);
+            url += `&certification_country=FR&certification.lte=12&include_adult=false`;
             // Autoriser mystère/suspense doux si mood le demande
             if (preferences.mood === "53" || preferences.mood === "878,9648") {
                 url += `&with_genres=9648`; // mystère

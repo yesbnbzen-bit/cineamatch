@@ -1,6 +1,6 @@
-import { tmdbService, openaiService } from './services/api.js?v=60';
+import { tmdbService, openaiService } from './services/api.js?v=61';
 import { store, getters } from './state/store.js?v=44';
-import { ui } from './modules/ui.js?v=43';
+import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=10';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=345';
@@ -1780,10 +1780,11 @@ const App = {
                 console.log(`📡 Pool L1 : ${safeCandidates.length} candidats`);
             }
 
-            // Niveau 2 : on lâche le filtre langue UNIQUEMENT si pas de langue auto-détectée depuis ADN
-            // Si langue détectée depuis références (ex: Parasite → ko), on garde le filtre pour respecter l'intention
+            // Niveau 2 : on lâche le filtre langue SEULEMENT si l'utilisateur n'a pas choisi explicitement
+            // → choix explicite (en, fr, ko, es) = respecté même en L2
+            // → auto-détection ADN (language=any) = souple, peut être relâchée en L2
             if (safeCandidates.length < 6) {
-                const keepLangInL2 = !!detectedLanguage && store.answers.language === 'any';
+                const keepLangInL2 = !!(store.answers.language && store.answers.language !== 'any');
                 if (!keepLangInL2) store._relaxedSearch = 'langue';
                 setStep(2, isEn ? '🌍 Expanding to all languages...' : '🌍 Élargissement toutes langues...');
                 console.log(`⚠️ Pool toujours petit, fallback L2 ${keepLangInL2 ? '(langue ADN conservée)' : 'sans filtre langue'}`);
@@ -1820,7 +1821,8 @@ const App = {
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                     if ((store.seenRatedMovieIds || []).includes(Number(f.id))) continue;
-                    // L3 : NI époque NI langue — uniquement mood + exclusions absolues
+                    // L3 : relâche époque — mais garde la langue si l'utilisateur l'a choisie explicitement
+                    if (store.answers.language && store.answers.language !== 'any' && langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
                     if (!safeCandidates.some(c => Number(c.id) === Number(f.id))) safeCandidates.push(f);

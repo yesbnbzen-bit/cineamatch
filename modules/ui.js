@@ -35,9 +35,10 @@ export const ui = {
         if (this.views[viewName]) this.views[viewName].classList.add('active');
         // Scroll top — couvre window + conteneur scrollable + vue elle-même
         this._scrollTop();
-        // Footer légal : visible sur hero et résultats uniquement
+        // Footer légal : visible sur toutes les vues sauf questionnaire, loading et duo
         const footer = document.getElementById('site-footer');
-        if (footer) footer.style.display = ['hero', 'results'].includes(viewName) ? 'block' : 'none';
+        const footerHidden = ['questionnaire', 'loading', 'duo-start', 'duo-share', 'duo-welcome'];
+        if (footer) footer.style.display = footerHidden.includes(viewName) ? 'none' : 'block';
         document.dispatchEvent(new CustomEvent('cinematch:view-change', { detail: viewName }));
     },
 
