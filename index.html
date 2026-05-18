@@ -36,7 +36,46 @@
     <link rel="apple-touch-icon" href="https://cineamatch.com/favicon-192.png">
     <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 
-    <!-- JSON-LD : données structurées pour Google -->
+    <!-- JSON-LD : WebSite (aide Google à reconnaître la marque CineaMatch) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "CineaMatch",
+      "alternateName": ["CineaMatch IA", "Cineamatch"],
+      "url": "https://cineamatch.com",
+      "description": "CineaMatch analyse tes goûts et te recommande le film parfait grâce à l'intelligence artificielle.",
+      "inLanguage": "fr-FR",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://cineamatch.com/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD : Organisation -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "CineaMatch",
+      "alternateName": "Cineamatch",
+      "url": "https://cineamatch.com",
+      "logo": "https://cineamatch.com/og-image.png",
+      "sameAs": [],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "availableLanguage": "French"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD : Application -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -48,32 +87,10 @@
       "operatingSystem": "Web",
       "inLanguage": "fr-FR",
       "offers": [
-        {
-          "@type": "Offer",
-          "name": "Gratuit",
-          "price": "0",
-          "priceCurrency": "EUR"
-        },
-        {
-          "@type": "Offer",
-          "name": "Premium Mensuel",
-          "price": "4.99",
-          "priceCurrency": "EUR",
-          "billingIncrement": "P1M"
-        },
-        {
-          "@type": "Offer",
-          "name": "Premium Annuel",
-          "price": "39.99",
-          "priceCurrency": "EUR",
-          "billingIncrement": "P1Y"
-        }
-      ],
-      "creator": {
-        "@type": "Organization",
-        "name": "CineaMatch",
-        "url": "https://cineamatch.com"
-      }
+        { "@type": "Offer", "name": "Gratuit", "price": "0", "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Premium Mensuel", "price": "4.99", "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Premium Annuel", "price": "39.99", "priceCurrency": "EUR" }
+      ]
     }
     </script>
     <link rel="stylesheet" href="style.css?v=367">
