@@ -203,9 +203,14 @@ export const tmdbService = {
         // Note: le paramètre `page` de l'URL de base est remplacé plus bas par `randomPage`.
         // On le retire ici pour éviter le doublon page=X&...&page=Y (le dernier gagne, mais c'est source de confusion).
         // 10770 = Téléfilm | 99 = Documentaire — exclus par défaut sauf si mood documentaire
+        // 16 = Animation | 10751 = Famille — exclus par défaut sauf si l'utilisateur les demande explicitement
         const moodStr = String(preferences.mood || preferences.blendedGenreIds || '');
         const excludeDocumentary = !moodStr.includes('99') ? ',99' : '';
-        let url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', without_genres: `10770${excludeDocumentary}` });
+        const userWantsAnimation = moodStr.includes('16') || preferences.context === 'family'
+            || (preferences.exclude || []).includes('animation')
+            || (preferences.blendedGenreIds || '').includes('16');
+        const excludeAnimation = userWantsAnimation ? '' : ',16,10751';
+        let url = tmdbUrl('/discover/movie', { language: this.lang, include_adult: 'false', without_genres: `10770${excludeDocumentary}${excludeAnimation}` });
 
         // ── Filtre plateformes de streaming (FR) ──
         // Les plateformes sont stockées en tant qu'IDs TMDB numériques (ex: "8" pour Netflix)
@@ -657,6 +662,10 @@ L'utilisateur a déjà vu des suggestions. Il veut explorer un REGISTRE DIFFÉRE
 → L'objectif : même émotion cible, chemin complètement différent.` : ''}
 
 ${userAnswers.context === 'family' ? '⛔ CONTRAINTE ABSOLUE : Contexte famille = ZÉRO contenu adulte/violent. Exclure genre_ids : 27 (horreur), 53 (thriller intense), 18 (drames lourds).' : ''}
+
+⛔ RÈGLE PAR DÉFAUT — AUDIENCE ADULTE :
+Sauf si l'utilisateur mentionne explicitement des films d'animation, des films pour enfants/ados, ou un contexte famille : ne propose JAMAIS de films d'animation (genre_ids: 16), de films familiaux (genre_ids: 10751), ou de films clairement destinés aux moins de 15 ans (ex: films Disney classiques, Pixar, DreamWorks, films de super-héros pour enfants).
+→ L'audience par défaut est adulte. Adapte-toi UNIQUEMENT si les films de référence ou le contexte indiquent clairement un intérêt pour ce type de contenu.
 
 Réponds UNIQUEMENT par ce JSON strict (pas de markdown, pas de texte autour) :
 {
