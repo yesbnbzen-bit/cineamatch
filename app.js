@@ -2018,6 +2018,12 @@ const App = {
                     continue;
                 }
 
+                // ✅ Filtre langue final sur details TMDB réels (vérification ultime)
+                if (langFilterSet && details.original_language && !langFilterSet.has(details.original_language)) {
+                    console.warn(`⛔ Langue rejetée (details TMDB) : ${details.title} (${details.original_language}) — filtre: ${[...langFilterSet].join(',')}`);
+                    continue;
+                }
+
                 // ✅ Filtre plateforme final
                 if (!_checkPlatform(details)) {
                     console.warn("⛔ Filtre final : " + details.title + " non confirmé sur tes plateformes — mis en réserve");
