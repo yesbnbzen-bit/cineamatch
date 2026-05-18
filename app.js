@@ -2023,6 +2023,16 @@ const App = {
                     console.warn(`⛔ Langue rejetée (details TMDB) : ${details.title} (${details.original_language}) — filtre: ${[...langFilterSet].join(',')}`);
                     continue;
                 }
+                // ✅ Double-vérification via spoken_languages (corrige erreurs TMDB original_language)
+                // Ex: ¿Quieres ser mi hijo? classé 'en' dans TMDB alors que film espagnol
+                if (store.answers.language === 'en' && details.spoken_languages?.length > 0) {
+                    const spoken = details.spoken_languages.map(l => l.iso_639_1);
+                    // Film sans aucun dialogue anglais → rejeté même si TMDB dit 'en'
+                    if (!spoken.includes('en')) {
+                        console.warn(`⛔ spoken_languages : ${details.title} (${spoken.join(',')}) — aucun anglais, rejeté`);
+                        continue;
+                    }
+                }
 
                 // ✅ Filtre plateforme final
                 if (!_checkPlatform(details)) {
