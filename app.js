@@ -3429,6 +3429,12 @@ const App = {
     },
 
     goHome() {
+        // Retirer le fond Mode Duo s'il est actif
+        this.removeDuoBg();
+        store.duoMode   = false;
+        store.duoRole   = null;
+        store.duoMerged = false;
+
         ui.switchView('hero');
         // Double scroll — couvre window ET body (Safari mobile)
         requestAnimationFrame(() => {
