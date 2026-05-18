@@ -62,9 +62,9 @@ function getQuestions() {
 //  Score de match décroissant selon le nombre de rerolls
 // ─────────────────────────────────────────────────────────────────
 const REROLL_MAX_SCORES     = [95, 87, 79, 71, 64, 58, 54, 50, 47, 45, 43];
-const REROLL_FREE_LIMIT     = 2;   // non-connecté : 2 rerolls max
-const REROLL_LOGGED_LIMIT   = 3;   // connecté gratuit : 3 rerolls max
-const REROLL_PREMIUM_LIMIT  = 10;  // abonné payant : 10 rerolls max
+const REROLL_FREE_LIMIT     = 0;   // sans compte : 0 reroll (1er clic → inscription)
+const REROLL_LOGGED_LIMIT   = 2;   // compte gratuit : 2 rerolls (3 batches total)
+const REROLL_PREMIUM_LIMIT  = 8;   // premium : 8 rerolls
 
 function getMaxScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount, REROLL_MAX_SCORES.length - 1)];
@@ -2468,9 +2468,8 @@ const App = {
         const nextPct      = getNextScore(store.rerollCount);
         const isPremium    = store.currentUser?.user_metadata?.is_premium === true;
         const isLoggedIn   = !!store.currentUser;
-        // Limites : connecté (gratuit ou premium) = 10 rerolls, anonyme = 2
-        // Stripe non encore configuré → tous les comptes connectés ont la limite premium
-        const activeLimit  = isLoggedIn ? REROLL_PREMIUM_LIMIT : REROLL_FREE_LIMIT;
+        // Limites par palier : sans compte → 0, gratuit → 2, premium → 8
+        const activeLimit  = isPremium ? REROLL_PREMIUM_LIMIT : (isLoggedIn ? REROLL_LOGGED_LIMIT : REROLL_FREE_LIMIT);
         const isLastRoll   = store.rerollCount >= REROLL_MAX_SCORES.length - 1;
         const rerollsLeft  = Math.max(0, activeLimit - store.rerollCount);
         const hitLimit     = store.rerollCount >= activeLimit;
@@ -2479,15 +2478,22 @@ const App = {
         rerollContainer.style.cssText = 'text-align:center;width:100%;margin-top:1.5rem;margin-bottom:2.5rem;display:flex;flex-direction:column;align-items:center;gap:14px;';
 
         if (hitLimit) {
-            // Montrer un bouton "verrouillé" qui ouvre le paywall
+            // Sans compte → invite à s'inscrire ; compte gratuit → invite à passer premium
+            const lockMsg   = !isLoggedIn
+                ? '✨ Crée un compte gratuit pour continuer à explorer'
+                : '⚡ Passe Premium pour des suggestions illimitées';
+            const lockLabel = !isLoggedIn
+                ? '🎬 Créer un compte — c\'est gratuit'
+                : '🔒 Débloquer le Premium';
             rerollContainer.innerHTML = `
-                <p style="font-size:0.73rem;color:#9ca3af;margin:0;">
-                    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
-                        background:#E50914;margin-right:6px;vertical-align:middle;"></span>
-                    ${t('results.reroll.limit.msg')}
+                <p style="font-size:0.82rem;color:#9ca3af;margin:0;max-width:320px;text-align:center;line-height:1.5">
+                    ${lockMsg}
                 </p>
-                <button class="btn-secondary btn-reroll-main btn-reroll-locked" id="reroll-btn" style="margin:0 auto;">
-                    🔒 ${t('results.reroll.unlock')}
+                <button class="btn-reroll-main btn-reroll-locked" id="reroll-btn"
+                    style="margin:0 auto;background:#E50914;color:#fff;border:none;
+                           padding:0.75rem 2rem;border-radius:50px;font-size:0.95rem;
+                           font-weight:700;cursor:pointer;letter-spacing:0.02em;">
+                    ${lockLabel}
                 </button>`;
         } else {
             rerollContainer.innerHTML = `
@@ -2501,9 +2507,9 @@ const App = {
                     </p>` : ''}
                 ${!isLastRoll
                     ? `<button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
-                        ${t('results.reroll')}${!isLoggedIn
-                            ? ` <span class="reroll-counter">${rerollsLeft} restant${rerollsLeft > 1 ? 's' : ''}</span>`
-                            : (store.rerollCount > 0 ? ` (${store.rerollCount}×)` : '')}
+                        ${t('results.reroll')}${(!isLoggedIn || isPremium)
+                            ? ''
+                            : ` <span class="reroll-counter">${rerollsLeft} restant${rerollsLeft > 1 ? 's' : ''}</span>`}
                        </button>
                        ${store.rerollCount === 0
                         ? `<div class="reroll-hint-badge">
@@ -2522,7 +2528,13 @@ const App = {
         const rerollBtn = document.getElementById('reroll-btn');
         if (rerollBtn) {
             if (hitLimit) {
-                rerollBtn.onclick = () => App.showPaywallModal();
+                if (!isLoggedIn) {
+                    // Sans compte → modale inscription
+                    rerollBtn.onclick = () => document.getElementById('auth-btn')?.click();
+                } else {
+                    // Compte gratuit → modale premium
+                    rerollBtn.onclick = () => App.showPricingModal();
+                }
             } else if (!isLastRoll) {
                 rerollBtn.onclick = () => this.processResults(true);
             }
