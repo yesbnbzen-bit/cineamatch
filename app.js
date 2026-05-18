@@ -2463,7 +2463,7 @@ const App = {
                                 color:var(--primary-color);margin-bottom:5px;opacity:0.9;">
                                 ${t('results.why')}
                             </p>
-                            <p class="ai-reason">${m.match_reason ? `"${escapeHtml(m.match_reason)}"` : `<em style="opacity:0.5;font-style:italic;font-size:0.85em">${getLang()==="en" ? "A strong match for your profile." : "Un choix qui correspond à ton profil."}</em>`}</p>
+                            <p class="ai-reason">${m.match_reason ? `"${escapeHtml(m.match_reason)}"` : `"${escapeHtml(App._autoReason(m))}"`}</p>
                         </div>
                         <!-- Notation & Déjà vu (si connecté) -->
                         <div class="rating-row" id="rating-row-${m.id}" style="display:none;">
@@ -3887,6 +3887,54 @@ const App = {
         const existing = document.getElementById('stripe-toast');
         if (existing) existing.remove();
 
+    // ── Génère une raison automatique quand l'IA n'en a pas fourni ──
+    // Utilise les données TMDB réelles : tagline, genres, cast, note, moodLabel
+    _autoReason(m) {
+        const isEn = getLang() === 'en';
+        const GENRE_FR = { 28:'Action', 12:'Aventure', 16:'Animation', 35:'Comédie', 80:'Crime', 99:'Documentaire',
+            18:'Drame', 10751:'Famille', 14:'Fantaisie', 36:'Histoire', 27:'Horreur', 10402:'Musique',
+            9648:'Mystère', 10749:'Romance', 878:'Science-Fiction', 10770:'Téléfilm', 53:'Thriller',
+            10752:'Guerre', 37:'Western' };
+        const GENRE_EN = { 28:'action', 12:'adventure', 16:'animation', 35:'comedy', 80:'crime', 99:'documentary',
+            18:'drama', 10751:'family', 14:'fantasy', 36:'history', 27:'horror', 10402:'music',
+            9648:'mystery', 10749:'romance', 878:'sci-fi', 53:'thriller', 10752:'war', 37:'western' };
+        const GENRE_MAP = isEn ? GENRE_EN : GENRE_FR;
+
+        const genre = (m.genres || []).map(g => GENRE_MAP[g.id] || g.name).filter(Boolean)[0]
+            || (m.genre_ids || []).map(id => GENRE_MAP[id]).filter(Boolean)[0];
+        const cast = m.credits?.cast?.slice(0, 2).map(a => a.name).join(' et ') || '';
+        const director = m.credits?.crew?.find(p => p.job === 'Director')?.name || '';
+        const year = m.release_date?.split('-')[0] || '';
+        const score = m.vote_average ? m.vote_average.toFixed(1) : '';
+        const tagline = m.tagline?.trim();
+        const mood = store.answers?.moodLabel || '';
+
+        // Priorité 1 : tagline existante → plus unique que n'importe quel texte généré
+        if (tagline && tagline.length > 10) {
+            return isEn ? `${tagline} — a ${score ? score + '/10 ' : ''}${genre || ''} that fits your mood.`
+                        : `${tagline}${score ? ` — ${score}/10` : ''}.`;
+        }
+
+        // Priorité 2 : construire depuis les données disponibles
+        const parts = [];
+        if (director && cast) {
+            parts.push(isEn ? `Directed by ${director}, with ${cast}.` : `Réalisé par ${director}, avec ${cast}.`);
+        } else if (cast) {
+            parts.push(isEn ? `Starring ${cast}.` : `Avec ${cast}.`);
+        }
+        if (genre && score) {
+            parts.push(isEn ? `A ${genre} rated ${score}/10 ${year ? `(${year})` : ''} that matches your ${mood || 'mood'}.`
+                             : `Une ${genre.toLowerCase()} noté ${score}/10 ${year ? `(${year})` : ''} qui colle à ton envie${mood ? ` de ${mood.toLowerCase()}` : ''}.`);
+        } else if (score) {
+            parts.push(isEn ? `Rated ${score}/10 — a solid pick for your mood.`
+                             : `Noté ${score}/10 — un choix solide pour ton envie.`);
+        }
+
+        return parts.join(' ') || (isEn ? `A well-rated ${genre || 'film'} for your current mood.`
+                                        : `Un ${genre ? genre.toLowerCase() : 'film'} bien noté pour ton envie du moment.`);
+    },
+
+        _showStripeToast(message, type = 'success') {
         const toast = document.createElement('div');
         toast.id = 'stripe-toast';
         toast.style.cssText = `
