@@ -2,7 +2,7 @@ import { tmdbService, openaiService } from './services/api.js?v=59';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=43';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=9';
+import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=10';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=345';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
@@ -3231,7 +3231,7 @@ const App = {
 
     // ── Profil cinéphile ──
     async showProfile() {
-        const { authUI } = await import('./modules/auth.js?v=22');
+        const { authUI } = await import('./modules/auth.js?v=26');
         authUI.showHistory();
     },
 
@@ -3349,7 +3349,7 @@ const App = {
         btn.textContent = '⏳ Mise à jour...';
 
         try {
-            const { authService } = await import('./services/supabase.js?v=9');
+            const { authService } = await import('./services/supabase.js?v=10');
             await authService.updatePassword(newPwd);
             showMsg('✅ Mot de passe mis à jour avec succès !', '#46d369');
             document.getElementById('profil-pwd-new').value     = '';
@@ -3552,12 +3552,12 @@ const App = {
             const pollPremium = async () => {
                 attempts++;
                 try {
-                    const { authService } = await import('./services/supabase.js?v=9');
+                    const { authService } = await import('./services/supabase.js?v=10');
                     // getUser() force une lecture fraîche depuis le serveur
                     const freshUser = await authService.getUser();
                     if (freshUser?.user_metadata?.is_premium === true) {
                         store.currentUser = freshUser;
-                        const { authUI } = await import('./modules/auth.js?v=24');
+                        const { authUI } = await import('./modules/auth.js?v=26');
                         await authUI.onLogin(freshUser);
                         this._showToast('⚡ Premium activé ! Bienvenue dans CineaMatch Premium.', 'success', 5000);
                     } else if (attempts < 5) {

@@ -121,7 +121,7 @@ export const watchlistService = {
             title:       movie.title,
             poster_path: movie.poster_path,
             year:        movie.release_date?.split('-')[0] || ''
-        });
+        }, { onConflict: 'user_id,movie_id' });
         if (error) console.error('watchlist add:', error);
     },
 
@@ -226,7 +226,7 @@ export const ratingsService = {
             genre_ids:   movie.genre_ids || [],
             rating:      rating,
             seen:        seen
-        });
+        }, { onConflict: 'user_id,movie_id' });
         if (error) console.error('ratings rate:', error);
     },
 
@@ -239,7 +239,7 @@ export const ratingsService = {
             poster_path: movie.poster_path,
             genre_ids:   movie.genre_ids || [],
             seen:        true
-        });
+        }, { onConflict: 'user_id,movie_id' });
         if (error) console.error('ratings markSeen:', error);
     },
 

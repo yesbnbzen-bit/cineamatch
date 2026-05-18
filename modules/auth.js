@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=9';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=10';
 import { store } from '../state/store.js?v=44';
 import { t, applyTranslations } from '../config/i18n.js?v=345';
 
@@ -52,13 +52,26 @@ export const authUI = {
         // Vérifier si une session existe déjà
         const session = await authService.getSession();
         if (session?.user) {
-            await this.onLogin(session.user);
+            // Forcer un getUser() serveur pour avoir user_metadata frais (is_premium à jour)
+            // getSession() retourne le JWT en cache qui peut être périmé
+            try {
+                const freshUser = await authService.getUser();
+                await this.onLogin(freshUser || session.user);
+            } catch {
+                await this.onLogin(session.user);
+            }
         }
 
         // Écouter les changements d'état auth
         authService.onAuthChange(async (user) => {
             if (user) {
-                await this.onLogin(user);
+                // Même chose : forcer getUser() pour avoir les métadonnées fraîches
+                try {
+                    const freshUser = await authService.getUser();
+                    await this.onLogin(freshUser || user);
+                } catch {
+                    await this.onLogin(user);
+                }
             } else {
                 this.onLogout();
             }
@@ -505,6 +518,7 @@ export const authUI = {
         wlGrid.style.display = 'none';
         if (wlEmpty) wlEmpty.style.display = 'none';
         if (!watchlist || watchlist.length === 0) return;
+        wlGrid.style.display = '';
         watchlist.forEach((m, i) => {
             const item = document.createElement('div');
             item.className = 'history-item';
@@ -518,10 +532,42 @@ export const authUI = {
                     <p class="history-item-title">${m.title||'—'}</p>
                     ${m.release_date ? `<p class="history-item-meta">${m.release_date.split('-')[0]}</p>` : ''}
                 </div>
-                <button class="watchlist-btn active" onclick="toggleWatchlist(event,${m.id})" title="${t('watchlist.remove.btn')}">
+                <button class="watchlist-btn active" title="${t('watchlist.remove.btn')}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 </button>
             `;
+
+            // Retrait favoris : animer + supprimer du store et de la DB
+            const removeBtn = item.querySelector('.watchlist-btn');
+            removeBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                item.style.transition = 'opacity 0.25s, transform 0.25s';
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0.85)';
+                // Retirer du store
+                const idx = store.watchlist.findIndex(w => w.id === m.id);
+                if (idx > -1) store.watchlist.splice(idx, 1);
+                // Retirer de la DB
+                if (store.currentUser) watchlistService.remove(store.currentUser.id, m.id);
+                localStorage.setItem('watchlist', JSON.stringify(store.watchlist));
+                // Mettre à jour le bouton cœur sur la page résultats si visible
+                const wlBtn = document.getElementById(`wl-btn-${m.id}`);
+                if (wlBtn) {
+                    wlBtn.classList.remove('active');
+                    const svg = wlBtn.querySelector('svg');
+                    if (svg) svg.setAttribute('fill', 'none');
+                }
+                // Retirer la carte du DOM
+                setTimeout(() => {
+                    item.remove();
+                    // Afficher l'état vide si plus rien
+                    if (wlGrid.children.length === 0) {
+                        wlGrid.style.display = 'none';
+                        if (wlEmpty) wlEmpty.style.display = 'block';
+                    }
+                }, 260);
+            });
+
             item.onclick = (e) => { if (!e.target.closest('.watchlist-btn')) window.open(`https://www.themoviedb.org/movie/${m.id}`, '_blank'); };
             wlGrid.appendChild(item);
         });
