@@ -1939,10 +1939,20 @@ const App = {
 
             // ── Dédupliquer le ranked par tmdb_id (sécurité anti-doublon) ──
             const seenRankedIds = new Set();
+            const candidateLangMap = new Map(safeCandidates.map(c => [Number(c.id), c.original_language]));
             const rankedDeduped = ranked.filter(r => {
                 const id = Number(r.tmdb_id);
                 if (!id || seenRankedIds.has(id)) return false;
                 seenRankedIds.add(id);
+                // ⛔ FILTRE LANGUE ABSOLU — dernière barrière avant affichage
+                // Si l'utilisateur a choisi une langue explicite, les films d'une autre langue sont exclus du classement
+                if (langFilterSet) {
+                    const origLang = candidateLangMap.get(id);
+                    if (origLang && !langFilterSet.has(origLang)) {
+                        console.warn(`⛔ Langue filtrée (post-IA) : ${r.title || id} (${origLang}) rejeté — filtre: ${[...langFilterSet].join(',')}`);
+                        return false;
+                    }
+                }
                 return true;
             });
 
@@ -2045,6 +2055,8 @@ const App = {
                     if (usedIds.has(Number(c.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(c.id))) continue;
                     if ((store.seenRatedMovieIds || []).includes(Number(c.id))) continue;
+                    // ⛔ Filtre langue absolu en rescue aussi
+                    if (langFilterSet && c.original_language && !langFilterSet.has(c.original_language)) continue;
                     const details = await tmdbService.getMovieDetails(c.id);
                     if (!details || Number(details.id) !== Number(c.id)) continue;
                     // Strict : même règle que passe 1 — providers vides = rejeté
@@ -2075,6 +2087,8 @@ const App = {
                         if (finalMovies.length >= 3) break;
                         if (_usedIds3.has(Number(c.id))) continue;
                         if ((store.seenRatedMovieIds || []).includes(Number(c.id))) continue;
+                        // ⛔ Filtre langue absolu en passe 3 aussi
+                        if (langFilterSet && c.original_language && !langFilterSet.has(c.original_language)) continue;
                         const details = await tmdbService.getMovieDetails(c.id);
                         if (!details || Number(details.id) !== Number(c.id)) continue;
                         if (!_checkPlatform(details)) continue; // strict
