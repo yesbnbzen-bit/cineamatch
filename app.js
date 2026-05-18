@@ -2585,6 +2585,26 @@ const App = {
 
         // Lancer le questionnaire au clic ou à l'appui sur Entrée
         const launch = () => {
+            const isPremium = store.currentUser?.user_metadata?.is_premium === true;
+            const isLoggedIn = !!store.currentUser;
+
+            // ── Gate : non connecté → popup inscription ──
+            if (!isLoggedIn) {
+                this._showDuoGate('signup');
+                return;
+            }
+
+            // ── Gate : compte gratuit → 1 essai à vie ──
+            if (!isPremium) {
+                const duoUsed = localStorage.getItem('duo_free_used');
+                if (duoUsed) {
+                    this._showDuoGate('premium');
+                    return;
+                }
+                // Marquer l'essai gratuit comme utilisé
+                localStorage.setItem('duo_free_used', '1');
+            }
+
             // Validation : max 25 chars, pas de HTML/scripts
             const raw = nameInput?.value?.trim() || '';
             store.duoNameA = raw.slice(0, 25).replace(/[<>"'&]/g, '');
@@ -3443,7 +3463,7 @@ const App = {
 
                 <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;margin:0 0 2rem;">
                     ${isSignup
-                        ? 'Crée un compte gratuit en 30 secondes et obtiens <strong style="color:#fff">2 suggestions supplémentaires</strong> à chaque session.'
+                        ? 'Crée un compte gratuit en 30 secondes et obtiens <strong style="color:#fff">2 suggestions supplémentaires</strong> par jour.'
                         : 'Les membres Premium ont accès à <strong style="color:#fff">des suggestions illimitées</strong>, l\'historique complet et bien plus.'}
                 </p>
 
@@ -3493,6 +3513,81 @@ const App = {
 
         // Lien secondaire
         document.getElementById('reroll-gate-login').onclick = () => {
+            close();
+            if (isSignup) {
+                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signin'));
+            } else {
+                this.showPricingModal();
+            }
+        };
+    },
+
+    // ── Popup gate Mode Duo ──
+    _showDuoGate(type) {
+        document.getElementById('duo-gate-overlay')?.remove();
+
+        const isSignup = type === 'signup';
+        const overlay  = document.createElement('div');
+        overlay.id     = 'duo-gate-overlay';
+        overlay.style.cssText = `
+            position:fixed;inset:0;z-index:9999;
+            background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);
+            display:flex;align-items:center;justify-content:center;
+            padding:1rem;animation:fadeIn 0.2s ease;`;
+
+        overlay.innerHTML = `
+            <div style="
+                background:#111;border:1px solid rgba(255,255,255,0.1);
+                border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;
+                text-align:center;position:relative;
+                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+                <button id="duo-gate-close" style="
+                    position:absolute;top:1rem;right:1rem;background:none;
+                    border:none;color:rgba(255,255,255,0.4);font-size:1.3rem;
+                    cursor:pointer;line-height:1;">✕</button>
+
+                <div style="font-size:2.8rem;margin-bottom:1rem;">💑</div>
+
+                <h3 style="font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 0.6rem;">
+                    ${isSignup ? 'Le Mode Duo t\'attend' : 'Mode Duo — Fonctionnalité Premium'}
+                </h3>
+
+                <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;margin:0 0 2rem;">
+                    ${isSignup
+                        ? 'Crée un compte gratuit pour tester le Mode Duo <strong style="color:#fff">une fois</strong>. Trouve le film parfait pour deux en quelques secondes.'
+                        : 'Tu as utilisé ton essai gratuit. Passe Premium pour utiliser le Mode Duo <strong style="color:#fff">sans limite</strong> et accéder à toutes les fonctionnalités.'}
+                </p>
+
+                <button id="duo-gate-cta" style="
+                    width:100%;padding:0.9rem;background:#E50914;color:#fff;
+                    border:none;border-radius:12px;font-size:1rem;font-weight:800;
+                    cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
+                    ${isSignup ? 'Créer un compte gratuit' : 'Passer Premium — 4,99€/mois'}
+                </button>
+                <button id="duo-gate-secondary" style="
+                    width:100%;padding:0.75rem;background:transparent;
+                    color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
+                    border-radius:12px;font-size:0.9rem;cursor:pointer;">
+                    ${isSignup ? 'J\'ai déjà un compte' : 'Voir toutes les offres'}
+                </button>
+            </div>`;
+
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        document.getElementById('duo-gate-close').onclick = close;
+        overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+        document.getElementById('duo-gate-cta').onclick = () => {
+            close();
+            if (isSignup) {
+                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signup'));
+            } else {
+                this.showPricingModal();
+            }
+        };
+
+        document.getElementById('duo-gate-secondary').onclick = () => {
             close();
             if (isSignup) {
                 import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signin'));
