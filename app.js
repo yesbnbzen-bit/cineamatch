@@ -3886,6 +3886,25 @@ const App = {
     _showToast(message, type = 'success', duration = 4000) {
         const existing = document.getElementById('stripe-toast');
         if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.id = 'stripe-toast';
+        toast.style.cssText = `
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: ${type === 'success' ? '#16a34a' : type === 'info' ? '#1d4ed8' : '#E50914'};
+            color: #fff; padding: 12px 24px; border-radius: 10px;
+            font-size: 0.9rem; font-weight: 600; z-index: 9999;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            animation: fadeInUp 0.3s ease both;
+            max-width: 90vw; text-align: center;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.4s';
+            setTimeout(() => toast.remove(), 400);
+        }, duration);
+    },
 
     // ── Génère une raison automatique quand l'IA n'en a pas fourni ──
     // Utilise les données TMDB réelles : tagline, genres, cast, note, moodLabel
@@ -3934,7 +3953,7 @@ const App = {
                                         : `Un ${genre ? genre.toLowerCase() : 'film'} bien noté pour ton envie du moment.`);
     },
 
-    _showStripeToast(message, type = 'success') {
+    _showStripeToast(message, type = 'success', duration = 4000) {
         const toast = document.createElement('div');
         toast.id = 'stripe-toast';
         toast.style.cssText = `
