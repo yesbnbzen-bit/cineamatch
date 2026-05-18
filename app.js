@@ -3934,7 +3934,7 @@ const App = {
                                         : `Un ${genre ? genre.toLowerCase() : 'film'} bien noté pour ton envie du moment.`);
     },
 
-        _showStripeToast(message, type = 'success') {
+    _showStripeToast(message, type = 'success') {
         const toast = document.createElement('div');
         toast.id = 'stripe-toast';
         toast.style.cssText = `
