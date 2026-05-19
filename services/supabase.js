@@ -411,3 +411,63 @@ export const preferencesService = {
         }
     }
 };
+
+// ─────────────────────────────────────────────────────────────────
+//  DUO SESSIONS — sync cross-device
+//  Permet à Person A et Person B d'être sur des appareils différents
+// ─────────────────────────────────────────────────────────────────
+
+export const duoSessionService = {
+
+    // Génère un ID court unique (8 chars alphanumériques)
+    _genId() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let id = '';
+        for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+        return id;
+    },
+
+    // Créer une nouvelle session duo — retourne l'ID de session
+    async create(nameA, answersA) {
+        const id = this._genId();
+        const { error } = await supabase.from('duo_sessions').insert({
+            id,
+            name_a:    nameA || '',
+            answers_a: answersA,
+            status:    'waiting',
+            expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        });
+        if (error) throw error;
+        return id;
+    },
+
+    // Lire une session par son ID
+    async get(id) {
+        const { data, error } = await supabase
+            .from('duo_sessions')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();
+        if (error) throw error;
+        return data;
+    },
+
+    // Person B a ouvert le lien — signaler à Person A
+    async setResponding(id) {
+        await supabase.from('duo_sessions')
+            .update({ status: 'responding' })
+            .eq('id', id);
+    },
+
+    // Person B a terminé — sauvegarder les résultats pour Person A
+    async complete(id, nameB, bRawAnswers, finalMovies, finalAnswers) {
+        const { error } = await supabase.from('duo_sessions').update({
+            status:        'done',
+            name_b:        nameB || '',
+            b_raw_answers: bRawAnswers,
+            final_movies:  finalMovies,
+            final_answers: finalAnswers
+        }).eq('id', id);
+        if (error) throw error;
+    }
+};

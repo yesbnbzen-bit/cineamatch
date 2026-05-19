@@ -2,7 +2,7 @@ import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=65';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=10';
+import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=11';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=347';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
@@ -229,19 +229,40 @@ const App = {
             setTimeout(() => this.handleStripeReturn(premiumParam), 1500);
         }
 
-        // ── Détection URL Personne B (?duo=BASE64) ──
-        const duoParam = new URLSearchParams(location.search).get('duo');
-        if (duoParam) {
+        // ── Détection URL Personne B — format Supabase (?duo_id=SESSION_ID) ──
+        const duoSessionId = new URLSearchParams(location.search).get('duo_id');
+        if (duoSessionId) {
             try {
-                // URLSearchParams.get() décode %XX mais transforme + en espace
-                // On re-encode les espaces en + avant le atob pour corriger ça
+                const { duoSessionService } = await import('./services/supabase.js?v=11');
+                const session = await duoSessionService.get(duoSessionId);
+                if (session && session.status !== 'done') {
+                    store.duoMode           = true;
+                    store.duoRole           = 'B';
+                    store.duoPartnerAnswers = session.answers_a;
+                    store.duoNameA          = session.name_a || '';
+                    store.duoMerged         = false;
+                    store._duoSessionId     = duoSessionId;
+                    await duoSessionService.setResponding(duoSessionId);
+                    localStorage.setItem('duo_b_status', 'responding'); // fallback même appareil
+                    this.renderDuoWelcome();
+                } else if (!session) {
+                    console.warn('Duo session introuvable ou expirée :', duoSessionId);
+                }
+            } catch(e) {
+                console.error('Duo session load failed:', e);
+            }
+        }
+
+        // ── Détection URL Personne B — ancien format (?duo=BASE64) — rétrocompat ──
+        const duoParam = new URLSearchParams(location.search).get('duo');
+        if (duoParam && !duoSessionId) {
+            try {
                 const cleanParam = duoParam.replace(/ /g, '+');
                 const answersA = JSON.parse(decodeURIComponent(escape(atob(cleanParam))));
                 store.duoMode = true;
                 store.duoRole = 'B';
                 store.duoPartnerAnswers = answersA;
                 store.duoMerged = false;
-                // Signaler à Person A (autre onglet/appareil) que B a commencé
                 localStorage.setItem('duo_b_status', 'responding');
                 this.renderDuoWelcome();
             } catch(e) {
@@ -2195,6 +2216,18 @@ const App = {
                 try {
                     localStorage.setItem('duo_final_movies', JSON.stringify(finalMovies));
                     localStorage.setItem('duo_final_answers', JSON.stringify(store.answers));
+                    // Cross-device sync : sauvegarder dans Supabase si session existe
+                    if (store._duoSessionId) {
+                        import('./services/supabase.js?v=11').then(({ duoSessionService }) => {
+                            duoSessionService.complete(
+                                store._duoSessionId,
+                                store.duoNameB,
+                                store.duoPersonBAnswers || {},
+                                finalMovies,
+                                store.answers
+                            ).catch(e => console.warn('Duo session complete error:', e));
+                        });
+                    }
                 } catch(e) {}
             }
 
@@ -2712,12 +2745,12 @@ const App = {
     },
 
     // Écran de partage — Personne A vient de terminer le questionnaire
-    renderDuoShare() {
+    async renderDuoShare() {
         ui.switchView('duo-share');
         this.injectDuoBg();
 
-        // Fonction qui (re)génère le lien + QR
-        const refresh = () => {
+        // Fonction qui génère le lien + QR (Supabase session cross-device)
+        const refresh = async () => {
             const nameA = store.duoNameA || '';
 
             const minimalAnswers = {
@@ -2736,8 +2769,22 @@ const App = {
                     poster_path: m.poster_path
                 }))
             };
-            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(minimalAnswers))));
-            const duoUrl  = `${location.origin}${location.pathname}?duo=${encodeURIComponent(encoded)}`;
+            // URL avec session Supabase (cross-device) ou fallback base64 (même navigateur)
+            let duoUrl;
+            if (!store._duoSessionId) {
+                try {
+                    const { duoSessionService } = await import('./services/supabase.js?v=11');
+                    const sessionId = await duoSessionService.create(nameA, minimalAnswers);
+                    store._duoSessionId = sessionId;
+                    duoUrl = `${location.origin}${location.pathname}?duo_id=${sessionId}`;
+                } catch(e) {
+                    console.warn('Supabase session failed, fallback base64:', e);
+                    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(minimalAnswers))));
+                    duoUrl = `${location.origin}${location.pathname}?duo=${encodeURIComponent(encoded)}`;
+                }
+            } else {
+                duoUrl = `${location.origin}${location.pathname}?duo_id=${store._duoSessionId}`;
+            }
 
             // Mettre à jour le champ lien
             const linkInput = document.getElementById('duo-share-link');
@@ -2788,7 +2835,7 @@ const App = {
         }
 
         // Génération initiale
-        refresh();
+        await refresh();
 
         // ── Bouton "Remplir ici ensemble" — même écran, même appareil ──
         const togetherBtn = document.getElementById('duo-together-btn');
@@ -2805,100 +2852,128 @@ const App = {
             };
         }
 
-        // ── Synchro localStorage : écouter si Person B termine dans un autre onglet ──
-        // Stocker les réponses A pour que Person A puisse calculer les résultats
+        // ── localStorage fallback (même appareil / "Remplir ensemble") ──
         localStorage.setItem('duo_a_answers', JSON.stringify({ ...store.answers, nameA: store.duoNameA }));
-        // Purger les données des sessions précédentes pour garantir que l'event storage se déclenche
         localStorage.removeItem('duo_b_answers');
         localStorage.removeItem('duo_b_status');
         localStorage.removeItem('duo_final_movies');
         localStorage.removeItem('duo_final_answers');
 
-        // ── Initialiser l'animation d'attente ──
-        const waitingEl = document.getElementById('duo-waiting-anim');
-        const waitingText = document.getElementById('duo-waiting-text');
+        // ── Animation d'attente ──
+        const waitingEl    = document.getElementById('duo-waiting-anim');
+        const waitingText  = document.getElementById('duo-waiting-text');
         const nameADisplay = document.getElementById('duo-wait-name-a');
         const nameBDisplay = document.getElementById('duo-wait-name-b');
         if (nameADisplay) nameADisplay.textContent = store.duoNameA || t('duo.fallback.you');
 
-        const onStorageEvent = (e) => {
-            // B vient d'ouvrir le lien — montrer l'animation "en train de répondre"
-            if (e.key === 'duo_b_status' && e.newValue === 'responding') {
-                if (waitingEl) waitingEl.classList.add('b-responding');
-                if (waitingText) waitingText.textContent = t('duo.partner.answering');
-                if (nameBDisplay) nameBDisplay.textContent = '✍️';
+        let _duoPollDone = false;
+
+        // ── Callback commun : résultats reçus (Supabase OU localStorage) ──
+        const onResults = ({ finalMovies, finalAnswers, bRawAnswers }) => {
+            if (_duoPollDone) return;
+            _duoPollDone = true;
+            if (waitingEl)    waitingEl.classList.add('b-done');
+            if (waitingText)  waitingText.textContent = t('duo.partner.ready');
+            if (nameBDisplay) nameBDisplay.textContent = '✓';
+            const readyBanner = document.getElementById('duo-partner-ready');
+            if (readyBanner)  readyBanner.style.display = 'flex';
+            const seeBtn = document.getElementById('duo-see-results-btn');
+            if (seeBtn) {
+                seeBtn.onclick = () => {
+                    store.answers           = finalAnswers;
+                    store.duoMode           = true;
+                    store.duoMerged         = true;
+                    store.duoPersonBAnswers = bRawAnswers;
+                    store.duoPartnerAnswers = JSON.parse(localStorage.getItem('duo_a_answers') || '{}');
+                    if (bRawAnswers.nameB)  store.duoNameB = bRawAnswers.nameB;
+                    store.rerollCount       = 0;
+                    store._lastMovies       = finalMovies;
+                    if (finalMovies.length > 0) {
+                        this.renderResults(finalMovies);
+                    } else {
+                        store.suggestedMovieIds = [];
+                        store.suggestedTitles   = [];
+                        this.processResults();
+                    }
+                };
             }
+        };
 
-            // Attendre que les films finaux soient disponibles (après réponse IA)
-            if (e.key !== 'duo_final_movies' || !e.newValue) return;
-            try {
-                if (waitingEl) waitingEl.classList.add('b-done');
-                if (waitingText) waitingText.textContent = t('duo.partner.ready');
-                if (nameBDisplay) nameBDisplay.textContent = '✓';
-                const readyBanner = document.getElementById('duo-partner-ready');
-                if (readyBanner) readyBanner.style.display = 'flex';
-                const seeBtn = document.getElementById('duo-see-results-btn');
-                if (seeBtn) {
-                    seeBtn.onclick = () => {
-                        window.removeEventListener('storage', onStorageEvent);
-
-                        // Charger les films EXACTS de Person B — zéro appel IA, résultats identiques
-                        const finalMovies   = JSON.parse(localStorage.getItem('duo_final_movies') || '[]');
-                        const finalAnswers  = JSON.parse(localStorage.getItem('duo_final_answers') || '{}');
-                        const bRawAnswers   = JSON.parse(localStorage.getItem('duo_b_answers') || '{}');
-
-                        store.answers            = finalAnswers;
-                        store.duoMode            = true;
-                        store.duoMerged          = true;
-                        store.duoPersonBAnswers  = bRawAnswers;
-                        store.duoPartnerAnswers  = JSON.parse(localStorage.getItem('duo_a_answers') || '{}');
-                        // Restaurer le prénom de B pour Person A
-                        if (bRawAnswers.nameB) store.duoNameB = bRawAnswers.nameB;
-                        store.rerollCount        = 0;
-                        store._lastMovies        = finalMovies;
-
-                        if (finalMovies.length > 0) {
-                            // Afficher directement les films sans rappeler l'IA
-                            this.renderResults(finalMovies);
-                        } else {
-                            // Fallback : recalculer si les films n'ont pas encore été sauvegardés
-                            store.suggestedMovieIds = [];
-                            store.suggestedTitles   = [];
-                            this.processResults();
+        // ── Polling Supabase (cross-device — appareils différents) ──
+        if (store._duoSessionId) {
+            import('./services/supabase.js?v=11').then(({ duoSessionService }) => {
+                const _supabasePoll = setInterval(async () => {
+                    if (_duoPollDone) { clearInterval(_supabasePoll); return; }
+                    try {
+                        const session = await duoSessionService.get(store._duoSessionId);
+                        if (!session) return;
+                        if (session.status === 'responding' && !waitingEl?.classList.contains('b-responding')) {
+                            waitingEl?.classList.add('b-responding');
+                            if (waitingText)  waitingText.textContent = t('duo.partner.answering');
+                            if (nameBDisplay) nameBDisplay.textContent = session.name_b
+                                ? session.name_b.slice(0, 1).toUpperCase() : '✍️';
                         }
-                    };
+                        if (session.status === 'done' && session.final_movies?.length) {
+                            clearInterval(_supabasePoll);
+                            if (session.name_b) store.duoNameB = session.name_b;
+                            onResults({
+                                finalMovies:  session.final_movies,
+                                finalAnswers: session.final_answers || {},
+                                bRawAnswers:  session.b_raw_answers || {}
+                            });
+                        }
+                    } catch(e) { console.warn('Supabase poll error:', e); }
+                }, 2000);
+                document.addEventListener('cinematch:view-change',
+                    () => clearInterval(_supabasePoll), { once: true });
+            }).catch(e => console.warn('Supabase import failed:', e));
+        }
+
+        // ── Polling localStorage (même appareil / fallback) ──
+        const onStorageEvent = (e) => {
+            if (_duoPollDone) return;
+            if (e.key === 'duo_b_status' && e.newValue === 'responding') {
+                if (!waitingEl?.classList.contains('b-responding')) {
+                    waitingEl?.classList.add('b-responding');
+                    if (waitingText)  waitingText.textContent = t('duo.partner.answering');
+                    if (nameBDisplay) nameBDisplay.textContent = '✍️';
                 }
-            } catch(err) { console.warn('duo sync error', err); }
+            }
+            if (e.key === 'duo_final_movies' && e.newValue) {
+                try {
+                    onResults({
+                        finalMovies:  JSON.parse(localStorage.getItem('duo_final_movies') || '[]'),
+                        finalAnswers: JSON.parse(localStorage.getItem('duo_final_answers') || '{}'),
+                        bRawAnswers:  JSON.parse(localStorage.getItem('duo_b_answers') || '{}')
+                    });
+                } catch(err) { console.warn('duo localStorage sync error', err); }
+            }
         };
         window.addEventListener('storage', onStorageEvent);
 
-        // ── Polling de secours (même onglet ou Safari qui ne déclenche pas storage) ──
-        let _duoPollDone = false;
-        const _duoPoll = setInterval(() => {
-            if (_duoPollDone) { clearInterval(_duoPoll); return; }
-            // Vérifier si B est en train de répondre
+        // ── Polling de secours (Safari ne déclenche pas storage en même onglet) ──
+        const _localPoll = setInterval(() => {
+            if (_duoPollDone) { clearInterval(_localPoll); return; }
             const bStatus = localStorage.getItem('duo_b_status');
-            if (bStatus === 'responding' && waitingEl && !waitingEl.classList.contains('b-responding')) {
-                waitingEl.classList.add('b-responding');
-                if (waitingText) waitingText.textContent = t('duo.partner.answering');
+            if (bStatus === 'responding' && !waitingEl?.classList.contains('b-responding')) {
+                waitingEl?.classList.add('b-responding');
+                if (waitingText)  waitingText.textContent = t('duo.partner.answering');
                 if (nameBDisplay) nameBDisplay.textContent = '✍️';
             }
-            // Vérifier si les films finaux sont disponibles
             const finalMoviesRaw = localStorage.getItem('duo_final_movies');
-            if (!finalMoviesRaw) return;
-            _duoPollDone = true;
-            clearInterval(_duoPoll);
-            // Même logique que l'event storage
-            onStorageEvent({ key: 'duo_final_movies', newValue: finalMoviesRaw });
+            if (finalMoviesRaw) {
+                _duoPollDone = true;
+                clearInterval(_localPoll);
+                onStorageEvent({ key: 'duo_final_movies', newValue: finalMoviesRaw });
+            }
         }, 1500);
 
-        // ── Timeout 10 min : si B ne répond pas, proposer de continuer en solo ──
+        // ── Timeout 15 min ──
         const DUO_TIMEOUT_MS = 15 * 60 * 1000;
         const _duoTimeout = setTimeout(() => {
-            if (_duoPollDone) return; // B a déjà répondu, pas besoin
+            if (_duoPollDone) return;
             _duoPollDone = true;
-            clearInterval(_duoPoll);
-            // Afficher bannière de timeout
+            clearInterval(_localPoll);
             if (waitingText) waitingText.textContent = t('duo.timeout.waiting');
             const timeoutBanner = document.createElement('div');
             timeoutBanner.className = 'duo-timeout-banner';
@@ -2912,8 +2987,8 @@ const App = {
             if (waitingContainer) waitingContainer.appendChild(timeoutBanner);
         }, DUO_TIMEOUT_MS);
 
-        // Nettoyer le polling et le timeout si on quitte cet écran
-        const _stopPoll = () => { _duoPollDone = true; clearInterval(_duoPoll); clearTimeout(_duoTimeout); };
+        // Nettoyer si on quitte cet écran
+        const _stopPoll = () => { _duoPollDone = true; clearInterval(_localPoll); clearTimeout(_duoTimeout); };
         document.addEventListener('cinematch:view-change', _stopPoll, { once: true });
     },
 
@@ -3454,7 +3529,7 @@ const App = {
         btn.textContent = t('profile.pwd.updating');
 
         try {
-            const { authService } = await import('./services/supabase.js?v=10');
+            const { authService } = await import('./services/supabase.js?v=11');
             await authService.updatePassword(newPwd);
             showMsg(t('profile.pwd.success'), '#46d369');
             document.getElementById('profil-pwd-new').value     = '';
@@ -3899,7 +3974,7 @@ const App = {
             const pollPremium = async () => {
                 attempts++;
                 try {
-                    const { authService } = await import('./services/supabase.js?v=10');
+                    const { authService } = await import('./services/supabase.js?v=11');
                     // getUser() force une lecture fraîche depuis le serveur
                     const freshUser = await authService.getUser();
                     if (freshUser?.user_metadata?.is_premium === true) {
