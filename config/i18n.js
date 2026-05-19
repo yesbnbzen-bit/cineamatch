@@ -23,7 +23,7 @@ export const TRANSLATIONS = {
         'hero.line1':        'L\'IA trouve ton film',
         'hero.line2':        'en 30 secondes',
         'hero.title':        'L\'IA trouve ton film en 30 secondes',
-        'hero.subtitle':     'Marre de chercher pendant 1h ? Quelques questions suffisent — l\'IA te propose 3 films parfaits pour ce soir.',
+        'hero.subtitle':     'Marre de chercher pendant 1h ? Quelques questions et l\'IA te propose 3 films parfaits pour ce soir.',
         'hero.start':        'COMMENCER →',
         'hero.duo':          '👥 Mode Duo',
         'hero.feat1':        'Rapide',
@@ -315,7 +315,7 @@ export const TRANSLATIONS = {
         'hero.feat3':        'AI-powered',
 
         // Trending
-        'trending.title':    '🏆 Top Match right now',
+        'trending.title':    'Top Match right now',
         'trending.sublabel': 'Most liked films on streaming this week',
         'trending.more':     'SEE MORE →',
 

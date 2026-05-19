@@ -1625,11 +1625,11 @@ h1 {
     position: absolute;
     bottom: 38px;
     left: 7px;
-    background: rgba(0,0,0,0.72);
+    background: rgba(0,0,0,0.75);
     backdrop-filter: blur(6px);
     border-radius: 5px;
-    padding: 3px 7px;
-    font-size: 0.66rem;
+    padding: 3px 8px;
+    font-size: 0.74rem;
     font-weight: 700;
     color: #FFD700;
     opacity: 1;
@@ -1637,6 +1637,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 2px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
 }
 
 /* Platform badge — top-left */
