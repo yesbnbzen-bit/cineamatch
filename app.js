@@ -3,7 +3,7 @@ import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=10';
-import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=346';
+import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=347';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
 function _updateMultiCounter(grid, q, count) {
@@ -2338,8 +2338,8 @@ const App = {
 
             const answersA = store.duoPartnerAnswers || {};
             const answersB = store.duoPersonBAnswers || {};
-            const nameA    = store.duoNameA || 'Partenaire A';
-            const nameB    = store.duoNameB || 'Partenaire B';
+            const nameA    = store.duoNameA || t('duo.fallback.partner.a');
+            const nameB    = store.duoNameB || t('duo.fallback.partner.b');
             const moodLabelA = moodLabels[answersA.mood] || "—";
             const moodIconA  = moodIcons[answersA.mood]  || "";
             const moodLabelB = moodLabels[answersB.mood] || "—";
@@ -2758,7 +2758,7 @@ const App = {
             // Bouton partager (Web Share API)
             const shareBtn = document.getElementById('duo-share-btn');
             if (shareBtn) {
-                const nameA = store.duoNameA || 'ton partenaire';
+                const nameA = store.duoNameA || t('duo.fallback.partner.name');
                 if (navigator.share) {
                     shareBtn.style.display = 'inline-flex';
                     shareBtn.onclick = () => {
@@ -2819,15 +2819,13 @@ const App = {
         const waitingText = document.getElementById('duo-waiting-text');
         const nameADisplay = document.getElementById('duo-wait-name-a');
         const nameBDisplay = document.getElementById('duo-wait-name-b');
-        if (nameADisplay) nameADisplay.textContent = store.duoNameA || 'Toi';
+        if (nameADisplay) nameADisplay.textContent = store.duoNameA || t('duo.fallback.you');
 
         const onStorageEvent = (e) => {
             // B vient d'ouvrir le lien — montrer l'animation "en train de répondre"
             if (e.key === 'duo_b_status' && e.newValue === 'responding') {
                 if (waitingEl) waitingEl.classList.add('b-responding');
-                if (waitingText) waitingText.textContent = getLang() === 'en'
-                    ? '🎬 Your partner is answering right now...'
-                    : '🎬 Ton partenaire répond en ce moment...';
+                if (waitingText) waitingText.textContent = t('duo.partner.answering');
                 if (nameBDisplay) nameBDisplay.textContent = '✍️';
             }
 
@@ -2835,7 +2833,7 @@ const App = {
             if (e.key !== 'duo_final_movies' || !e.newValue) return;
             try {
                 if (waitingEl) waitingEl.classList.add('b-done');
-                if (waitingText) waitingText.textContent = getLang() === 'en' ? '✅ Your partner finished!' : '✅ Ton partenaire a terminé !';
+                if (waitingText) waitingText.textContent = t('duo.partner.ready');
                 if (nameBDisplay) nameBDisplay.textContent = '✓';
                 const readyBanner = document.getElementById('duo-partner-ready');
                 if (readyBanner) readyBanner.style.display = 'flex';
@@ -2882,9 +2880,7 @@ const App = {
             const bStatus = localStorage.getItem('duo_b_status');
             if (bStatus === 'responding' && waitingEl && !waitingEl.classList.contains('b-responding')) {
                 waitingEl.classList.add('b-responding');
-                if (waitingText) waitingText.textContent = getLang() === 'en'
-                    ? '🎬 Your partner is answering right now...'
-                    : '🎬 Ton partenaire répond en ce moment...';
+                if (waitingText) waitingText.textContent = t('duo.partner.answering');
                 if (nameBDisplay) nameBDisplay.textContent = '✍️';
             }
             // Vérifier si les films finaux sont disponibles
@@ -2897,19 +2893,17 @@ const App = {
         }, 1500);
 
         // ── Timeout 10 min : si B ne répond pas, proposer de continuer en solo ──
-        const DUO_TIMEOUT_MS = 10 * 60 * 1000;
+        const DUO_TIMEOUT_MS = 15 * 60 * 1000;
         const _duoTimeout = setTimeout(() => {
             if (_duoPollDone) return; // B a déjà répondu, pas besoin
             _duoPollDone = true;
             clearInterval(_duoPoll);
             // Afficher bannière de timeout
-            if (waitingText) waitingText.textContent = getLang() === 'en'
-                ? '⏱️ Your partner hasn\'t responded yet...'
-                : '⏱️ Ton partenaire n\'a pas encore répondu...';
+            if (waitingText) waitingText.textContent = t('duo.timeout.waiting');
             const timeoutBanner = document.createElement('div');
             timeoutBanner.className = 'duo-timeout-banner';
             timeoutBanner.innerHTML = `
-                <p>${getLang() === 'en' ? 'Want to continue solo in the meantime?' : 'Tu veux continuer en solo en attendant ?'}</p>
+                <p>${t('duo.timeout.solo')}</p>
                 <button class="duo-timeout-solo-btn cta-btn" onclick="location.href='/'">
                     ${t('btn.solo')}
                 </button>
@@ -2939,7 +2933,7 @@ const App = {
                 <div class="duo-badge-pill">${t('duo.badge')}</div>
                 <div class="duo-welcome-icon">🎬</div>
                 <p class="duo-partner-name">${nameA}</p>
-                <p class="duo-partner-waiting">${getLang() === 'en' ? 'is waiting for tonight!' : 't\u2019attend pour ce soir !'}</p>
+                <p class="duo-partner-waiting">${t('duo.partner.waiting.for')}</p>
                 <div class="duo-divider"></div>
                 <p class="duo-subtitle">${t('duo.welcome.sub')}</p>
                 <div class="duo-name-field">
@@ -3087,7 +3081,7 @@ const App = {
         const duoPaceConflict = paceA !== 'any' && paceB !== 'any' && paceA !== paceB;
 
         return {
-            context:          a?.context || 'couple',
+            context:          b?.context || a?.context || 'couple',
             mood:             mergedMood,
             language:         mergedLanguage,
             duration:         mergedDuration,
@@ -3719,26 +3713,24 @@ const App = {
                 <div style="font-size:2.8rem;margin-bottom:1rem;">💑</div>
 
                 <h3 style="font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 0.6rem;">
-                    ${isSignup ? 'Le Mode Duo t\'attend' : 'Mode Duo — Fonctionnalité Premium'}
+                    ${isSignup ? t('duo.gate.signup.title') : t('duo.gate.premium.title')}
                 </h3>
 
                 <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;margin:0 0 2rem;">
-                    ${isSignup
-                        ? 'Crée un compte gratuit pour tester le Mode Duo <strong style="color:#fff">une fois</strong>. Trouve le film parfait pour deux en quelques secondes.'
-                        : 'Tu as utilisé ton essai gratuit. Passe Premium pour utiliser le Mode Duo <strong style="color:#fff">sans limite</strong> et accéder à toutes les fonctionnalités.'}
+                    ${isSignup ? t('duo.gate.signup.sub') : t('duo.gate.premium.sub')}
                 </p>
 
                 <button id="duo-gate-cta" style="
                     width:100%;padding:0.9rem;background:#E50914;color:#fff;
                     border:none;border-radius:12px;font-size:1rem;font-weight:800;
                     cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
-                    ${isSignup ? 'Créer un compte gratuit' : 'Passer Premium — 4,99€/mois'}
+                    ${isSignup ? t('paywall.cta') : t('paywall.premium')}
                 </button>
                 <button id="duo-gate-secondary" style="
                     width:100%;padding:0.75rem;background:transparent;
                     color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
                     border-radius:12px;font-size:0.9rem;cursor:pointer;">
-                    ${isSignup ? 'J\'ai déjà un compte' : 'Voir toutes les offres'}
+                    ${isSignup ? t('paywall.signin.btn') : t('duo.gate.premium.sec')}
                 </button>
             </div>`;
 

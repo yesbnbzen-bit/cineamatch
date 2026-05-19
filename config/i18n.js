@@ -234,6 +234,25 @@ export const TRANSLATIONS = {
         'duo.wait.partner':   'Partenaire',
         'duo.wait.text':      'En attente de ton partenaire…',
 
+        // Duo — statuts partenaire en temps réel
+        'duo.partner.waiting.for':  't\'attend pour ce soir !',
+        'duo.partner.answering':    '🎬 Ton partenaire répond en ce moment...',
+        'duo.timeout.waiting':      '⏱️ Ton partenaire n\'a pas encore répondu...',
+        'duo.timeout.solo':         'Tu veux continuer en solo en attendant ?',
+
+        // Duo — fallbacks noms
+        'duo.fallback.you':         'Toi',
+        'duo.fallback.partner.name':'ton partenaire',
+        'duo.fallback.partner.a':   'Partenaire A',
+        'duo.fallback.partner.b':   'Partenaire B',
+
+        // Duo gate (popup accès)
+        'duo.gate.signup.title':    'Le Mode Duo t\'attend',
+        'duo.gate.premium.title':   'Mode Duo — Fonctionnalité Premium',
+        'duo.gate.signup.sub':      'Crée un compte gratuit pour tester le Mode Duo <strong style="color:#fff">une fois</strong>. Trouve le film parfait pour deux en quelques secondes.',
+        'duo.gate.premium.sub':     'Tu as utilisé ton essai gratuit. Passe Premium pour utiliser le Mode Duo <strong style="color:#fff">sans limite</strong> et accéder à toutes les fonctionnalités.',
+        'duo.gate.premium.sec':     'Voir toutes les offres',
+
         // Onboarding steps
         'onboard.0.title':   'Ta recommandation en 30s',
         'onboard.0.text':    'Réponds à quelques questions et l\'IA te suggère 3 films parfaits pour toi ce soir.',
@@ -517,6 +536,25 @@ export const TRANSLATIONS = {
         'duo.invite':         '${nameA} invites you to find the perfect film for tonight 🎬 Answer the questionnaire!',
         'duo.wait.partner':   'Partner',
         'duo.wait.text':      'Waiting for your partner…',
+
+        // Duo — partner status (real-time)
+        'duo.partner.waiting.for':  'is waiting for tonight!',
+        'duo.partner.answering':    '🎬 Your partner is answering right now...',
+        'duo.timeout.waiting':      '⏱️ Your partner hasn\'t responded yet...',
+        'duo.timeout.solo':         'Want to continue solo in the meantime?',
+
+        // Duo — name fallbacks
+        'duo.fallback.you':         'You',
+        'duo.fallback.partner.name':'your partner',
+        'duo.fallback.partner.a':   'Partner A',
+        'duo.fallback.partner.b':   'Partner B',
+
+        // Duo gate (access popup)
+        'duo.gate.signup.title':    'Duo Mode is waiting for you',
+        'duo.gate.premium.title':   'Duo Mode — Premium Feature',
+        'duo.gate.signup.sub':      'Create a free account to try Duo Mode <strong style="color:#fff">once</strong>. Find the perfect film for two in seconds.',
+        'duo.gate.premium.sub':     'You\'ve used your free trial. Go Premium for <strong style="color:#fff">unlimited</strong> Duo Mode and all features.',
+        'duo.gate.premium.sec':     'See all plans',
 
         // Onboarding steps
         'onboard.0.title':   'Your recommendation in 30s',
