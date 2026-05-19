@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=63';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=64';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -646,6 +646,8 @@ const App = {
 
         // Nettoyer toute session sauvegardée au démarrage
         this._clearSession();
+        // Vider le cache TMDB pour éviter des données obsolètes entre sessions
+        tmdbService.clearDetailsCache();
         // Reset complet à chaque nouvelle session
         store.step = 1;
         // En mode solo, réinitialiser l'état duo et retirer les blobs
@@ -1901,11 +1903,24 @@ const App = {
 
             setStep(3, isEn ? '⭐ AI selecting the best films...' : '⭐ L\'IA sélectionne les meilleurs films...');
 
-            // ── B-fix : enrichir les 15 meilleurs candidats avec cast + réalisateur ──
+            // ── B-fix : enrichir les 25 meilleurs candidats avec cast + réalisateur ──
             // → l'IA verra "Réal: Tim Story | Avec: Kevin Hart, Taraji P. Henson" dans le pool
-            // → appels /credits en parallèle (~150ms) sur les 15 films les mieux notés
+            // → appels /credits en parallèle (~150ms) sur les 25 films les mieux notés
             const enrichedSafeCandidates = await tmdbService.enrichCandidatesWithCast(safeCandidates, 25);
-            console.log(`🎬 Candidats enrichis avec cast : ${enrichedSafeCandidates.filter(c => c._credits).length}/15`);
+            console.log(`🎬 Candidats enrichis avec cast : ${enrichedSafeCandidates.filter(c => c._credits).length}/25`);
+
+            // ── Perf 11 : limiter à 40 candidats max envoyés à OpenAI ──
+            // → réduit les tokens consommés, accélère la réponse, réduit le coût
+            // → on garde les 40 mieux notés (qualité pondérée vote_average × log10(votes))
+            const candidatesForAI = enrichedSafeCandidates.length > 40
+                ? [...enrichedSafeCandidates]
+                    .sort((a, b) =>
+                        (b.vote_average || 0) * Math.log10((b.vote_count || 1) + 1) -
+                        (a.vote_average || 0) * Math.log10((a.vote_count || 1) + 1)
+                    )
+                    .slice(0, 40)
+                : enrichedSafeCandidates;
+            console.log(`🤖 Candidats envoyés à l'IA : ${candidatesForAI.length}/${enrichedSafeCandidates.length}`);
 
             // ── ÉTAPE 3 : OpenAI score et classe les candidats ──
             const ranked = await openaiService.getDeepRecommendations(
@@ -1933,7 +1948,7 @@ const App = {
                     // Profil d'âge
                     _ageProfile:      ageProfile,
                 },
-                enrichedSafeCandidates,
+                candidatesForAI,
                 isReroll,
                 [...store.suggestedMovieIds, ...lovedMovieIds],
                 getLang()
@@ -2003,6 +2018,19 @@ const App = {
             // Réserves : no-synopsis et films rejetés par plateforme (dernier recours anti-crash)
             const platformRejected = [];
 
+            // ── Perf 5 : précharger les détails des 8 premiers films classés en parallèle ──
+            // → évite les appels séquentiels (8 × 300ms = 2.4s → ~300ms total)
+            const top8Valid = rankedDeduped
+                .filter(r => validCandidateIds.has(Number(r.tmdb_id)))
+                .slice(0, 8);
+            const preloadedDetails = await Promise.all(
+                top8Valid.map(r => tmdbService.getMovieDetails(r.tmdb_id).catch(() => null))
+            );
+            const detailsCache = new Map(
+                top8Valid.map((r, i) => [Number(r.tmdb_id), preloadedDetails[i]])
+            );
+            console.log(`⚡ Détails préchargés en parallèle : ${preloadedDetails.filter(Boolean).length}/${top8Valid.length}`);
+
             // ── PASSE 1 : sélection parmi les films classés par l'IA ──
             for (const r of rankedDeduped) {
                 if (finalMovies.length >= 3) break;
@@ -2013,7 +2041,9 @@ const App = {
                     continue;
                 }
 
-                const details = await tmdbService.getMovieDetails(r.tmdb_id);
+                // Perf : utiliser le cache préchargé, sinon fetch individuel pour les films hors top 8
+                const details = detailsCache.get(Number(r.tmdb_id))
+                    ?? await tmdbService.getMovieDetails(r.tmdb_id);
                 if (!details) continue;
 
                 // ✅ Anti-redirect TMDB

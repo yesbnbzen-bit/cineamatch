@@ -26,6 +26,7 @@ const _DEV_KEY = '';
 export const tmdbService = {
     apiKey: '',
     lang: 'fr-FR',
+    _detailsCache: new Map(), // Perf 15 : cache en mémoire pour getMovieDetails
 
     init(key) {
         this.apiKey = key;
@@ -33,6 +34,12 @@ export const tmdbService = {
 
     setLanguage(lang) {
         this.lang = lang === 'en' ? 'en-US' : 'fr-FR';
+    },
+
+    // Vide le cache détails (à appeler au début de chaque nouvelle session)
+    clearDetailsCache() {
+        this._detailsCache.clear();
+        console.log('🗑️ Cache détails TMDB vidé');
     },
 
     async searchMovies(query) {
@@ -68,6 +75,12 @@ export const tmdbService = {
     },
 
     async getMovieDetails(movieId) {
+        // Perf 15 : retourner depuis le cache si déjà récupéré dans cette session
+        const cacheKey = `${movieId}_${this.lang}`;
+        if (this._detailsCache.has(cacheKey)) {
+            return this._detailsCache.get(cacheKey);
+        }
+
         if (this.apiKey === 'MOCK' || !this.apiKey) {
             return {
                 id: movieId,
@@ -105,6 +118,8 @@ export const tmdbService = {
             } catch(e) { /* silencieux */ }
         }
 
+        // Mettre en cache pour les appels suivants (reroll, rescue pass, etc.)
+        this._detailsCache.set(cacheKey, data);
         return data;
     },
 
