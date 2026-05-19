@@ -2782,6 +2782,14 @@ const App = {
 
     // Écran de partage — Personne A vient de terminer le questionnaire
     async renderDuoShare() {
+        // Toujours repartir d'une session fraîche — même si _duoSessionId traîne d'une session précédente
+        store._duoSessionId = null;
+        localStorage.removeItem('duo_a_answers');
+        localStorage.removeItem('duo_b_status');
+        localStorage.removeItem('duo_final_movies');
+        localStorage.removeItem('duo_final_answers');
+        localStorage.removeItem('duo_b_answers');
+
         ui.switchView('duo-share');
         this.injectDuoBg();
 
