@@ -23,7 +23,7 @@ export const TRANSLATIONS = {
         'hero.line1':        'L\'IA trouve ton film',
         'hero.line2':        'en 30 secondes',
         'hero.title':        'L\'IA trouve ton film en 30 secondes',
-        'hero.subtitle':     'Marre de chercher pendant 1h ? L\'IA trouve ton film en quelques secondes.',
+        'hero.subtitle':     'Marre de chercher pendant 1h ? Quelques questions suffisent — l\'IA te propose 3 films parfaits pour ce soir.',
         'hero.start':        'COMMENCER →',
         'hero.duo':          '👥 Mode Duo',
         'hero.feat1':        'Rapide',
