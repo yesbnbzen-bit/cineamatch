@@ -2721,6 +2721,24 @@ const App = {
         // Focus auto sur le champ
         setTimeout(() => nameInput?.focus(), 300);
 
+        // ── Si l'utilisateur se connecte pendant qu'il est sur cette page,
+        //    préfill son prénom et ferme l'éventuelle gate ──
+        const _onLoginWhileOnDuoStart = (e) => {
+            const user = e.detail?.user;
+            if (!document.getElementById('duo-start')?.classList.contains('active')) return;
+            document.getElementById('duo-gate-overlay')?.remove();
+            if (nameInput && !nameInput.value.trim()) {
+                const n = user?.user_metadata?.name || user?.email?.split('@')[0] || '';
+                if (n) nameInput.value = n;
+                nameInput.focus();
+            }
+        };
+        window.addEventListener('cinematch:login', _onLoginWhileOnDuoStart, { once: true });
+        // Nettoyage si on quitte cet écran sans s'être connecté
+        document.addEventListener('cinematch:view-change', () => {
+            window.removeEventListener('cinematch:login', _onLoginWhileOnDuoStart);
+        }, { once: true });
+
         // Lancer le questionnaire au clic ou à l'appui sur Entrée
         const launch = () => {
             const isPremium = store.currentUser?.user_metadata?.is_premium === true;
@@ -3038,8 +3056,21 @@ const App = {
             const nameInputB = document.getElementById('duo-name-b');
             if (startBtn) {
                 const launch = () => {
-                    // Validation : max 25 chars, pas de HTML/scripts
+                    // Validation : prénom obligatoire
                     const raw = nameInputB?.value?.trim() || '';
+                    if (!raw) {
+                        if (nameInputB) {
+                            nameInputB.style.borderColor = '#E50914';
+                            nameInputB.placeholder = t('duo.placeholder.required') || (getLang() === 'en' ? 'Enter your name to continue' : 'Entre ton prénom pour continuer');
+                            nameInputB.classList.add('shake');
+                            setTimeout(() => {
+                                nameInputB.style.borderColor = '';
+                                nameInputB.classList.remove('shake');
+                            }, 800);
+                            nameInputB.focus();
+                        }
+                        return;
+                    }
                     store.duoNameB = raw.slice(0, 25).replace(/[<>"'&]/g, '');
                     this.startFlow(true);
                 };
@@ -3419,7 +3450,7 @@ const App = {
 
     // ── Profil cinéphile ──
     async showProfile() {
-        const { authUI } = await import('./modules/auth.js?v=26');
+        const { authUI } = await import('./modules/auth.js?v=27');
         authUI.showHistory();
     },
 
@@ -3685,7 +3716,7 @@ const App = {
         document.getElementById('reroll-gate-cta').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signup'));
+                import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signup'));
             } else {
                 this.showPricingModal();
             }
@@ -3695,7 +3726,7 @@ const App = {
         document.getElementById('reroll-gate-login').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signin'));
+                import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signin'));
             } else {
                 this.showPricingModal();
             }
@@ -3761,11 +3792,11 @@ const App = {
 
         document.getElementById('sg-signup').onclick = () => {
             close();
-            import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signup'));
+            import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signup'));
         };
         document.getElementById('sg-login').onclick = () => {
             close();
-            import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signin'));
+            import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signin'));
         };
     },
 
@@ -3826,7 +3857,7 @@ const App = {
         document.getElementById('duo-gate-cta').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signup'));
+                import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signup'));
             } else {
                 this.showPricingModal();
             }
@@ -3835,7 +3866,7 @@ const App = {
         document.getElementById('duo-gate-secondary').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=26').then(m => m.authUI.showModal('signin'));
+                import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signin'));
             } else {
                 this.showPricingModal();
             }
@@ -3987,7 +4018,7 @@ const App = {
                     const freshUser = await authService.getUser();
                     if (freshUser?.user_metadata?.is_premium === true) {
                         store.currentUser = freshUser;
-                        const { authUI } = await import('./modules/auth.js?v=26');
+                        const { authUI } = await import('./modules/auth.js?v=27');
                         await authUI.onLogin(freshUser);
                         this._showToast(t('stripe.toast.activated'), 'success', 5000);
                     } else if (attempts < 5) {

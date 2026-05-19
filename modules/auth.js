@@ -208,6 +208,9 @@ export const authUI = {
 
         this.hideModal();
         console.log(`✅ Connecté : ${name}`);
+
+        // Notifier l'app qu'un utilisateur vient de se connecter (utilisé par le Mode Duo)
+        window.dispatchEvent(new CustomEvent('cinematch:login', { detail: { user } }));
     },
 
     // ── Personnaliser le hero avec stats ──

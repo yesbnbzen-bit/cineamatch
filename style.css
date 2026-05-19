@@ -38,6 +38,10 @@
     animation: shakeGrid 0.45s ease;
 }
 
+.shake {
+    animation: shakeGrid 0.45s ease;
+}
+
 .options-grid.limit-reached .option-card:not(.selected) {
     opacity: 0.35;
 }
