@@ -2695,6 +2695,14 @@ const App = {
         store.duoMerged = false;
         store.duoNameA = '';
         store.duoNameB = '';
+        store._duoSessionId = null; // reset session Supabase pour créer un nouveau lien
+
+        // Nettoyer les résidus d'une session duo précédente
+        localStorage.removeItem('duo_a_answers');
+        localStorage.removeItem('duo_b_status');
+        localStorage.removeItem('duo_final_movies');
+        localStorage.removeItem('duo_final_answers');
+        localStorage.removeItem('duo_b_answers');
 
         ui.switchView('duo-start');
         this.injectDuoBg();
