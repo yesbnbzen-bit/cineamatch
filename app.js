@@ -2710,23 +2710,26 @@ const App = {
         const startBtn = document.getElementById('duo-start-a-btn');
         const nameInput = document.getElementById('duo-name-a-start');
 
-        // ── Préfill prénom : tentative immédiate + retry si auth pas encore restaurée ──
+        // ── Préfill prénom — lit le nom depuis toutes les sources possibles ──
+        const _getDisplayName = (user) =>
+            user?.user_metadata?.name
+            || user?.user_metadata?.full_name
+            || document.getElementById('user-name')?.textContent?.trim()  // lu depuis la navbar
+            || user?.email?.split('@')[0]
+            || '';
+
         const _prefillName = (user) => {
             if (!nameInput || nameInput.value.trim()) return; // déjà rempli
-            const n = user?.user_metadata?.name
-                || user?.user_metadata?.full_name
-                || user?.email?.split('@')[0]
-                || '';
+            const n = _getDisplayName(user);
             if (n) { nameInput.value = n; nameInput.focus(); }
         };
 
         // Tentative immédiate (user déjà connecté)
         if (store.currentUser) _prefillName(store.currentUser);
 
-        // Retry après 800ms (auth restoration async)
-        const _prefillRetry = setTimeout(() => {
-            if (store.currentUser) _prefillName(store.currentUser);
-        }, 800);
+        // Retry à 500ms et 1500ms (auth restoration async)
+        const _prefillRetry1 = setTimeout(() => { if (store.currentUser) _prefillName(store.currentUser); }, 500);
+        const _prefillRetry2 = setTimeout(() => { if (store.currentUser) _prefillName(store.currentUser); }, 1500);
 
         // Focus auto si pas encore rempli
         setTimeout(() => { if (!nameInput?.value) nameInput?.focus(); }, 300);
@@ -2742,7 +2745,8 @@ const App = {
         // Nettoyage si on quitte cet écran
         document.addEventListener('cinematch:view-change', () => {
             window.removeEventListener('cinematch:login', _onLoginWhileOnDuoStart);
-            clearTimeout(_prefillRetry);
+            clearTimeout(_prefillRetry1);
+            clearTimeout(_prefillRetry2);
         }, { once: true });
 
         // Lancer le questionnaire au clic ou à l'appui sur Entrée
