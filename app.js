@@ -2710,33 +2710,39 @@ const App = {
         const startBtn = document.getElementById('duo-start-a-btn');
         const nameInput = document.getElementById('duo-name-a-start');
 
-        // Pré-remplir le prénom si l'utilisateur est connecté
-        if (nameInput && store.currentUser) {
-            const userDisplayName = store.currentUser.user_metadata?.name
-                || store.currentUser.email?.split('@')[0]
+        // ── Préfill prénom : tentative immédiate + retry si auth pas encore restaurée ──
+        const _prefillName = (user) => {
+            if (!nameInput || nameInput.value.trim()) return; // déjà rempli
+            const n = user?.user_metadata?.name
+                || user?.user_metadata?.full_name
+                || user?.email?.split('@')[0]
                 || '';
-            if (userDisplayName) nameInput.value = userDisplayName;
-        }
+            if (n) { nameInput.value = n; nameInput.focus(); }
+        };
 
-        // Focus auto sur le champ
-        setTimeout(() => nameInput?.focus(), 300);
+        // Tentative immédiate (user déjà connecté)
+        if (store.currentUser) _prefillName(store.currentUser);
 
-        // ── Si l'utilisateur se connecte pendant qu'il est sur cette page,
-        //    préfill son prénom et ferme l'éventuelle gate ──
+        // Retry après 800ms (auth restoration async)
+        const _prefillRetry = setTimeout(() => {
+            if (store.currentUser) _prefillName(store.currentUser);
+        }, 800);
+
+        // Focus auto si pas encore rempli
+        setTimeout(() => { if (!nameInput?.value) nameInput?.focus(); }, 300);
+
+        // ── Si l'utilisateur se connecte / son auth se restaure pendant qu'il est sur cette page ──
         const _onLoginWhileOnDuoStart = (e) => {
             const user = e.detail?.user;
             if (!document.getElementById('duo-start')?.classList.contains('active')) return;
             document.getElementById('duo-gate-overlay')?.remove();
-            if (nameInput && !nameInput.value.trim()) {
-                const n = user?.user_metadata?.name || user?.email?.split('@')[0] || '';
-                if (n) nameInput.value = n;
-                nameInput.focus();
-            }
+            _prefillName(user);
         };
-        window.addEventListener('cinematch:login', _onLoginWhileOnDuoStart, { once: true });
-        // Nettoyage si on quitte cet écran sans s'être connecté
+        window.addEventListener('cinematch:login', _onLoginWhileOnDuoStart);
+        // Nettoyage si on quitte cet écran
         document.addEventListener('cinematch:view-change', () => {
             window.removeEventListener('cinematch:login', _onLoginWhileOnDuoStart);
+            clearTimeout(_prefillRetry);
         }, { once: true });
 
         // Lancer le questionnaire au clic ou à l'appui sur Entrée
