@@ -232,6 +232,18 @@ const App = {
         // ── Détection URL Personne B — format Supabase (?duo_id=SESSION_ID) ──
         const duoSessionId = new URLSearchParams(location.search).get('duo_id');
         if (duoSessionId) {
+            // Afficher immédiatement un écran de chargement duo — évite l'écran blanc de 7s
+            this.injectDuoBg();
+            ui.switchView('duo-welcome');
+            const welcomeCard = document.querySelector('#duo-welcome .duo-card');
+            if (welcomeCard) {
+                welcomeCard.innerHTML = `
+                    <div class="duo-badge-pill">${t('duo.badge')}</div>
+                    <div class="duo-welcome-icon" style="animation:float 2s ease-in-out infinite">🎬</div>
+                    <p style="color:rgba(255,255,255,0.5);font-size:0.95rem;margin:1rem 0 0;">
+                        ${getLang() === 'en' ? 'Loading session…' : 'Chargement de la session…'}
+                    </p>`;
+            }
             try {
                 const { duoSessionService } = await import('./services/supabase.js?v=11');
                 const session = await duoSessionService.get(duoSessionId);
@@ -246,6 +258,22 @@ const App = {
                     localStorage.setItem('duo_b_status', 'responding'); // fallback même appareil
                     this.renderDuoWelcome();
                 } else if (!session) {
+                    // Session introuvable ou expirée — afficher un message d'erreur
+                    if (welcomeCard) {
+                        welcomeCard.innerHTML = `
+                            <div class="duo-welcome-icon">⏱️</div>
+                            <h2 style="font-size:1.3rem;font-weight:800;color:#fff;margin:0 0 0.5rem;">
+                                ${getLang() === 'en' ? 'Link expired' : 'Lien expiré'}
+                            </h2>
+                            <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;">
+                                ${getLang() === 'en'
+                                    ? 'Ask your partner to generate a new link.'
+                                    : 'Demande à ton partenaire de générer un nouveau lien.'}
+                            </p>
+                            <button onclick="location.href='/'" class="btn-primary" style="margin-top:1.5rem;">
+                                ${getLang() === 'en' ? 'Back to home' : 'Retour à l\'accueil'}
+                            </button>`;
+                    }
                     console.warn('Duo session introuvable ou expirée :', duoSessionId);
                 }
             } catch(e) {
