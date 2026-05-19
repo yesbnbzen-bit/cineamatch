@@ -1202,6 +1202,13 @@ Applique le scoring dynamique, garantis la diversité du top 3, et génère des 
             return diversified;
         } catch (error) {
             clearTimeout(timeout);
+            // Point 8 : message spécifique si timeout (AbortError) vs autre erreur
+            if (error.name === 'AbortError') {
+                console.warn('⏱️ OpenAI timeout (30s) — scoring abandonné');
+                throw new Error(lang === 'en'
+                    ? 'AI took too long to respond — please try again'
+                    : "L'IA a mis trop de temps à répondre — réessaie dans un instant");
+            }
             console.error("OpenAI Hybrid Ranking Error:", error);
             throw new Error("Rank API failed: " + error.message);
         }

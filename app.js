@@ -1,9 +1,9 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=64';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=65';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=10';
-import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=345';
+import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=346';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
 function _updateMultiCounter(grid, q, count) {
@@ -648,6 +648,8 @@ const App = {
         this._clearSession();
         // Vider le cache TMDB pour éviter des données obsolètes entre sessions
         tmdbService.clearDetailsCache();
+        // Reset compteur anti-boucle
+        store._autoRetryCount = 0;
         // Reset complet à chaque nouvelle session
         store.step = 1;
         // En mode solo, réinitialiser l'état duo et retirer les blobs
@@ -939,13 +941,16 @@ const App = {
                         if (_hint) {
                             const left = maxSelect - cleaned.length;
                             if (cleaned.length === 0) {
-                                _hint.textContent = `Choisis jusqu'à ${maxSelect} · ou passe directement`;
+                                _hint.textContent = t('q.hint.empty').replace('${max}', maxSelect);
                                 _hint.className = 'multi-hint';
                             } else if (left === 0) {
-                                _hint.textContent = `✓ Sélection complète — appuie sur Continuer`;
+                                _hint.textContent = t('q.hint.complete');
                                 _hint.className = 'multi-hint complete';
                             } else {
-                                _hint.textContent = `${cleaned.length} sélectionné${cleaned.length > 1 ? 's' : ''} · encore ${left} possible${left > 1 ? 's' : ''}`;
+                                const isEn = getLang() === 'en';
+                                _hint.textContent = isEn
+                                    ? `${cleaned.length} selected · ${left} more possible`
+                                    : `${cleaned.length} sélectionné${cleaned.length > 1 ? 's' : ''} · encore ${left} possible${left > 1 ? 's' : ''}`;
                                 _hint.className = 'multi-hint multi-hint-pulse';
                                 setTimeout(() => { if (_hint) _hint.className = 'multi-hint'; }, 400);
                             }
@@ -976,14 +981,19 @@ const App = {
             hint.className = 'multi-hint';
             if (current === 0) {
                 hint.textContent = maxSelect
-                    ? `Choisis jusqu'à ${maxSelect} · ou passe directement`
-                    : 'Sélectionne tes choix';
+                    ? t('q.hint.empty').replace('${max}', maxSelect)
+                    : t('q.hint.select');
             } else {
                 const left = (maxSelect || 0) - current;
-                hint.textContent = left > 0
-                    ? `${current} sélectionné${current > 1 ? 's' : ''} · encore ${left} possible${left > 1 ? 's' : ''}`
-                    : `✓ Sélection complète — appuie sur Continuer`;
-                if (left === 0) hint.classList.add('complete');
+                if (left > 0) {
+                    const isEn = getLang() === 'en';
+                    hint.textContent = isEn
+                        ? `${current} selected · ${left} more possible`
+                        : `${current} sélectionné${current > 1 ? 's' : ''} · encore ${left} possible${left > 1 ? 's' : ''}`;
+                } else {
+                    hint.textContent = t('q.hint.complete');
+                    hint.classList.add('complete');
+                }
             }
             // Conserver l'ancien compteur masqué pour la fonction _updateMultiCounter
             const counter = document.createElement('p');
@@ -1442,25 +1452,52 @@ const App = {
                 if (adnDirectors.length > 0) console.log(`🎬 Réalisateurs ADN :`, adnDirectors);
             }
 
-            // ── ÉTAPE 1 : OpenAI traduit les réponses en filtres TMDb ──
-            // Les films de référence sont maintenant enrichis avec cast + director
-            // → buildDNAArchetypes passera "réal. Tim Story — avec Kevin Hart, Taraji P. Henson..."
-            setStep(1, isEn ? `🧠 AI reading your taste...` : `🧠 L'IA lit tes goûts...`, moodLabel);
-            const metadata = await openaiService.extractMetadata(
-                { ...store.answers, contextLabel, moodLabel, durationLabel, excludeLabels, detectedLanguage, blendedGenreIds },
-                isReroll,
-                store.suggestedTitles
-            );
-            store.aiAnalysis = metadata;
-            if (metadata.cultural_universe) console.log(`🌍 Univers culturel détecté :`, metadata.cultural_universe);
+            // ── ÉTAPES 1 + 2 EN PARALLÈLE — gain ~2-3 secondes ──
+            // extractMetadata (OpenAI ~2-3s) et Discovery TMDB (~1s) démarrent simultanément.
+            // Source 3 (suggestions IA) attend metadata — mais Sources 1+2 n'en ont pas besoin.
+            setStep(1, isEn ? `🧠 AI + search running together...` : `🧠 Analyse IA + recherche en parallèle...`, moodLabel);
 
+            // Point 10 : incrémenter rerollCount AVANT le bloc parallèle
+            // → extractMetadata et getDeepRecommendations voient le bon compteur
             if (isReroll) store.rerollCount++;
 
-            setStep(2, isEn ? '🔍 Searching the film database...' : '🔍 Recherche dans la base de films...');
+            const hasProviderFilter = (store.preferredPlatforms || []).length > 0;
+            const userPlatforms = store.preferredPlatforms || [];
 
-            // ── ÉTAPE 2 : TMDb — 3 sources à poids égal ──
-            // Toutes les sources contribuent au même pool, le scorer IA décide ensuite.
-            // Pas de priorité entre sources — évite que les suggestions IA dominent toujours.
+            const [metadata, [discovered, castDiscoveredRaw], tmdbRecsResult] = await Promise.all([
+                // ── Branche A : OpenAI extractMetadata ──
+                openaiService.extractMetadata(
+                    { ...store.answers, contextLabel, moodLabel, durationLabel, excludeLabels, detectedLanguage, blendedGenreIds },
+                    isReroll,
+                    store.suggestedTitles
+                ),
+                // ── Branche B : TMDB Sources 2 + 2b (Discovery) ──
+                // N'a pas besoin de metadata — utilise directement blendedGenreIds
+                Promise.all([
+                    tmdbService.getAdvancedDiscovery(
+                        { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds, _userPlatforms: userPlatforms },
+                        {}, isReroll, isReroll ? store.rerollCount + 1 : 1, []
+                    ),
+                    hasProviderFilter
+                        ? tmdbService.getAdvancedDiscovery(
+                            { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: userPlatforms, rerollVariant: 'different_angle' },
+                            {}, true, Math.floor(Math.random() * 4) + 2, []
+                          )
+                        : adnCastIds.length > 0
+                            ? tmdbService.getAdvancedDiscovery(
+                                { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: [] },
+                                {}, false, 1, adnCastIds
+                              )
+                            : Promise.resolve([])
+                ]),
+                // ── Branche C : TMDB Source 1 (recs depuis films de référence) ──
+                (!hasProviderFilter && store.answers.lastLovedMovies?.length > 0)
+                    ? tmdbService.getRecommendations(store.answers.lastLovedMovies.map(m => m.id))
+                    : Promise.resolve([])
+            ]);
+
+            store.aiAnalysis = metadata;
+            if (metadata.cultural_universe) console.log(`🌍 Univers culturel détecté :`, metadata.cultural_universe);
 
             let candidates = [];
             const addUnique = (films) => {
@@ -1471,58 +1508,28 @@ const App = {
                 }
             };
 
-            // SOURCE 1 : Recommendations TMDb depuis les films de référence
-            // Si l'utilisateur a des plateformes sélectionnées → skip Source 1
-            // (/recommendations TMDB ne supporte pas with_watch_providers)
-            // → Source 2 couvre déjà ce rôle avec le filtre plateforme + blendedGenreIds
-            const hasProviderFilter = (store.preferredPlatforms || []).length > 0;
-            if (!hasProviderFilter && store.answers.lastLovedMovies?.length > 0) {
-                const refIds = store.answers.lastLovedMovies.map(m => m.id);
-                const tmdbRecs = await tmdbService.getRecommendations(refIds);
-                addUnique(tmdbRecs);
-                console.log(`🎯 ${tmdbRecs.length} candidats via ADN TMDb`);
+            // Fusionner les résultats des 3 branches
+            if (tmdbRecsResult.length > 0) {
+                addUnique(tmdbRecsResult);
+                console.log(`🎯 ${tmdbRecsResult.length} candidats via ADN TMDb`);
             }
-
-            // SOURCE 2 + 2b en PARALLÈLE (A3-fix : séquentiel → Promise.all = -2s de temps)
-            // SOURCE 2 : Discovery générale (genre blend + époque + langue + keywords)
-            // SOURCE 2b : si plateformes sélectionnées → 2e appel avec page différente pour enrichir le pool
-            //             sinon → Discovery par acteurs ADN
-            const userPlatforms = store.preferredPlatforms || [];
-            const [discovered, castDiscoveredRaw] = await Promise.all([
-                tmdbService.getAdvancedDiscovery(
-                    { ...store.answers, detectedLanguage, adnKeywordIds, blendedGenreIds, _userPlatforms: userPlatforms },
-                    metadata, isReroll, store.rerollCount + 1, []
-                ),
-                hasProviderFilter
-                    // Plateformes actives : 2e passe Discovery avec page aléatoire pour + de variété
-                    ? tmdbService.getAdvancedDiscovery(
-                        { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: userPlatforms, rerollVariant: 'different_angle' },
-                        {}, true, Math.floor(Math.random() * 4) + 2, []
-                      )
-                    : adnCastIds.length > 0
-                        ? tmdbService.getAdvancedDiscovery(
-                            { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: [] },
-                            {}, false, 1, adnCastIds
-                          )
-                        : Promise.resolve([])
-            ]);
             addUnique(discovered);
             if (castDiscoveredRaw.length > 0) {
                 addUnique(castDiscoveredRaw);
                 console.log(`🎭 ${castDiscoveredRaw.length} candidats via cast ADN`);
             }
 
-            // SOURCE 3 : Suggestions précises de l'IA (enrichissement du pool)
-            // Si plateformes actives → on n'ajoute les suggestions IA que si elles
-            // sont déjà dans le pool Netflix (évite les films hors-plateforme)
+            setStep(2, isEn ? '🔍 Refining with AI suggestions...' : '🔍 Affinement avec suggestions IA...');
+
+            // SOURCE 3 : Suggestions précises de l'IA (nécessite metadata — s'exécute après)
             if (metadata.specific_suggestions?.length > 0) {
                 const searches = await Promise.all(
                     metadata.specific_suggestions.map(suggTitle => tmdbService.searchMovies(suggTitle).catch(() => null))
                 );
-                const aiResults = searches.map(d => d?.results?.[0]).filter(Boolean);
+                const aiResults = searches.map(d => d?.results?.[0]).filter(Boolean)
+                    .filter(f => !langFilterSet || !f.original_language || langFilterSet.has(f.original_language));
                 const _activePlatforms = (store.preferredPlatforms || []).filter(p => p !== 'any');
                 if (_activePlatforms.length > 0) {
-                    // Garder seulement les films IA déjà présents dans le pool filtré Netflix
                     const poolIds = new Set(candidates.map(c => Number(c.id)));
                     addUnique(aiResults.filter(f => poolIds.has(Number(f.id))));
                 } else {
@@ -2057,13 +2064,14 @@ const App = {
                     console.warn(`⛔ Langue rejetée (details TMDB) : ${details.title} (${details.original_language}) — filtre: ${[...langFilterSet].join(',')}`);
                     continue;
                 }
-                // ✅ Double-vérification via spoken_languages (corrige erreurs TMDB original_language)
-                // Ex: ¿Quieres ser mi hijo? classé 'en' dans TMDB alors que film espagnol
-                if (store.answers.language === 'en' && details.spoken_languages?.length > 0) {
+                // ✅ Double-vérification via spoken_languages pour TOUTES les langues explicites
+                // Corrige les erreurs de classification TMDB (ex: film espagnol taggé 'en')
+                if (langFilterSet && store.answers.language && store.answers.language !== 'any'
+                    && details.spoken_languages?.length > 0) {
                     const spoken = details.spoken_languages.map(l => l.iso_639_1);
-                    // Film sans aucun dialogue anglais → rejeté même si TMDB dit 'en'
-                    if (!spoken.includes('en')) {
-                        console.warn(`⛔ spoken_languages : ${details.title} (${spoken.join(',')}) — aucun anglais, rejeté`);
+                    const hasMatch = [...langFilterSet].some(lang => spoken.includes(lang));
+                    if (!hasMatch) {
+                        console.warn(`⛔ spoken_languages : ${details.title} (${spoken.join(',')}) — aucune langue du filtre [${[...langFilterSet].join(',')}], rejeté`);
                         continue;
                     }
                 }
@@ -2169,10 +2177,16 @@ const App = {
 
             if (!finalMovies.length) throw new Error("Impossible de récupérer les détails des films");
 
-            // Si toujours < 3 malgré tout (pool IA trop restreint), relancer une fois
+            // Si toujours < 3 malgré tout (pool IA trop restreint), relancer une fois max
+            // Point 4 : compteur anti-boucle infinie (max 2 tentatives auto)
             if (finalMovies.length < 3 && !isReroll) {
-                console.warn(`⚠️ Seulement ${finalMovies.length} film(s) — nouveau tirage`);
-                return this.processResults(true);
+                store._autoRetryCount = (store._autoRetryCount || 0) + 1;
+                if (store._autoRetryCount <= 2) {
+                    console.warn(`⚠️ Seulement ${finalMovies.length} film(s) — nouveau tirage (tentative ${store._autoRetryCount}/2)`);
+                    return this.processResults(true);
+                } else {
+                    console.warn(`⛔ Max tentatives atteint — affichage partiel (${finalMovies.length} film(s))`);
+                }
             }
 
             // ── Sauvegarder les films exacts pour le partage Duo ──
@@ -2247,7 +2261,7 @@ const App = {
                 animation:fadeIn 0.5s ease;text-align:center;`;
             const platformCount = store.preferredPlatforms?.length || 0;
             badge.innerHTML = hasFavGenres
-                ? t('results.perso').replace('${n}', store.answers._userFavGenres.length) + (platformCount > 0 ? ` · ${platformCount} plateforme${platformCount > 1 ? 's' : ''}` : '')
+                ? t('results.perso').replace('${n}', store.answers._userFavGenres.length) + (platformCount > 0 ? ` · ${platformCount} ${t('results.platform')}${getLang() === 'fr' && platformCount > 1 ? 's' : ''}` : '')
                 : t('results.perso2');
             if (resultsTitle) resultsTitle.after(badge);
         }
@@ -2580,7 +2594,7 @@ const App = {
                     ? `<button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
                         ${t('results.reroll')}${(!isLoggedIn || isPremium)
                             ? ''
-                            : ` <span class="reroll-counter">${rerollsLeft} restant${rerollsLeft > 1 ? 's' : ''}</span>`}
+                            : ` <span class="reroll-counter">${rerollsLeft} ${t('results.reroll.left')}${getLang() === 'fr' && rerollsLeft > 1 ? 's' : ''}</span>`}
                        </button>
                        ${store.rerollCount === 0
                         ? `<div class="reroll-hint-badge">
@@ -3281,7 +3295,7 @@ const App = {
         // Mettre à jour le subtitle
         const sub = document.getElementById('watchlist-subtitle');
         if (sub) sub.textContent = store.watchlist.length > 0
-            ? `${store.watchlist.length} film${store.watchlist.length > 1 ? 's' : ''} sauvegardé${store.watchlist.length > 1 ? 's' : ''}`
+            ? `${store.watchlist.length} film${store.watchlist.length > 1 ? 's' : ''} ${t('watchlist.saved')}${getLang() === 'fr' && store.watchlist.length > 1 ? 's' : ''}`
             : t('watchlist.subtitle');
 
         if (store.watchlist.length === 0) {
@@ -3439,23 +3453,23 @@ const App = {
             if (msgEl) { msgEl.textContent = text; msgEl.style.color = color; msgEl.style.display = 'block'; }
         };
 
-        if (!newPwd || newPwd.length < 6) return showMsg('Le mot de passe doit faire au moins 6 caractères.', '#E50914');
-        if (newPwd !== confirm) return showMsg('Les deux mots de passe ne correspondent pas.', '#E50914');
+        if (!newPwd || newPwd.length < 6) return showMsg(t('profile.pwd.min'), '#E50914');
+        if (newPwd !== confirm) return showMsg(t('profile.pwd.mismatch'), '#E50914');
 
         btn.disabled    = true;
-        btn.textContent = '⏳ Mise à jour...';
+        btn.textContent = t('profile.pwd.updating');
 
         try {
             const { authService } = await import('./services/supabase.js?v=10');
             await authService.updatePassword(newPwd);
-            showMsg('✅ Mot de passe mis à jour avec succès !', '#46d369');
+            showMsg(t('profile.pwd.success'), '#46d369');
             document.getElementById('profil-pwd-new').value     = '';
             document.getElementById('profil-pwd-confirm').value = '';
         } catch(err) {
-            showMsg('Erreur : ' + err.message, '#E50914');
+            showMsg(t('profile.pwd.error') + err.message, '#E50914');
         } finally {
             btn.disabled    = false;
-            btn.textContent = '🔒 Mettre à jour le mot de passe';
+            btn.textContent = t('profile.pwd.btn');
         }
     },
 
@@ -3781,14 +3795,14 @@ const App = {
 
         if (!isLoggedIn) {
             if (icon)    icon.textContent    = '🎬';
-            if (title)   title.textContent   = 'Encore plus de films !';
-            if (sub)     sub.textContent     = 'Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.';
-            if (ctaPrim) { ctaPrim.textContent = 'Créer un compte gratuit'; ctaPrim.onclick = () => openAuthTab('tab-signup'); }
-            if (ctaSec)  { ctaSec.style.display = 'block'; ctaSec.textContent = 'J\'ai déjà un compte'; ctaSec.onclick = () => openAuthTab('tab-signin'); }
+            if (title)   title.textContent   = t('paywall.more.title');
+            if (sub)     sub.textContent     = t('paywall.sub');
+            if (ctaPrim) { ctaPrim.textContent = t('paywall.cta'); ctaPrim.onclick = () => openAuthTab('tab-signup'); }
+            if (ctaSec)  { ctaSec.style.display = 'block'; ctaSec.textContent = t('paywall.signin.btn'); ctaSec.onclick = () => openAuthTab('tab-signin'); }
         } else {
             if (icon)    icon.textContent    = '⚡';
-            if (title)   title.textContent   = 'Rerolls illimités';
-            if (sub)     sub.textContent     = 'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite.';
+            if (title)   title.textContent   = t('paywall.reroll.title');
+            if (sub)     sub.textContent     = t('paywall.reroll.sub');
             if (ctaPrim) { ctaPrim.textContent = t('paywall.premium'); ctaPrim.onclick = () => { this.hidePaywallModal(); this.showPricingModal(); }; }
             if (ctaSec)  ctaSec.style.display = 'none';
         }
@@ -3835,7 +3849,7 @@ const App = {
         // Désactiver uniquement le bouton cliqué pendant la redirection
         if (clickedBtn) {
             clickedBtn.disabled = true;
-            clickedBtn.innerHTML = '<span class="btn-spinner"></span><span>Redirection...</span>';
+            clickedBtn.innerHTML = `<span class="btn-spinner"></span><span>${t('stripe.redirecting')}</span>`;
             clickedBtn.classList.add('pricing-cta--loading');
         }
 
@@ -3853,7 +3867,7 @@ const App = {
             const data = await res.json();
 
             if (!res.ok || !data.url) {
-                throw new Error(data.error || 'Erreur lors de la création du paiement');
+                throw new Error(data.error || t('stripe.error.create'));
             }
 
             // Rediriger vers Stripe Checkout
@@ -3864,13 +3878,13 @@ const App = {
             // Réactiver le bouton cliqué en cas d'erreur
             if (clickedBtn) {
                 clickedBtn.disabled = false;
-                clickedBtn.innerHTML = 'Choisir';
+                clickedBtn.innerHTML = t('stripe.choose');
                 clickedBtn.classList.remove('pricing-cta--loading');
             }
             // Afficher un message d'erreur simple
             const footer = document.querySelector('.pricing-footer');
             if (footer) {
-                footer.textContent = `Erreur : ${err.message}`;
+                footer.textContent = t('stripe.error.prefix') + err.message;
                 footer.style.color = '#E50914';
             }
         }
@@ -3886,7 +3900,7 @@ const App = {
 
         if (status === 'success') {
             // Toast immédiat
-            this._showToast('🎉 Paiement confirmé ! Activation du Premium en cours...', 'success', 4000);
+            this._showToast(t('stripe.toast.confirmed'), 'success', 4000);
 
             // Attendre que le webhook Stripe ait mis à jour Supabase (jusqu'à 5s)
             let attempts = 0;
@@ -3900,7 +3914,7 @@ const App = {
                         store.currentUser = freshUser;
                         const { authUI } = await import('./modules/auth.js?v=26');
                         await authUI.onLogin(freshUser);
-                        this._showToast('⚡ Premium activé ! Bienvenue dans CineaMatch Premium.', 'success', 5000);
+                        this._showToast(t('stripe.toast.activated'), 'success', 5000);
                     } else if (attempts < 5) {
                         // Réessayer dans 2 secondes
                         setTimeout(pollPremium, 2000);
@@ -3912,7 +3926,7 @@ const App = {
             };
             setTimeout(pollPremium, 2000);
         } else if (status === 'cancel') {
-            this._showToast('Paiement annulé. Tu peux reprendre quand tu veux !', 'info', 4000);
+            this._showToast(t('stripe.toast.cancelled'), 'info', 4000);
         }
     },
 
@@ -4019,7 +4033,7 @@ window.addEventListener('pageshow', (e) => {
     if (e.persisted) {
         document.querySelectorAll('.pricing-cta').forEach(btn => {
             btn.disabled = false;
-            btn.innerHTML = 'Choisir';
+            btn.innerHTML = t('stripe.choose');
             btn.classList.remove('pricing-cta--loading');
         });
     }

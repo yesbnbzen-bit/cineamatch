@@ -251,6 +251,40 @@ export const TRANSLATIONS = {
         'error.title':       'Oups, quelque chose a mal tourné',
         'error.sub':         'L\'IA n\'a pas pu terminer ton analyse.',
         'error.retry':       '↺ Recommencer',
+
+        // Multi-sélection hints
+        'q.hint.empty':      'Choisis jusqu\'à ${max} · ou passe directement',
+        'q.hint.select':     'Sélectionne tes choix',
+        'q.hint.complete':   '✓ Sélection complète — appuie sur Continuer',
+
+        // Reroll counter
+        'results.reroll.left': 'restant',
+
+        // Watchlist subtitle
+        'watchlist.saved':   'sauvegardé',
+
+        // Platform badge
+        'results.platform':  'plateforme',
+
+        // Profil — changement de mot de passe
+        'profile.pwd.min':      'Le mot de passe doit faire au moins 6 caractères.',
+        'profile.pwd.mismatch': 'Les deux mots de passe ne correspondent pas.',
+        'profile.pwd.updating': '⏳ Mise à jour...',
+        'profile.pwd.success':  '✅ Mot de passe mis à jour avec succès !',
+        'profile.pwd.btn':      '🔒 Mettre à jour le mot de passe',
+        'profile.pwd.error':    'Erreur : ',
+
+        // Paywall
+        'paywall.more.title':   'Encore plus de films !',
+
+        // Stripe
+        'stripe.redirecting':     'Redirection...',
+        'stripe.choose':          'Choisir',
+        'stripe.error.create':    'Erreur lors de la création du paiement',
+        'stripe.error.prefix':    'Erreur : ',
+        'stripe.toast.confirmed': '🎉 Paiement confirmé ! Activation du Premium en cours...',
+        'stripe.toast.activated': '⚡ Premium activé ! Bienvenue dans CineaMatch Premium.',
+        'stripe.toast.cancelled': 'Paiement annulé. Tu peux reprendre quand tu veux !',
     },
 
     en: {
@@ -501,6 +535,40 @@ export const TRANSLATIONS = {
         'error.title':       'Oops, something went wrong',
         'error.sub':         'The AI couldn\'t complete your analysis.',
         'error.retry':       '↺ Try again',
+
+        // Multi-selection hints
+        'q.hint.empty':      'Pick up to ${max} · or skip',
+        'q.hint.select':     'Select your choices',
+        'q.hint.complete':   '✓ Complete — press Continue',
+
+        // Reroll counter
+        'results.reroll.left': 'left',
+
+        // Watchlist subtitle
+        'watchlist.saved':   'saved',
+
+        // Platform badge
+        'results.platform':  'platform',
+
+        // Profile — password update
+        'profile.pwd.min':      'Password must be at least 6 characters.',
+        'profile.pwd.mismatch': 'Passwords don\'t match.',
+        'profile.pwd.updating': '⏳ Updating...',
+        'profile.pwd.success':  '✅ Password updated successfully!',
+        'profile.pwd.btn':      '🔒 Update password',
+        'profile.pwd.error':    'Error: ',
+
+        // Paywall
+        'paywall.more.title':   'More films for you!',
+
+        // Stripe
+        'stripe.redirecting':     'Redirecting...',
+        'stripe.choose':          'Choose',
+        'stripe.error.create':    'Error creating payment',
+        'stripe.error.prefix':    'Error: ',
+        'stripe.toast.confirmed': '🎉 Payment confirmed! Activating Premium...',
+        'stripe.toast.activated': '⚡ Premium activated! Welcome to CineaMatch Premium.',
+        'stripe.toast.cancelled': 'Payment cancelled. Come back whenever you\'re ready!',
     }
 };
 
