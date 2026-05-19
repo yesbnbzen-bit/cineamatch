@@ -336,8 +336,10 @@ const App = {
 
     // ── Films populaires sur streaming (homepage) ──
     async _loadTrending() {
+        // En prod, le proxy gère la clé — on vérifie quand même en dev
         const key = store.apiKeys.tmdb;
-        if (!key) return;
+        const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        if (!IS_PROD && !key) return;
 
         const section = document.getElementById('trending-section');
         if (!section) return;
@@ -345,9 +347,10 @@ const App = {
         try {
             const lang = tmdbService.lang;
             // Deux pages pour avoir 40 films disponibles → on prend les 20 avec poster
+            // ✅ Sécurité : passe par tmdbUrl() → clé gérée côté proxy, jamais exposée
             const [r1, r2] = await Promise.all([
-                fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${key}&language=${lang}&sort_by=popularity.desc&with_watch_monetization_types=flatrate&watch_region=FR&vote_count.gte=200&page=1`),
-                fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${key}&language=${lang}&sort_by=popularity.desc&with_watch_monetization_types=flatrate&watch_region=FR&vote_count.gte=200&page=2`)
+                fetch(tmdbUrl('/discover/movie', { language: lang, sort_by: 'popularity.desc', with_watch_monetization_types: 'flatrate', watch_region: 'FR', 'vote_count.gte': '200', page: '1' }), { cache: 'no-store' }),
+                fetch(tmdbUrl('/discover/movie', { language: lang, sort_by: 'popularity.desc', with_watch_monetization_types: 'flatrate', watch_region: 'FR', 'vote_count.gte': '200', page: '2' }), { cache: 'no-store' })
             ]);
             const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
             const all = [...(d1.results || []), ...(d2.results || [])];
@@ -432,8 +435,9 @@ const App = {
     },
 
     async _openTrendingMovie(movieId) {
-        const key = store.apiKeys.tmdb;
-        if (!key) return;
+        // ✅ Sécurité : proxy tmdbUrl() — clé jamais exposée dans les requêtes réseau
+        const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+        if (!IS_PROD && !store.apiKeys.tmdb) return;
         try {
             // Afficher un écran de chargement rapide
             ui.switchView('loading');
@@ -441,7 +445,7 @@ const App = {
             if (loadingText) loadingText.textContent = t('loading.movie');
 
             const res = await fetch(
-                `https://api.themoviedb.org/3/movie/${movieId}?api_key=${key}&language=${tmdbService.lang}&append_to_response=watch/providers`
+                tmdbUrl(`/movie/${movieId}`, { language: tmdbService.lang, append_to_response: 'watch/providers' })
             );
             const m = await res.json();
 
@@ -1511,7 +1515,7 @@ const App = {
             // sont déjà dans le pool Netflix (évite les films hors-plateforme)
             if (metadata.specific_suggestions?.length > 0) {
                 const searches = await Promise.all(
-                    metadata.specific_suggestions.map(t => tmdbService.searchMovies(t).catch(() => null))
+                    metadata.specific_suggestions.map(suggTitle => tmdbService.searchMovies(suggTitle).catch(() => null))
                 );
                 const aiResults = searches.map(d => d?.results?.[0]).filter(Boolean);
                 const _activePlatforms = (store.preferredPlatforms || []).filter(p => p !== 'any');
