@@ -10,7 +10,7 @@ const IS_PROD = window.location.hostname !== 'localhost' && window.location.host
 // Construit l'URL TMDB selon l'environnement
 // En prod : /api/tmdb?path=/movie/123&language=fr-FR  (clé gérée par le Worker)
 // En dev  : https://api.themoviedb.org/3/movie/123?api_key=XXX&language=fr-FR
-function tmdbUrl(path, params = {}) {
+export function tmdbUrl(path, params = {}) {
     if (IS_PROD) {
         const qs = new URLSearchParams({ path, ...params }).toString();
         return `/api/tmdb?${qs}`;
