@@ -232,7 +232,8 @@ const App = {
         // ── Détection URL Personne B — format Supabase (?duo_id=SESSION_ID) ──
         const duoSessionId = new URLSearchParams(location.search).get('duo_id');
         if (duoSessionId) {
-            // Afficher immédiatement un écran de chargement duo — évite l'écran blanc de 7s
+            // Retirer le loader HTML instantané (classe ajoutée avant app.js dans <head>)
+            document.documentElement.classList.remove('duo-link');
             this.injectDuoBg();
             ui.switchView('duo-welcome');
             const welcomeCard = document.querySelector('#duo-welcome .duo-card');
