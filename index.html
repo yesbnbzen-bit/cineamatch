@@ -207,6 +207,50 @@
         }
     }
     </style>
+
+    <!-- ── Écran de chargement instantané pour les liens Duo (?duo_id=) ──
+         Ce script s'exécute AVANT le chargement de app.js (ES modules).
+         Il évite l'écran noir de 5-7s sur mobile. -->
+    <script>
+    (function() {
+        var duoId = new URLSearchParams(location.search).get('duo_id');
+        if (!duoId) return;
+        // Injecter immédiatement un overlay de chargement dans le body
+        // (le body n'est pas encore parsé, on utilise document.write pour rester dans le <head>)
+        var style = [
+            '#duo-instant-loader{position:fixed;inset:0;z-index:99999;',
+            'background:linear-gradient(135deg,#0a0a0a 0%,#1a0505 100%);',
+            'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;}',
+            '#duo-instant-loader .dil-icon{font-size:3.5rem;animation:dil-float 2s ease-in-out infinite;}',
+            '#duo-instant-loader .dil-text{color:rgba(255,255,255,0.5);font-family:-apple-system,sans-serif;',
+            'font-size:1rem;letter-spacing:0.02em;}',
+            '#duo-instant-loader .dil-bar{width:120px;height:3px;background:rgba(255,255,255,0.1);',
+            'border-radius:99px;overflow:hidden;}',
+            '#duo-instant-loader .dil-bar-fill{height:100%;width:30%;background:#E50914;',
+            'border-radius:99px;animation:dil-progress 1.4s ease-in-out infinite;}',
+            '@keyframes dil-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}',
+            '@keyframes dil-progress{0%{transform:translateX(-100%)}100%{transform:translateX(500%)}}'
+        ].join('');
+        var el = document.createElement('div');
+        el.id = 'duo-instant-loader';
+        el.innerHTML = '<style>' + style + '</style>'
+            + '<div class="dil-icon">🎬</div>'
+            + '<div class="dil-text">Chargement de la session…</div>'
+            + '<div class="dil-bar"><div class="dil-bar-fill"></div></div>';
+        // Attacher au body dès qu'il est disponible
+        if (document.body) {
+            document.body.appendChild(el);
+        } else {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.appendChild(el);
+                // Auto-supprimer après 15s (sécurité)
+                setTimeout(function(){ el.remove(); }, 15000);
+            });
+        }
+        // Auto-supprimer dès que app.js prend la main (via l'événement view-change)
+        document.addEventListener('cinematch:view-change', function() { el.remove(); }, { once: true });
+    })();
+    </script>
 </head>
 
 <body class="dark-theme">
@@ -941,7 +985,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=449"></script>
+    <script type="module" src="app.js?v=450"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=27';
         authUI.init();
