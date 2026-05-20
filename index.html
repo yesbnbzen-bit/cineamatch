@@ -7,7 +7,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#0a0a0a">
+    <!-- Fond sombre immédiat — avant même que style.css se charge -->
+    <style>html,body{background:#0a0a0a;margin:0}</style>
     <title>CineaMatch – Trouve ton film parfait avec l'IA en 30 secondes</title>
     <meta name="description" content="Fini de scroller pendant 1h sans décider. CineaMatch analyse tes goûts et te recommande le film parfait en quelques secondes. Gratuit, sans inscription.">
     <meta name="keywords" content="recommandation film, trouver un film, IA film, quel film regarder, film du soir, recommandation cinéma, intelligence artificielle">
@@ -93,10 +95,13 @@
       ]
     }
     </script>
+    <link rel="preload" href="style.css?v=367" as="style">
     <link rel="stylesheet" href="style.css?v=367">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts en non-bloquant (display=swap + media trick) -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet"></noscript>
     <style>
     /* ── Mobile ≤ 600px ── */
     @media (max-width: 600px) {
@@ -973,7 +978,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=453"></script>
+    <script type="module" src="app.js?v=454"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=27';
         authUI.init();
