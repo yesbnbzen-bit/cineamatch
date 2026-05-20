@@ -208,43 +208,12 @@
     }
     </style>
 
-    <!-- ── Loader instantané duo : classe sur <html> settée AVANT le body ── -->
+    <!-- ── Affiche #duo-welcome immédiatement si lien duo (?duo_id=) ──
+         app.js n'a pas encore chargé : on force l'affichage via CSS class sur <html> -->
     <script>if(new URLSearchParams(location.search).get('duo_id'))document.documentElement.classList.add('duo-link');</script>
-    <style>
-        /* Caché par défaut, visible uniquement quand duo-link est présent sur <html> */
-        #duo-instant-loader { display: none; }
-        html.duo-link #duo-instant-loader {
-            display: flex;
-            position: fixed; inset: 0; z-index: 99999;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0505 100%);
-            flex-direction: column; align-items: center; justify-content: center; gap: 1.4rem;
-        }
-        #duo-instant-loader .dil-icon { font-size: 3.5rem; animation: dil-float 2s ease-in-out infinite; }
-        #duo-instant-loader .dil-label {
-            color: rgba(255,255,255,0.55); font-family: -apple-system, sans-serif;
-            font-size: 1rem; letter-spacing: 0.02em;
-        }
-        #duo-instant-loader .dil-bar {
-            width: 140px; height: 3px; background: rgba(255,255,255,0.1);
-            border-radius: 99px; overflow: hidden;
-        }
-        #duo-instant-loader .dil-bar-fill {
-            height: 100%; background: #E50914; border-radius: 99px;
-            animation: dil-progress 1.4s ease-in-out infinite;
-        }
-        @keyframes dil-float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
-        @keyframes dil-progress { 0%{transform:translateX(-100%)} 100%{transform:translateX(500%)} }
-    </style>
 </head>
 
 <body class="dark-theme">
-
-    <!-- Loader instantané pour les liens Duo — visible dès le 1er pixel si ?duo_id= dans l'URL -->
-    <div id="duo-instant-loader" aria-hidden="true">
-        <div class="dil-icon">🎬</div>
-        <div class="dil-label">Chargement de la session…</div>
-        <div class="dil-bar"><div class="dil-bar-fill"></div></div>
-    </div>
 
     <div id="app">
         <header class="navbar">
@@ -977,7 +946,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=451"></script>
+    <script type="module" src="app.js?v=452"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=27';
         authUI.init();

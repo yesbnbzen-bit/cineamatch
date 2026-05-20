@@ -3975,6 +3975,17 @@ body.duo-active {
     min-height: calc(100vh - 100px);
 }
 
+/* Affiche #duo-welcome immédiatement si ?duo_id= dans l'URL
+   (avant que app.js charge) — élimine l'écran noir sur mobile */
+html.duo-link #duo-welcome {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    animation: none;
+}
+
 .duo-card {
     background: rgba(16, 15, 18, 0.97);
     backdrop-filter: blur(48px);
