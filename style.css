@@ -335,9 +335,9 @@ main {
 #hero.active {
     justify-content: flex-start;
     align-items: center;
-    min-height: calc(100vh - 80px);
-    padding-top: clamp(100px, 16vh, 170px);
-    padding-bottom: 3rem;
+    min-height: auto;
+    padding-top: clamp(60px, 8vh, 100px);
+    padding-bottom: 2rem;
 }
 
 #loading.active {
@@ -6155,9 +6155,9 @@ html.duo-link #duo-welcome {
     }
 
     #hero.active {
-        min-height: 100vh;
-        padding-top: 75px;
-        padding-bottom: 2rem;
+        min-height: auto;
+        padding-top: 56px;
+        padding-bottom: 1.5rem;
         padding-left: 20px;
         padding-right: 20px;
         justify-content: flex-start;
@@ -6864,13 +6864,13 @@ html.duo-link #duo-welcome {
        4. HERO
     ───────────────────────────────────────────── */
     #hero.active {
-        padding-top: calc(148px + env(safe-area-inset-top, 0px));
-        padding-bottom: 56px;
+        padding-top: calc(72px + env(safe-area-inset-top, 0px));
+        padding-bottom: 2rem;
         padding-left: 20px;
         padding-right: 20px;
         align-items: center;
         justify-content: flex-start;
-        min-height: 100dvh;
+        min-height: auto;
         box-sizing: border-box;
     }
 
