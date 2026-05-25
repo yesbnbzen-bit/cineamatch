@@ -1215,6 +1215,75 @@ Applique le scoring dynamique, garantis la diversité du top 3, et génère des 
     },
 
     // ─────────────────────────────────────────────────────────────
+    //  GÉNÈRE des raisons personnalisées pour les films sans match_reason
+    //  Un seul appel IA pour tous les films concernés (max 3)
+    // ─────────────────────────────────────────────────────────────
+    async generateMissingReasons(movies, userProfile, lang = 'fr') {
+        if (!this._resolveKey()) return;
+        const targets = movies.filter(m => !m.match_reason);
+        if (!targets.length) return;
+
+        const isFr = lang !== 'en';
+        const mood = userProfile?.moodLabel || userProfile?.mood || '';
+        const context = userProfile?.contextLabel || userProfile?.context || '';
+        const lovedMovies = (userProfile?.lastLovedMovies || [])
+            .map(m => m?.title || (typeof m === 'string' ? m : '')).filter(Boolean).slice(0, 3).join(', ');
+
+        const filmList = targets.map((m, i) => {
+            const genres = (m.genres || []).map(g => g.name).filter(Boolean).join(', ');
+            const director = m.credits?.crew?.find(p => p.job === 'Director')?.name || '';
+            const cast = m.credits?.cast?.slice(0, 3).map(a => a.name).join(', ') || '';
+            const score = m.vote_average?.toFixed(1) || '?';
+            const year = m.release_date?.split('-')[0] || '?';
+            const overview = m.overview?.slice(0, 200) || '';
+            return `Film ${i+1}: "${m.title}" (${year}) | Genres: ${genres} | Réalisateur: ${director} | Cast: ${cast} | Note: ${score}/10\nSynopsis: ${overview}`;
+        }).join('\n\n');
+
+        const prompt = isFr
+            ? `Tu es un critique de cinéma expert. Un utilisateur cherche ${mood ? `un film pour "${mood}"` : 'un film'} ${context ? `dans le contexte "${context}"` : ''}${lovedMovies ? `. Ses films de référence : ${lovedMovies}` : ''}.
+
+Pour chaque film ci-dessous, génère une raison personnalisée de 2 phrases max (max 200 caractères) expliquant POURQUOI ce film spécifique correspond à ce profil. Sois précis, mentionne des éléments concrets du film (réalisateur, atmosphère, thème unique). Ne sois jamais générique.
+
+${filmList}
+
+Réponds en JSON strict : {"reasons": ["raison film 1", "raison film 2", ...]}`
+            : `You are an expert film critic. A user is looking for ${mood ? `a film for "${mood}"` : 'a film'} ${context ? `in the context "${context}"` : ''}${lovedMovies ? `. Their reference films: ${lovedMovies}` : ''}.
+
+For each film below, generate a personalized 2-sentence reason (max 200 chars) explaining WHY this specific film matches this profile. Be precise, mention concrete elements (director, atmosphere, unique theme). Never be generic.
+
+${filmList}
+
+Reply in strict JSON: {"reasons": ["reason film 1", "reason film 2", ...]}`;
+
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 12000);
+            const resp = await fetch(OPENAI_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this._resolveKey()}` },
+                signal: controller.signal,
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.4,
+                    response_format: { type: 'json_object' },
+                    max_tokens: 600
+                })
+            });
+            clearTimeout(timeout);
+            if (!resp.ok) return;
+            const data = await resp.json();
+            const parsed = JSON.parse(data.choices[0].message.content);
+            const reasons = parsed.reasons || [];
+            targets.forEach((m, i) => {
+                if (reasons[i]) m.match_reason = reasons[i];
+            });
+        } catch(e) {
+            console.warn('generateMissingReasons failed (non-bloquant):', e.message);
+        }
+    },
+
+    // ─────────────────────────────────────────────────────────────
     //  DIVERSITÉ FILTER : Garantit que le top 3 est varié
     //  Si les 3 premiers ont le même "diversity_tag" ou les mêmes
     //  genres principaux, on intercale le meilleur film d'un autre registre.

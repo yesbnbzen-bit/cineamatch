@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=65';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=66';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -2258,6 +2258,12 @@ const App = {
                         });
                     }
                 } catch(e) {}
+            }
+
+            // ── Compléter les match_reasons manquantes (films rescue/fallback) ──
+            const missingReasons = finalMovies.filter(m => !m.match_reason);
+            if (missingReasons.length > 0) {
+                await openaiService.generateMissingReasons(finalMovies, store.answers, getLang());
             }
 
             this.renderResults(finalMovies);
