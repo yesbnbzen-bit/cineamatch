@@ -1605,7 +1605,7 @@ const App = {
 
             // Époque : si la session est neutre ('any'), utiliser la préférence sauvegardée
             const PREF_ERA_MAP = {
-                'Récent (2010+)':           { min: 2010, max: 9999 },
+                'Récent (2010+)':           { min: 2020, max: 9999 }, // cohérent avec questionnaire ('new' = 2020+)
                 'Années 90-2000':           { min: 1990, max: 2009 },
                 'Classiques (avant 1990)':  { min: 0,    max: 1989 },
             };
@@ -1877,17 +1877,20 @@ const App = {
             if (safeCandidates.length < 6) {
                 store._relaxedSearch = 'epoque';
                 setStep(2, isEn ? '📅 Expanding to all eras...' : '📅 Élargissement toutes époques...');
-                console.log(`⚠️ Pool toujours petit, fallback L3 sans filtre époque NI langue`);
+                // L3 : relâche les PLATEFORMES mais GARDE l'époque → films récents sans contrainte de plateforme
+                console.log(`⚠️ Pool toujours petit, fallback L3 : relâche plateforme, CONSERVE époque`);
                 const fb3 = await tmdbService.getAdvancedDiscovery(
-                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude, _userPlatforms: store.preferredPlatforms || [] },
+                    { mood: store.answers.mood, blendedGenreIds, exclude: store.answers.exclude, _userPlatforms: [] },
                     {}, false, 1, []
                 );
                 for (const f of fb3) {
+                    const year = parseInt(f.release_date?.split('-')[0]) || 0;
                     const genres = f.genre_ids || [];
                     if (lovedMovieIds.includes(Number(f.id))) continue;
                     if (store.suggestedMovieIds.includes(Number(f.id))) continue;
                     if ((store.seenRatedMovieIds || []).includes(Number(f.id))) continue;
-                    // L3 : relâche époque — mais garde la langue si l'utilisateur l'a choisie explicitement
+                    // L3 : GARDE l'époque (priorité sur la plateforme)
+                    if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) continue;
                     if (store.answers.language && store.answers.language !== 'any' && langFilterSet && f.original_language && !langFilterSet.has(f.original_language)) continue;
                     if (effectiveExclusions.length > 0 && genres.some(g => effectiveExclusions.includes(g))) continue;
                     if (moodGenresArray.length > 0 && genres.length > 0 && !moodGenresArray.some(g => genres.includes(g))) continue;
@@ -2368,8 +2371,8 @@ const App = {
                     ? '🌍 No films found in your selected language — showing similar films in other languages'
                     : '🌍 Aucun film trouvé dans la langue choisie — voici des films similaires dans d\'autres langues',
                 epoque: isEn
-                    ? '📅 Not enough recent films found — showing the best matches from all eras'
-                    : '📅 Pas assez de films récents trouvés — voici les meilleures correspondances toutes époques confondues',
+                    ? '📅 Not enough recent films on your platforms — showing films from all eras in this style'
+                    : '📅 Pas assez de films récents sur tes plateformes — voici les meilleures correspondances toutes époques',
                 tout: isEn
                     ? '🎯 Your criteria were very specific — here are the closest films we found in the same spirit'
                     : '🎯 Tes critères étaient très précis — voici les films les plus proches dans le même esprit'
