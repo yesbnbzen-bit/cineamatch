@@ -651,11 +651,12 @@ body.page-ready #hero.active .hero-content .hero-features {
 #watchlist-view.active {
     align-items: flex-start;
     align-self: flex-start;
-    padding-top: calc(72px + 2rem);   /* sous la navbar fixe */
+    padding-top: 2.5rem;
     padding-bottom: 6rem;
-    margin-top: 0;
-    background: var(--bg-color, #0c0c0c);
-    border-radius: 0;
+    margin-top: 1rem;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(229, 9, 20, 0.07) 0%, transparent 65%),
+        var(--bg-color, #0c0c0c);
+    border-radius: 24px;
 }
 
 /* ── Header ── */
@@ -6261,9 +6262,12 @@ html.duo-link #duo-welcome {
 
     #history-view.active,
     #watchlist-view.active {
-        padding-top: calc(72px + 1.5rem);
+        padding-top: calc(64px + 1rem);
         padding-bottom: 3.5rem;
         margin-top: 0;
+        border-radius: 16px;
+        background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(229, 9, 20, 0.06) 0%, transparent 65%),
+            var(--bg-color, #0c0c0c);
         align-self: flex-start;
     }
 
@@ -6469,9 +6473,12 @@ html.duo-link #duo-welcome {
 @media (max-width: 600px) {
     #history-view.active,
     #watchlist-view.active {
-        padding-top: calc(72px + 1.5rem);
+        padding-top: calc(64px + 1rem);
         padding-bottom: 3.5rem;
         margin-top: 0;
+        border-radius: 16px;
+        background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(229, 9, 20, 0.06) 0%, transparent 65%),
+            var(--bg-color, #0c0c0c);
         align-self: flex-start;
     }
 
@@ -7641,11 +7648,13 @@ html.duo-link #duo-welcome {
         padding-right: 16px;
         align-items: stretch;
         align-self: flex-start;
-        border-radius: 0;
+        border-radius: 16px;
         margin: 0;
         width: 100%;
         box-sizing: border-box;
         min-height: auto;
+        background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(229, 9, 20, 0.06) 0%, transparent 65%),
+            var(--bg-color, #0c0c0c);
     }
 
     .history-header {
