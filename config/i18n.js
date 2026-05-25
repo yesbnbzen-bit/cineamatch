@@ -108,7 +108,7 @@ export const TRANSLATIONS = {
         'q.validate':        'Continuer →',
         'q.search.placeholder': 'Tape le titre d\'un film...',
         'q.search.skip':     'Passer →',
-        'q.search.submit':   'Voir mes films →',
+        'q.search.submit':   '🎬 Lancer ma recherche',
         'q.readmore':        'Lire la suite',
         'q.readless':        'Réduire',
 
@@ -139,8 +139,8 @@ export const TRANSLATIONS = {
         'results.redo':              '🔄 Refaire le questionnaire',
         'results.save':      '✓ Enregistré !',
         'results.savebtn':   'Enregistrer',
-        'results.perso':     '✦ Personnalisé · ${n} genres favoris...',
-        'results.perso2':    '✦ Mode Premium — note tes films pour affiner les recommandations',
+        'results.perso':     '🎯 Adapté à tes goûts · ${n} genres analysés',
+        'results.perso2':    '🎯 Recommandations personnalisées — note des films pour affiner encore plus',
 
         // Trailer
         'trailer.search':   '● CHERCHER LA BANDE-ANNONCE',
@@ -412,7 +412,7 @@ export const TRANSLATIONS = {
         'q.validate':        'Continue →',
         'q.search.placeholder': 'Type a film title...',
         'q.search.skip':     'Skip →',
-        'q.search.submit':   'See my films →',
+        'q.search.submit':   '🎬 Start my search',
         'q.readmore':        'Read more',
         'q.readless':        'Collapse',
 
@@ -443,8 +443,8 @@ export const TRANSLATIONS = {
         'results.redo':              '🔄 Redo the questionnaire',
         'results.save':      '✓ Saved!',
         'results.savebtn':   'Save',
-        'results.perso':     '✦ Personalised · ${n} favourite genres...',
-        'results.perso2':    '✦ Premium Mode — rate your films to refine recommendations',
+        'results.perso':     '🎯 Tailored to your taste · ${n} genres analysed',
+        'results.perso2':    '🎯 Personalised recommendations — rate films to refine further',
 
         // Trailer
         'trailer.search':   '● SEARCH TRAILER',
