@@ -4107,8 +4107,7 @@ const App = {
         }, duration);
     },
 
-    // ── Génère une raison automatique personnalisée quand l'IA n'en a pas fourni ──
-    // Utilise les données TMDB + les réponses du questionnaire pour une explication contextualisée
+    // ── Génère une raison unique par film, ancrée dans les données TMDB spécifiques ──
     _autoReason(m) {
         const isEn = getLang() === 'en';
         const GENRE_FR = { 28:'Action', 12:'Aventure', 16:'Animation', 35:'Comédie', 80:'Crime', 99:'Documentaire',
@@ -4121,92 +4120,58 @@ const App = {
         const GENRE_MAP = isEn ? GENRE_EN : GENRE_FR;
 
         const genres = (m.genres || []).map(g => GENRE_MAP[g.id] || g.name).filter(Boolean);
-        const genre = genres[0] || (m.genre_ids || []).map(id => GENRE_MAP[id]).filter(Boolean)[0];
-        const cast = m.credits?.cast?.slice(0, 2).map(a => a.name) || [];
+        const genre  = genres[0] || '';
+        const genre2 = genres[1] || '';
+        const cast   = m.credits?.cast?.slice(0, 2).map(a => a.name) || [];
         const director = m.credits?.crew?.find(p => p.job === 'Director')?.name || '';
-        const year = m.release_date?.split('-')[0] || '';
-        const score = m.vote_average ? m.vote_average.toFixed(1) : '';
+        const year   = m.release_date?.split('-')[0] || '';
+        const score  = m.vote_average ? m.vote_average.toFixed(1) : '';
         const runtime = m.runtime ? `${m.runtime} min` : '';
-        const mood = store.answers?.moodLabel || store.answers?.mood || '';
-        const context = store.answers?.contextLabel || store.answers?.context || '';
-        const lovedMovies = store.answers?.lastLovedMovies || [];
+        const tagline = m.tagline?.trim() || '';
+        const mood   = store.answers?.moodLabel || store.answers?.mood || '';
 
-        // ── Construire une phrase d'accroche basée sur l'ambiance demandée ──
-        const moodHooks_fr = {
-            'frisson': `Si tu cherches à frissonner ce soir`,
-            'peur': `Pour une vraie montée d'adrénaline`,
-            'rire': `Pour passer une soirée légère et fun`,
-            'pleurer': `Prépare les mouchoirs`,
-            'réfléchir': `Pour un film qui fait vraiment réfléchir`,
-            'action': `Pour une montée d'adrénaline garantie`,
-            'romance': `Pour une belle histoire d'amour`,
-            'dépaysement': `Pour voyager sans quitter ton canapé`,
-            'suspense': `Pour rester scotché du début à la fin`,
-        };
-        const moodHooks_en = {
-            'thrill': `If you want a good scare tonight`,
-            'laugh': `For a fun and light evening`,
-            'cry': `Get the tissues ready`,
-            'think': `For a film that will make you think`,
-            'action': `For guaranteed adrenaline`,
-            'romance': `For a beautiful love story`,
-            'escape': `For a journey without leaving your couch`,
-            'suspense': `To stay hooked from start to finish`,
-        };
-        const moodHooks = isEn ? moodHooks_en : moodHooks_fr;
-        const moodKey = Object.keys(moodHooks).find(k => mood?.toLowerCase().includes(k));
-        const moodHook = moodKey ? moodHooks[moodKey] : '';
+        // ── Phrase 1 : UNIQUE à ce film (tagline > réalisateur > combo genre+année+note) ──
+        let sentence1 = '';
+        if (tagline && tagline.length > 8 && tagline.length < 120) {
+            // Tagline intégrée naturellement dans une phrase
+            sentence1 = isEn
+                ? `"${tagline}" — a ${genre ? genre.toLowerCase() : 'film'}${score ? ` rated ${score}/10` : ''}.`
+                : `"${tagline}" — un ${genre ? genre.toLowerCase() : 'film'}${score ? ` noté ${score}/10` : ''}.`;
+        } else if (director && genre) {
+            sentence1 = isEn
+                ? `Directed by ${director}, a ${genre.toLowerCase()}${genre2 ? `/${genre2.toLowerCase()}` : ''} from ${year || 'recent years'}${score ? ` rated ${score}/10` : ''}.`
+                : `Réalisé par ${director}, un ${genre.toLowerCase()}${genre2 ? `/${genre2.toLowerCase()}` : ''} de ${year || 'ces dernières années'}${score ? ` noté ${score}/10` : ''}.`;
+        } else if (genre && year && score) {
+            sentence1 = isEn
+                ? `A ${genre.toLowerCase()}${genre2 ? `/${genre2.toLowerCase()}` : ''} from ${year}, rated ${score}/10 on TMDb.`
+                : `Un ${genre.toLowerCase()}${genre2 ? `/${genre2.toLowerCase()}` : ''} de ${year}, noté ${score}/10 sur TMDb.`;
+        }
 
-        // ── Référence à un film aimé si disponible ──
-        const lovedTitle = lovedMovies[0]?.title || (typeof lovedMovies[0] === 'string' ? lovedMovies[0] : '');
-        const lovedRef = lovedTitle
-            ? (isEn ? `In the same vein as ${lovedTitle}` : `Dans la lignée de ${lovedTitle}`)
+        // ── Phrase 2 : casting + durée, ancrée dans le mood ──
+        let sentence2 = '';
+        const castStr = cast.join(isEn ? ' and ' : ' et ');
+        const moodHint = mood
+            ? (isEn ? `matches your mood for ${mood.toLowerCase()}` : `colle à ton envie de ${mood.toLowerCase()}`)
             : '';
-
-        // ── Infos film ──
-        const castStr = cast.slice(0, 2).join(isEn ? ' and ' : ' et ');
-        const directorStr = director ? (isEn ? `Directed by ${director}` : `Réalisé par ${director}`) : '';
-        const scoreStr = score ? `${score}/10` : '';
-        const yearStr = year ? `(${year})` : '';
-        const runtimeStr = runtime ? (isEn ? `${runtime}` : `${runtime}`) : '';
-
-        // ── Assembler la raison ──
-        const parts = [];
-
-        // Phrase 1 : accroche mood + référence film aimé ou directeur
-        if (lovedRef && genre) {
-            parts.push(isEn
-                ? `${lovedRef}, this ${genre.toLowerCase()} delivers the same powerful atmosphere.`
-                : `${lovedRef}, ce ${genre.toLowerCase()} délivre la même atmosphère saisissante.`);
-        } else if (moodHook && genre) {
-            parts.push(isEn
-                ? `${moodHook} — this ${genre.toLowerCase()} ${scoreStr ? `(${scoreStr})` : ''} won't disappoint.`
-                : `${moodHook} — ce ${genre.toLowerCase()} ${scoreStr ? `noté ${scoreStr}` : ''} ne décevra pas.`);
-        } else if (directorStr && genre) {
-            parts.push(isEn
-                ? `${directorStr}, a ${genre.toLowerCase()} ${yearStr} rated ${scoreStr}.`
-                : `${directorStr}, un ${genre.toLowerCase()} ${yearStr} noté ${scoreStr}.`);
+        if (castStr && runtime) {
+            sentence2 = isEn
+                ? `Starring ${castStr} · ${runtime}${moodHint ? ` — ${moodHint}` : ''}.`
+                : `Avec ${castStr} · ${runtime}${moodHint ? ` — ${moodHint}` : ''}.`;
+        } else if (castStr) {
+            sentence2 = isEn
+                ? `Starring ${castStr}${moodHint ? ` — ${moodHint}` : ''}.`
+                : `Avec ${castStr}${moodHint ? ` — ${moodHint}` : ''}.`;
+        } else if (moodHint) {
+            sentence2 = isEn ? `This pick ${moodHint}.` : `Ce choix ${moodHint}.`;
         }
 
-        // Phrase 2 : casting + durée ou contexte
-        if (castStr) {
-            const contextHint = context
-                ? (isEn ? `perfect for a ${context.toLowerCase()} viewing` : `parfait pour une soirée ${context.toLowerCase()}`)
-                : '';
-            parts.push(isEn
-                ? `Starring ${castStr}${runtimeStr ? ` · ${runtimeStr}` : ''}${contextHint ? ` — ${contextHint}` : ''}.`
-                : `Avec ${castStr}${runtimeStr ? ` · ${runtimeStr}` : ''}${contextHint ? ` — ${contextHint}` : ''}.`);
-        } else if (scoreStr && !parts.length) {
-            parts.push(isEn ? `Rated ${scoreStr} ${yearStr} — a solid match for your mood.`
-                             : `Noté ${scoreStr} ${yearStr} — un choix solide pour ton envie.`);
-        }
+        if (sentence1 && sentence2) return `${sentence1} ${sentence2}`;
+        if (sentence1) return sentence1;
+        if (sentence2) return sentence2;
 
-        if (parts.length) return parts.join(' ');
-
-        // Fallback ultime
         return isEn
-            ? `A well-rated ${genre || 'film'} ${yearStr} tailored to your taste.`
-            : `Un ${genre ? genre.toLowerCase() : 'film'} bien noté ${yearStr} sélectionné pour toi.`;
+            ? `A well-rated ${genre || 'film'} ${year ? `(${year})` : ''} selected for your taste.`
+            : `Un ${genre ? genre.toLowerCase() : 'film'} bien noté ${year ? `(${year})` : ''} sélectionné pour toi.`;
     },
 
     _showStripeToast(message, type = 'success', duration = 4000) {
