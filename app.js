@@ -4107,8 +4107,8 @@ const App = {
         }, duration);
     },
 
-    // ── Génère une raison automatique quand l'IA n'en a pas fourni ──
-    // Utilise les données TMDB réelles : tagline, genres, cast, note, moodLabel
+    // ── Génère une raison automatique personnalisée quand l'IA n'en a pas fourni ──
+    // Utilise les données TMDB + les réponses du questionnaire pour une explication contextualisée
     _autoReason(m) {
         const isEn = getLang() === 'en';
         const GENRE_FR = { 28:'Action', 12:'Aventure', 16:'Animation', 35:'Comédie', 80:'Crime', 99:'Documentaire',
@@ -4120,38 +4120,92 @@ const App = {
             9648:'mystery', 10749:'romance', 878:'sci-fi', 53:'thriller', 10752:'war', 37:'western' };
         const GENRE_MAP = isEn ? GENRE_EN : GENRE_FR;
 
-        const genre = (m.genres || []).map(g => GENRE_MAP[g.id] || g.name).filter(Boolean)[0]
-            || (m.genre_ids || []).map(id => GENRE_MAP[id]).filter(Boolean)[0];
-        const cast = m.credits?.cast?.slice(0, 2).map(a => a.name).join(' et ') || '';
+        const genres = (m.genres || []).map(g => GENRE_MAP[g.id] || g.name).filter(Boolean);
+        const genre = genres[0] || (m.genre_ids || []).map(id => GENRE_MAP[id]).filter(Boolean)[0];
+        const cast = m.credits?.cast?.slice(0, 2).map(a => a.name) || [];
         const director = m.credits?.crew?.find(p => p.job === 'Director')?.name || '';
         const year = m.release_date?.split('-')[0] || '';
         const score = m.vote_average ? m.vote_average.toFixed(1) : '';
-        const tagline = m.tagline?.trim();
-        const mood = store.answers?.moodLabel || '';
+        const runtime = m.runtime ? `${m.runtime} min` : '';
+        const mood = store.answers?.moodLabel || store.answers?.mood || '';
+        const context = store.answers?.contextLabel || store.answers?.context || '';
+        const lovedMovies = store.answers?.lastLovedMovies || [];
 
-        // Priorité 1 : tagline existante → plus unique que n'importe quel texte généré
-        if (tagline && tagline.length > 10) {
-            return isEn ? `${tagline} — a ${score ? score + '/10 ' : ''}${genre || ''} that fits your mood.`
-                        : `${tagline}${score ? ` — ${score}/10` : ''}.`;
-        }
+        // ── Construire une phrase d'accroche basée sur l'ambiance demandée ──
+        const moodHooks_fr = {
+            'frisson': `Si tu cherches à frissonner ce soir`,
+            'peur': `Pour une vraie montée d'adrénaline`,
+            'rire': `Pour passer une soirée légère et fun`,
+            'pleurer': `Prépare les mouchoirs`,
+            'réfléchir': `Pour un film qui fait vraiment réfléchir`,
+            'action': `Pour une montée d'adrénaline garantie`,
+            'romance': `Pour une belle histoire d'amour`,
+            'dépaysement': `Pour voyager sans quitter ton canapé`,
+            'suspense': `Pour rester scotché du début à la fin`,
+        };
+        const moodHooks_en = {
+            'thrill': `If you want a good scare tonight`,
+            'laugh': `For a fun and light evening`,
+            'cry': `Get the tissues ready`,
+            'think': `For a film that will make you think`,
+            'action': `For guaranteed adrenaline`,
+            'romance': `For a beautiful love story`,
+            'escape': `For a journey without leaving your couch`,
+            'suspense': `To stay hooked from start to finish`,
+        };
+        const moodHooks = isEn ? moodHooks_en : moodHooks_fr;
+        const moodKey = Object.keys(moodHooks).find(k => mood?.toLowerCase().includes(k));
+        const moodHook = moodKey ? moodHooks[moodKey] : '';
 
-        // Priorité 2 : construire depuis les données disponibles
+        // ── Référence à un film aimé si disponible ──
+        const lovedRef = lovedMovies.length > 0
+            ? (isEn ? `In the same vein as ${lovedMovies[0]}` : `Dans la lignée de ${lovedMovies[0]}`)
+            : '';
+
+        // ── Infos film ──
+        const castStr = cast.slice(0, 2).join(isEn ? ' and ' : ' et ');
+        const directorStr = director ? (isEn ? `Directed by ${director}` : `Réalisé par ${director}`) : '';
+        const scoreStr = score ? `${score}/10` : '';
+        const yearStr = year ? `(${year})` : '';
+        const runtimeStr = runtime ? (isEn ? `${runtime}` : `${runtime}`) : '';
+
+        // ── Assembler la raison ──
         const parts = [];
-        if (director && cast) {
-            parts.push(isEn ? `Directed by ${director}, with ${cast}.` : `Réalisé par ${director}, avec ${cast}.`);
-        } else if (cast) {
-            parts.push(isEn ? `Starring ${cast}.` : `Avec ${cast}.`);
-        }
-        if (genre && score) {
-            parts.push(isEn ? `A ${genre} rated ${score}/10 ${year ? `(${year})` : ''} that matches your ${mood || 'mood'}.`
-                             : `Une ${genre.toLowerCase()} noté ${score}/10 ${year ? `(${year})` : ''} qui colle à ton envie${mood ? ` de ${mood.toLowerCase()}` : ''}.`);
-        } else if (score) {
-            parts.push(isEn ? `Rated ${score}/10 — a solid pick for your mood.`
-                             : `Noté ${score}/10 — un choix solide pour ton envie.`);
+
+        // Phrase 1 : accroche mood + référence film aimé ou directeur
+        if (lovedRef && genre) {
+            parts.push(isEn
+                ? `${lovedRef}, this ${genre.toLowerCase()} delivers the same powerful atmosphere.`
+                : `${lovedRef}, ce ${genre.toLowerCase()} délivre la même atmosphère saisissante.`);
+        } else if (moodHook && genre) {
+            parts.push(isEn
+                ? `${moodHook} — this ${genre.toLowerCase()} ${scoreStr ? `(${scoreStr})` : ''} won't disappoint.`
+                : `${moodHook} — ce ${genre.toLowerCase()} ${scoreStr ? `noté ${scoreStr}` : ''} ne décevra pas.`);
+        } else if (directorStr && genre) {
+            parts.push(isEn
+                ? `${directorStr}, a ${genre.toLowerCase()} ${yearStr} rated ${scoreStr}.`
+                : `${directorStr}, un ${genre.toLowerCase()} ${yearStr} noté ${scoreStr}.`);
         }
 
-        return parts.join(' ') || (isEn ? `A well-rated ${genre || 'film'} for your current mood.`
-                                        : `Un ${genre ? genre.toLowerCase() : 'film'} bien noté pour ton envie du moment.`);
+        // Phrase 2 : casting + durée ou contexte
+        if (castStr) {
+            const contextHint = context
+                ? (isEn ? `perfect for a ${context.toLowerCase()} viewing` : `parfait pour une soirée ${context.toLowerCase()}`)
+                : '';
+            parts.push(isEn
+                ? `Starring ${castStr}${runtimeStr ? ` · ${runtimeStr}` : ''}${contextHint ? ` — ${contextHint}` : ''}.`
+                : `Avec ${castStr}${runtimeStr ? ` · ${runtimeStr}` : ''}${contextHint ? ` — ${contextHint}` : ''}.`);
+        } else if (scoreStr && !parts.length) {
+            parts.push(isEn ? `Rated ${scoreStr} ${yearStr} — a solid match for your mood.`
+                             : `Noté ${scoreStr} ${yearStr} — un choix solide pour ton envie.`);
+        }
+
+        if (parts.length) return parts.join(' ');
+
+        // Fallback ultime
+        return isEn
+            ? `A well-rated ${genre || 'film'} ${yearStr} tailored to your taste.`
+            : `Un ${genre ? genre.toLowerCase() : 'film'} bien noté ${yearStr} sélectionné pour toi.`;
     },
 
     _showStripeToast(message, type = 'success', duration = 4000) {
