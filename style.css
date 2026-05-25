@@ -650,14 +650,12 @@ body.page-ready #hero.active .hero-content .hero-features {
 #history-view.active,
 #watchlist-view.active {
     align-items: flex-start;
-    align-self: flex-start;   /* épingle en haut du conteneur main */
-    padding-top: 5rem;
+    align-self: flex-start;
+    padding-top: calc(72px + 2rem);   /* sous la navbar fixe */
     padding-bottom: 6rem;
-    margin-top: 5rem;
-    /* Fond identique pour les deux pages */
-    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(229, 9, 20, 0.06) 0%, transparent 70%),
-        var(--bg-color, #0c0c0c);
-    border-radius: 24px;
+    margin-top: 0;
+    background: var(--bg-color, #0c0c0c);
+    border-radius: 0;
 }
 
 /* ── Header ── */
@@ -670,7 +668,37 @@ body.page-ready #hero.active .hero-content .hero-features {
     margin: 0 auto 2.5rem;
     gap: 1rem;
     padding-bottom: 1.5rem;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+    background: transparent;
+}
+
+/* Actions group: back + close */
+.history-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Close (✕) button on Mes Films / Mes Favoris */
+.btn-close-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+    color: rgba(255,255,255,0.55);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+    flex-shrink: 0;
+}
+.btn-close-view:hover {
+    background: rgba(229,9,20,0.18);
+    border-color: rgba(229,9,20,0.3);
+    color: white;
 }
 
 
@@ -6233,9 +6261,9 @@ html.duo-link #duo-welcome {
 
     #history-view.active,
     #watchlist-view.active {
-        padding-top: 4rem;
+        padding-top: calc(72px + 1.5rem);
         padding-bottom: 3.5rem;
-        margin-top: 3.5rem;
+        margin-top: 0;
         align-self: flex-start;
     }
 
@@ -6441,19 +6469,26 @@ html.duo-link #duo-welcome {
 @media (max-width: 600px) {
     #history-view.active,
     #watchlist-view.active {
-        padding-top: 3.5rem;
+        padding-top: calc(72px + 1.5rem);
         padding-bottom: 3.5rem;
-        margin-top: 1.5rem;
+        margin-top: 0;
         align-self: flex-start;
     }
 
-    /* Header en colonne */
+    /* Header — reste en ligne sur mobile */
     .history-header {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
         gap: 0.6rem;
         margin-bottom: 1.2rem;
         padding-bottom: 1rem;
+    }
+    .history-header > div {
+        flex: 1;
+        min-width: 0;
+    }
+    .history-header-actions {
+        flex-shrink: 0;
     }
 
     .history-title {
@@ -6596,25 +6631,25 @@ html.duo-link #duo-welcome {
     }
 }
 
-/* ── Modal Personnalisation — centré ── */
+/* ── Modal Personnalisation — bottom sheet sur mobile ── */
 @media (max-width: 600px) {
     .prefs-overlay {
-        padding: 16px;
-        align-items: center;
+        padding: 0;
+        align-items: flex-end;
         justify-content: center;
     }
 
     .prefs-modal {
-        border-radius: 20px;
-        max-height: 90dvh;
+        border-radius: 20px 20px 0 0;
+        max-height: 92dvh;
         height: auto;
-        padding: 0;          /* géré par prefs-header / prefs-body / prefs-footer */
-        width: min(92vw, 420px);
-        max-width: 420px;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
         overflow: hidden;
     }
 
-    /* Poignée visuelle en haut */
+    /* Drag handle */
     .prefs-modal::before {
         content: '';
         display: block;
@@ -6622,7 +6657,7 @@ html.duo-link #duo-welcome {
         height: 4px;
         background: rgba(255,255,255,0.18);
         border-radius: 2px;
-        margin: 0 auto 1.2rem;
+        margin: 12px auto 0;
     }
 
     .prefs-title {
@@ -6646,24 +6681,24 @@ html.duo-link #duo-welcome {
         font-size: 0.73rem;
     }
 
-    /* Onglets pill — scrollable sur mobile */
+    /* Onglets pill — grille 2×2 sur mobile */
     .prefs-tabs {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        flex-wrap: nowrap;
-        gap: 3px;
-        padding: 3px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        padding: 4px;
+        overflow: visible;
+        flex-wrap: unset;
     }
 
-    .prefs-tabs::-webkit-scrollbar { display: none; }
-
     .prefs-tab {
-        flex: 0 0 auto;
-        white-space: nowrap;
-        font-size: 0.7rem;
-        padding: 7px 10px;
+        flex: unset;
+        white-space: normal;
+        text-align: center;
+        font-size: 0.72rem;
+        padding: 9px 6px;
         min-height: 40px;
+        line-height: 1.2;
     }
 
     /* Grille plateformes : reste 2 colonnes mais chips plus compacts */
@@ -7600,16 +7635,15 @@ html.duo-link #duo-welcome {
     ───────────────────────────────────────────── */
     #history-view.active,
     #watchlist-view.active {
-        padding-top: 60px;
+        padding-top: calc(64px + 1rem);
         padding-bottom: 48px;
-        padding-left: 20px;
-        padding-right: 20px;
+        padding-left: 16px;
+        padding-right: 16px;
         align-items: stretch;
         align-self: flex-start;
-        border-radius: 16px;
-        /* Annule le padding 16px de main + 12px de marge propre */
-        margin: 72px -4px 20px;
-        width: calc(100% + 8px);
+        border-radius: 0;
+        margin: 0;
+        width: 100%;
         box-sizing: border-box;
         min-height: auto;
     }

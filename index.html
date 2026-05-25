@@ -95,8 +95,8 @@
       ]
     }
     </script>
-    <link rel="preload" href="style.css?v=369" as="style">
-    <link rel="stylesheet" href="style.css?v=369">
+    <link rel="preload" href="style.css?v=370" as="style">
+    <link rel="stylesheet" href="style.css?v=370">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Google Fonts en non-bloquant (display=swap + media trick) -->
@@ -585,7 +585,10 @@
                         <h2 class="history-title">Mes Favoris</h2>
                         <p class="history-subtitle" id="watchlist-subtitle">Tes films à regarder</p>
                     </div>
-                    <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
+                    <div class="history-header-actions">
+                        <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
+                        <button class="btn-close-view" onclick="App.goHome()" aria-label="Fermer">✕</button>
+                    </div>
                 </div>
                 <div id="watchlist-grid" class="history-grid"></div>
             </section>
@@ -597,7 +600,10 @@
                         <h2 class="history-title">Mes Films</h2>
                         <p class="history-subtitle" id="history-subtitle"></p>
                     </div>
-                    <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
+                    <div class="history-header-actions">
+                        <button class="btn-back" onclick="App.showPreferences()">← Mon Espace</button>
+                        <button class="btn-close-view" onclick="App.goHome()" aria-label="Fermer">✕</button>
+                    </div>
                 </div>
 
                 <!-- Badge niveau cinéphile -->
@@ -985,7 +991,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=458"></script>
+    <script type="module" src="app.js?v=459"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=27';
         authUI.init();
