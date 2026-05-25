@@ -5990,6 +5990,37 @@ html.duo-link #duo-welcome {
     border-color: rgba(229,9,20,0.5);
 }
 
+/* Bouton mise à jour MDP — secondaire, compact */
+.btn-pwd-update {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.75);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+    letter-spacing: 0.3px;
+}
+.btn-pwd-update::before {
+    content: '🔒';
+    font-size: 0.85rem;
+}
+.btn-pwd-update:hover {
+    background: rgba(229,9,20,0.14);
+    border-color: rgba(229,9,20,0.3);
+    color: white;
+}
+.btn-pwd-update:active {
+    transform: scale(0.98);
+}
+
 /* ── Section labels ── */
 .prefs-section-label {
     font-size: 0.65rem;
