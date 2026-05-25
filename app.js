@@ -4158,8 +4158,9 @@ const App = {
         const moodHook = moodKey ? moodHooks[moodKey] : '';
 
         // ── Référence à un film aimé si disponible ──
-        const lovedRef = lovedMovies.length > 0
-            ? (isEn ? `In the same vein as ${lovedMovies[0]}` : `Dans la lignée de ${lovedMovies[0]}`)
+        const lovedTitle = lovedMovies[0]?.title || (typeof lovedMovies[0] === 'string' ? lovedMovies[0] : '');
+        const lovedRef = lovedTitle
+            ? (isEn ? `In the same vein as ${lovedTitle}` : `Dans la lignée de ${lovedTitle}`)
             : '';
 
         // ── Infos film ──
