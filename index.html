@@ -95,8 +95,8 @@
       ]
     }
     </script>
-    <link rel="preload" href="style.css?v=372" as="style">
-    <link rel="stylesheet" href="style.css?v=372">
+    <link rel="preload" href="style.css?v=373" as="style">
+    <link rel="stylesheet" href="style.css?v=373">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Google Fonts en non-bloquant (display=swap + media trick) -->
@@ -668,19 +668,30 @@
 
             <!-- ══ ZONE 1 : En-tête fixe ══ -->
             <div class="prefs-header">
-                <button id="prefs-modal-close" class="prefs-close">✕</button>
-                <h3 class="prefs-title" data-i18n="prefs.title">Mon Espace</h3>
-
-                <!-- Séparateur -->
-                <div class="prefs-section-divider">
-                    <span data-i18n="prefs.settings.label">Préférences IA</span>
+                <div class="prefs-header-top">
+                    <div class="prefs-header-brand">
+                        <h3 class="prefs-title" data-i18n="prefs.title">Mon Espace</h3>
+                    </div>
+                    <button id="prefs-modal-close" class="prefs-close">✕</button>
                 </div>
-
+                <p class="prefs-subtitle">Personnalise tes recommandations IA</p>
                 <div class="prefs-tabs">
-                    <button class="prefs-tab active" data-tab="platforms">📡 <span data-i18n="prefs.tab.platforms">Plateformes</span></button>
-                    <button class="prefs-tab" data-tab="gouts">✨ <span data-i18n="prefs.tab.gouts">Mes goûts</span></button>
-                    <button class="prefs-tab" data-tab="exclusions">🚫 <span data-i18n="prefs.tab.exclusions">Exclusions</span></button>
-                    <button class="prefs-tab" data-tab="profil">👤 Mon Profil</button>
+                    <button class="prefs-tab active" data-tab="platforms">
+                        <span class="tab-icon">📺</span>
+                        <span class="tab-label" data-i18n="prefs.tab.platforms">Streaming</span>
+                    </button>
+                    <button class="prefs-tab" data-tab="gouts">
+                        <span class="tab-icon">🎬</span>
+                        <span class="tab-label" data-i18n="prefs.tab.gouts">Mes goûts</span>
+                    </button>
+                    <button class="prefs-tab" data-tab="exclusions">
+                        <span class="tab-icon">🚫</span>
+                        <span class="tab-label" data-i18n="prefs.tab.exclusions">À éviter</span>
+                    </button>
+                    <button class="prefs-tab" data-tab="profil">
+                        <span class="tab-icon">👤</span>
+                        <span class="tab-label">Mon Profil</span>
+                    </button>
                 </div>
             </div>
 
@@ -789,14 +800,16 @@
 
                 <!-- ── ONGLET 3 : Exclusions ── -->
                 <div class="prefs-tab-panel" id="tab-exclusions">
-                    <p class="prefs-tab-hint">Tes lignes rouges. Ces contenus ne seront <strong>jamais</strong> suggérés, quoi qu'il arrive.</p>
-                    <div class="pref-chips-grid" id="pref-exclusions">
-                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Violence extrême"><span>🩸 Violence extrême</span></label>
-                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Horreur"><span>💀 Horreur</span></label>
-                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Sous-titres"><span>💬 Sous-titres</span></label>
-                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Contenu adulte"><span>🔞 Contenu adulte</span></label>
-                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Films trop longs (>2h30)"><span>⏱ Films trop longs</span></label>
-                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="Documentaires"><span>🎙 Documentaires</span></label>
+                    <p class="prefs-tab-hint">Tes lignes rouges — identiques au questionnaire. Ces contenus ne seront <strong>jamais</strong> suggérés.</p>
+                    <div class="pref-chips-grid pref-chips-grid--exclude" id="pref-exclusions">
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="horror"><span>🚫 Trop de violence</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="sad"><span>😢 Trop triste / lourd</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="scary"><span>😱 Films qui font peur</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="adult"><span>🔞 Contenu adulte</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="slow"><span>🐌 Trop lent</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="complex"><span>🧠 Trop complexe</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="animation"><span>🎨 Films d'animation</span></label>
+                        <label class="pref-chip pref-chip--exclude"><input type="checkbox" value="teen"><span>🎓 Films d'ados</span></label>
                     </div>
                 </div>
 
@@ -991,7 +1004,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=459"></script>
+    <script type="module" src="app.js?v=460"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=27';
         authUI.init();

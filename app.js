@@ -1642,12 +1642,15 @@ const App = {
 
             // Exclusions : les préférences sauvegardées s'ajoutent toujours (filtre dur absolu)
             const PREF_EXCLUDE_GENRE_MAP = {
-                'Horreur':          [27],
-                'Violence extrême': [27, 53],
-                'Documentaires':    [99],
-                'Contenu adulte':   [],   // pas de genre TMDb direct
-                'Sous-titres':      [],   // géré via langue
-                'Films trop longs (>2h30)': [],  // runtime non disponible dans les candidats
+                // Mêmes clés que le questionnaire
+                horror:    [27, 53],   // Violence → Horreur + Thriller
+                sad:       [18],       // Trop triste → Drame
+                scary:     [27],       // Films qui font peur → Horreur
+                adult:     [],         // Contenu adulte → géré via prompt IA
+                slow:      [],         // Trop lent → géré via prompt IA
+                complex:   [],         // Trop complexe → géré via prompt IA
+                animation: [16],       // Films d'animation
+                teen:      [10749, 10751], // Films d'ados → Romance ado + Famille
             };
             const prefExcludedGenreIds = (savedPrefs.exclusions || [])
                 .flatMap(ex => PREF_EXCLUDE_GENRE_MAP[ex] || []);
