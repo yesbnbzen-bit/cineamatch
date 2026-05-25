@@ -195,6 +195,14 @@ body {
     align-items: center;
 }
 
+/* ── Lang abbr : visible seulement sur mobile ── */
+.lang-abbr { display: none; }
+.lang-full  { display: inline; }
+
+/* ── Dropdown nav items (Mes Films / Mon Espace) — desktop: cachés ── */
+.btn-drop-nav { display: none; }
+.drop-divider { display: none; }
+
 /* ── Switcher FR / EN — pill dropdown ── */
 .lang-switcher {
     position: relative;
@@ -285,18 +293,19 @@ body {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 10px 18px;
+    padding: 7px 14px;
     border-radius: 100px;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.25s;
     backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
 }
 
 .btn-config:hover {
@@ -4972,6 +4981,33 @@ html.duo-link #duo-welcome {
     box-shadow: 0 4px 16px rgba(245, 197, 24, 0.4);
 }
 
+/* ── Nav items dans le dropdown (Mes Films / Mon Espace) ── */
+.btn-drop-nav {
+    width: 100%;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-drop-nav:hover {
+    background: rgba(255,255,255,0.08);
+    color: white;
+}
+.drop-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 4px 8px;
+}
+
 /* Lien Premium dans le dropdown */
 .btn-premium-drop {
     width: 100%;
@@ -5734,40 +5770,44 @@ html.duo-link #duo-welcome {
     font-weight: 600;
 }
 
-/* ── ONGLETS ── */
+/* ── ONGLETS — style pill moderne ── */
 .prefs-tabs {
     display: flex;
-    gap: 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    gap: 4px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 4px;
     margin-bottom: 1.4rem;
 }
 
 .prefs-tab {
     flex: 1;
-    padding: 12px 8px;
+    padding: 8px 6px;
     background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    color: rgba(255,255,255,0.35);
-    font-size: 0.82rem;
+    border-radius: 9px;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.72rem;
     font-weight: 600;
     cursor: pointer;
-    transition: color 0.18s ease, border-color 0.18s ease;
+    transition: background 0.18s ease, color 0.18s ease;
     white-space: nowrap;
     letter-spacing: 0.2px;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    min-height: 44px;
+    min-height: 36px;
+    text-align: center;
 }
 
 .prefs-tab:hover {
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.05);
 }
 
 .prefs-tab.active {
     color: white;
-    border-bottom-color: #E50914;
+    background: rgba(229, 9, 20, 0.18);
+    box-shadow: inset 0 0 0 1px rgba(229,9,20,0.3);
 }
 
 /* ── Panels ── */
@@ -6064,45 +6104,43 @@ html.duo-link #duo-welcome {
    ══════════════════════════════════════════════════ */
 
 /* ── Navbar mobile ── */
+@media (max-width: 768px) {
+    /* Masquer les boutons nav — accessibles via le dropdown avatar */
+    #profile-nav-btn,
+    #prefs-nav-btn,
+    #config-btn,
+    #premium-nav-btn {
+        display: none !important;
+    }
+
+    /* Afficher Mes Films / Mon Espace dans le dropdown */
+    .btn-drop-nav { display: flex; }
+    .drop-divider  { display: block; }
+
+    /* Langue : afficher l'abréviation, cacher le texte complet */
+    .lang-full { display: none; }
+    .lang-abbr { display: inline; }
+}
+
 @media (max-width: 600px) {
     .navbar {
-        padding: 14px 4% 10px; /* top 14px = respiration visible */
-        overflow: visible; /* ne pas clipper les boutons nav */
+        padding: 12px 4% 10px;
+        overflow: visible;
     }
 
     .logo {
-        font-size: 1.35rem;
+        font-size: 1.3rem;
         flex-shrink: 0;
     }
 
     .nav-actions {
-        gap: 4px;
+        gap: 6px;
         flex-wrap: nowrap;
-        overflow: hidden;
-        flex-shrink: 1;
-        min-width: 0;
-    }
-
-    /* Cache les labels texte, garde seulement l'emoji */
-    .btn-config .btn-label {
-        display: none;
-    }
-
-    .btn-config {
-        padding: 7px 12px;
-        font-size: 0.88rem;
-        letter-spacing: 0;
-        min-width: 36px;
         flex-shrink: 0;
-        justify-content: center;
-        /* Taille minimale tactile */
-        min-height: 36px;
     }
 
-    /* User menu : cache le prénom, compact */
-    .user-name {
-        display: none;
-    }
+    /* User menu compact */
+    .user-name { display: none; }
 
     .user-menu {
         padding: 4px 8px 4px 4px;
@@ -6111,16 +6149,25 @@ html.duo-link #duo-welcome {
     }
 
     .user-avatar {
-        width: 27px;
-        height: 27px;
-        font-size: 0.65rem;
+        width: 30px;
+        height: 30px;
+        font-size: 0.7rem;
     }
 
-    /* Switcher langue plus compact */
-    .lang-pill-btn {
-        padding: 5px 10px;
-        font-size: 0.78rem;
+    /* Bouton login compact */
+    .btn-auth {
+        padding: 7px 12px !important;
+        font-size: 0.75rem !important;
     }
+    .btn-auth .btn-label { display: none; }
+
+    /* Lang pill ultra compact */
+    .lang-pill-btn {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+        gap: 4px;
+    }
+    .lang-chevron { display: none; }
 }
 
 /* ── Layout principal ── */
@@ -6599,13 +6646,14 @@ html.duo-link #duo-welcome {
         font-size: 0.73rem;
     }
 
-    /* Onglets — scrollable sur mobile */
+    /* Onglets pill — scrollable sur mobile */
     .prefs-tabs {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         flex-wrap: nowrap;
-        padding-bottom: 1px;
+        gap: 3px;
+        padding: 3px;
     }
 
     .prefs-tabs::-webkit-scrollbar { display: none; }
@@ -6613,8 +6661,8 @@ html.duo-link #duo-welcome {
     .prefs-tab {
         flex: 0 0 auto;
         white-space: nowrap;
-        font-size: 0.76rem;
-        padding: 10px 12px;
+        font-size: 0.7rem;
+        padding: 7px 10px;
         min-height: 40px;
     }
 
