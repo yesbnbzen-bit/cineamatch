@@ -651,12 +651,12 @@ body.page-ready #hero.active .hero-content .hero-features {
 #watchlist-view.active {
     align-items: flex-start;
     align-self: flex-start;
-    padding-top: 2.5rem;
+    padding-top: 0;
     padding-bottom: 6rem;
-    margin-top: 1rem;
-    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(229, 9, 20, 0.07) 0%, transparent 65%),
+    margin-top: 3rem;
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(229, 9, 20, 0.08) 0%, transparent 60%),
         var(--bg-color, #0c0c0c);
-    border-radius: 24px;
+    border-radius: 20px;
 }
 
 /* ── Header ── */
@@ -666,10 +666,20 @@ body.page-ready #hero.active .hero-content .hero-features {
     justify-content: space-between;
     width: 100%;
     max-width: 1100px;
-    margin: 0 auto 2.5rem;
+    margin: 0 auto 2rem;
     gap: 1rem;
-    padding-bottom: 1.5rem;
-    background: transparent;
+    padding: 2rem 0 2rem;
+    /* Dégradé noir en haut → titre bien lisible */
+    background: linear-gradient(
+        to bottom,
+        rgba(12, 12, 12, 1) 0%,
+        rgba(12, 12, 12, 0.95) 55%,
+        rgba(12, 12, 12, 0) 100%
+    );
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-radius: 20px 20px 0 0;
 }
 
 /* Actions group: back + close */
@@ -6487,8 +6497,9 @@ html.duo-link #duo-welcome {
         flex-direction: row;
         align-items: center;
         gap: 0.6rem;
-        margin-bottom: 1.2rem;
-        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        padding: 1.5rem 0 1.5rem;
+        border-radius: 16px 16px 0 0;
     }
     .history-header > div {
         flex: 1;
