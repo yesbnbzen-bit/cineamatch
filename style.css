@@ -345,7 +345,7 @@ main {
     justify-content: flex-start;
     align-items: center;
     min-height: auto;
-    padding-top: clamp(100px, 14vh, 160px);
+    padding-top: clamp(140px, 18vh, 220px);
     padding-bottom: 2rem;
 }
 
@@ -6390,7 +6390,7 @@ html.duo-link #duo-welcome {
 
     #hero.active {
         min-height: auto;
-        padding-top: 90px;
+        padding-top: 140px;
         padding-bottom: 1.5rem;
         padding-left: 20px;
         padding-right: 20px;
@@ -7117,7 +7117,7 @@ html.duo-link #duo-welcome {
        4. HERO
     ───────────────────────────────────────────── */
     #hero.active {
-        padding-top: calc(100px + env(safe-area-inset-top, 0px));
+        padding-top: calc(150px + env(safe-area-inset-top, 0px));
         padding-bottom: 2rem;
         padding-left: 20px;
         padding-right: 20px;
