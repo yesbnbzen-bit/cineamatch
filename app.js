@@ -678,9 +678,7 @@ const App = {
                 return;
             }
 
-            // Enregistrer la recherche
-            localStorage.setItem('anon_search_date',  today);
-            localStorage.setItem('anon_search_count', lastDate === today ? lastCount + 1 : 1);
+            // NE PAS incrémenter ici — on incrémente seulement quand les résultats sont affichés
         }
 
         // Fermer l'onboarding s'il est encore affiché
@@ -720,9 +718,10 @@ const App = {
             era: null,
             lastLovedMovies: []
         };
-        store.suggestedMovieIds = [];
-        store.suggestedTitles   = [];
-        store.rerollCount       = 0;
+        store.suggestedMovieIds  = [];
+        store.suggestedTitles    = [];
+        store.rerollCount        = 0;
+        store._anonSearchCounted = false;   // reset pour la nouvelle session
 
         // ── Mode Duo Personne B : sauter Q1, hériter du contexte de A ──
         if (keepDuoState && store.duoMode && store.duoRole === 'B') {
@@ -2303,6 +2302,15 @@ const App = {
 
     // ── Rendu des cartes résultats ──
     renderResults(movies) {
+        // ── Incrémenter le compteur anonyme ici (résultats réellement affichés) ──
+        if (!store.currentUser && !store._anonSearchCounted) {
+            store._anonSearchCounted = true;
+            const today    = new Date().toISOString().slice(0, 10);
+            const lastDate = localStorage.getItem('anon_search_date');
+            const lastCount = parseInt(localStorage.getItem('anon_search_count') || '0', 10);
+            localStorage.setItem('anon_search_date',  today);
+            localStorage.setItem('anon_search_count', lastDate === today ? lastCount + 1 : 1);
+        }
         ui.switchView('results');
         ui._scrollTop();
         // Titre adapté selon le mode

@@ -2047,13 +2047,16 @@ h1 {
 .btn-multi-next {
     transition: background 0.2s, box-shadow 0.2s, transform 0.15s !important;
 }
+/* has-selection: garde le gradient existant, renforce juste l'ombre */
 .btn-multi-next.has-selection {
-    background: #E50914 !important;
-    box-shadow: 0 4px 20px rgba(229,9,20,0.45) !important;
+    box-shadow:
+        0 6px 24px rgba(180, 0, 100, 0.5) !important,
+        0 2px 6px rgba(0,0,0,0.5) !important,
+        inset 0 1px 0 rgba(255,255,255,0.15) !important;
 }
 .btn-multi-next.has-selection:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 28px rgba(229,9,20,0.55) !important;
+    transform: translateY(-2px) scale(1.01) !important;
+    filter: brightness(1.1) !important;
 }
 
 /* Hint multi-select */
