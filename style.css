@@ -2233,49 +2233,50 @@ input[type="text"]:focus {
 
 /* Buttons */
 .btn-primary {
-    background: linear-gradient(135deg, #e5091a 0%, #b8000f 100%);
+    background: linear-gradient(120deg, #e5091a 0%, #c0006e 55%, #8b00d4 100%);
     color: white;
     border: none;
     padding: 1rem 2.5rem;
     font-size: 1rem;
-    font-weight: 700;
-    border-radius: 14px;
+    font-weight: 800;
+    border-radius: 50px;
     cursor: pointer;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.8px;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    min-height: 52px;
+    min-height: 54px;
     box-shadow:
-        0 4px 20px rgba(229, 9, 20, 0.35),
-        0 1px 3px rgba(0,0,0,0.4),
-        inset 0 1px 0 rgba(255,255,255,0.12);
+        0 6px 28px rgba(180, 0, 100, 0.45),
+        0 2px 6px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.15);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 9px;
     position: relative;
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .btn-primary::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.08) 0%, transparent 50%);
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 50%);
     pointer-events: none;
     border-radius: inherit;
 }
 
 @media (hover: hover) and (pointer: fine) {
     .btn-primary:hover {
-        background: linear-gradient(135deg, #f0101d 0%, #c8000f 100%);
+        filter: brightness(1.1);
         transform: translateY(-2px) scale(1.01);
         box-shadow:
-            0 8px 28px rgba(229, 9, 20, 0.45),
-            0 2px 6px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.14);
+            0 10px 36px rgba(180, 0, 100, 0.55),
+            0 3px 8px rgba(0,0,0,0.5),
+            inset 0 1px 0 rgba(255,255,255,0.18);
     }
 }
 
@@ -7885,15 +7886,18 @@ html.duo-link #duo-welcome {
 
     /* Bouton CONTINUER du questionnaire — compact et centré */
     #questionnaire .btn-primary {
-        padding: 10px 28px !important;
-        font-size: 0.82rem !important;
-        min-height: 40px !important;
-        min-width: 140px !important;
-        max-width: 240px !important;
-        width: auto !important;
+        padding: 12px 20px !important;
+        font-size: 0.8rem !important;
+        min-height: 44px !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
         margin: 0 auto !important;
-        border-radius: 10px !important;
-        letter-spacing: 0.4px !important;
+        border-radius: 50px !important;
+        letter-spacing: 0.8px !important;
+        white-space: normal !important;
+        text-align: center !important;
+        line-height: 1.2 !important;
     }
 
     .btn-secondary {
