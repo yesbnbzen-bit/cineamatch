@@ -2800,6 +2800,42 @@ input[type="text"]:focus {
     box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(229, 9, 20, 0.1);
 }
 
+/* ══ TOP MATCH — Carte #1 mise en valeur ══ */
+.movie-card.top-match {
+    border: 1.5px solid rgba(229, 9, 20, 0.55);
+    box-shadow:
+        0 0 0 1px rgba(229, 9, 20, 0.15),
+        0 8px 40px rgba(229, 9, 20, 0.22),
+        0 2px 8px rgba(0, 0, 0, 0.6);
+    background: linear-gradient(160deg, #1e1212 0%, #130a0a 60%, #111 100%);
+    position: relative;
+}
+
+/* Halo rouge subtil derrière la carte */
+.movie-card.top-match::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(229,9,20,0.18) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Poster légèrement plus grand */
+.movie-card.top-match .poster-container {
+    height: 310px;
+}
+
+.movie-card.top-match:hover {
+    transform: translateY(-10px) scale(1.01) translateZ(0);
+    border-color: rgba(229, 9, 20, 0.7);
+    box-shadow:
+        0 0 0 1px rgba(229, 9, 20, 0.25),
+        0 16px 60px rgba(229, 9, 20, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.7);
+}
+
 .poster-container {
     position: relative;
     width: 100%;

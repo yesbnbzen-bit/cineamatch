@@ -2462,7 +2462,7 @@ const App = {
 
         movies.forEach((m, idx) => {
             const card = document.createElement('div');
-            card.className = 'movie-card';
+            card.className = 'movie-card' + (idx === 0 ? ' top-match' : '');
             card.style.animation = `fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.18}s both`;
 
             // Infos providers (informatif seulement)
@@ -2532,8 +2532,8 @@ const App = {
                     onclick="event.stopPropagation()">${t('trailer.search')}</a>`;
 
             // Métadonnées
-            const rankLabels = ['#1 Match', '#2 Match', '#3 Match'];
-            const rankColors = ['rgba(229,9,20,0.6)', 'rgba(255,255,255,0.15)', 'rgba(255,255,255,0.15)'];
+            const rankLabels = ['👑 #1 Match', '#2 Match', '#3 Match'];
+            const rankColors = ['rgba(229,9,20,0.7)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.12)'];
             const year       = m.release_date ? m.release_date.split('-')[0] : '';
             const genres     = (m.genres || []).slice(0, 3).map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`).join('');
             const actors     = (m.credits?.cast || []).slice(0, 3).map(a => escapeHtml(a.name)).join(' · ');
