@@ -2,7 +2,7 @@ import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=66';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=11';
+import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=12';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=349';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
@@ -246,7 +246,7 @@ const App = {
                     </p>`;
             }
             try {
-                const { duoSessionService } = await import('./services/supabase.js?v=11');
+                const { duoSessionService } = await import('./services/supabase.js?v=12');
                 const session = await duoSessionService.get(duoSessionId);
                 if (session && session.status !== 'done') {
                     store.duoMode           = true;
@@ -2252,7 +2252,7 @@ const App = {
                     localStorage.setItem('duo_final_answers', JSON.stringify(store.answers));
                     // Cross-device sync : sauvegarder dans Supabase si session existe
                     if (store._duoSessionId) {
-                        import('./services/supabase.js?v=11').then(({ duoSessionService }) => {
+                        import('./services/supabase.js?v=12').then(({ duoSessionService }) => {
                             duoSessionService.complete(
                                 store._duoSessionId,
                                 store.duoNameB,
@@ -2866,7 +2866,7 @@ const App = {
             let duoUrl;
             if (!store._duoSessionId) {
                 try {
-                    const { duoSessionService } = await import('./services/supabase.js?v=11');
+                    const { duoSessionService } = await import('./services/supabase.js?v=12');
                     const sessionId = await duoSessionService.create(nameA, minimalAnswers);
                     store._duoSessionId = sessionId;
                     duoUrl = `${location.origin}${location.pathname}?duo_id=${sessionId}`;
@@ -2994,7 +2994,7 @@ const App = {
 
         // ── Polling Supabase (cross-device — appareils différents) ──
         if (store._duoSessionId) {
-            import('./services/supabase.js?v=11').then(({ duoSessionService }) => {
+            import('./services/supabase.js?v=12').then(({ duoSessionService }) => {
                 const _supabasePoll = setInterval(async () => {
                     if (_duoPollDone) { clearInterval(_supabasePoll); return; }
                     try {
@@ -3635,7 +3635,7 @@ const App = {
         btn.textContent = t('profile.pwd.updating');
 
         try {
-            const { authService } = await import('./services/supabase.js?v=11');
+            const { authService } = await import('./services/supabase.js?v=12');
             await authService.updatePassword(newPwd);
             showMsg(t('profile.pwd.success'), '#46d369');
             document.getElementById('profil-pwd-new').value     = '';
@@ -4080,7 +4080,7 @@ const App = {
             const pollPremium = async () => {
                 attempts++;
                 try {
-                    const { authService } = await import('./services/supabase.js?v=11');
+                    const { authService } = await import('./services/supabase.js?v=12');
                     // getUser() force une lecture fraîche depuis le serveur
                     const freshUser = await authService.getUser();
                     if (freshUser?.user_metadata?.is_premium === true) {

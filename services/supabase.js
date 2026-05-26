@@ -3,7 +3,7 @@
 //  Remplace tes clés ci-dessous une fois le projet créé
 // ─────────────────────────────────────────────────────────────────
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const SUPABASE_URL  = 'https://wyikiuwcygaemjzwbltk.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_z2dX34NgOMVj4spzMWF1-w_fQOWQb0x';
