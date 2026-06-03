@@ -2860,37 +2860,46 @@ input[type="text"]:focus {
 
 .rank-laurel-svg { flex-shrink: 0; }
 
-/* ══ BADGE COMPATIBILITÉ #1 MATCH (sur le poster) ══ */
+/* ══ BADGE COMPATIBILITÉ #1 MATCH — style score IA premium ══ */
 .poster-compat-badge {
     position: absolute;
-    top: 14px;
-    left: 14px;
-    z-index: 10;
-    background: rgba(229,9,20,0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 12px;
-    padding: 7px 13px 6px;
+    top: 20px;
+    left: 20px;
+    z-index: 20;
+    width: 100px;
+    height: 100px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0;
-    box-shadow: 0 4px 20px rgba(229,9,20,0.45);
+    justify-content: center;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid rgba(255,35,35,0.70);
+    border-radius: 22px;
+    box-shadow:
+        0 0 28px rgba(255,35,35,0.35),
+        inset 0 0 18px rgba(255,35,35,0.12);
 }
 .compat-pct {
-    font-size: 1.45rem;
+    font-size: 2.6rem;
     font-weight: 900;
-    color: #fff;
     line-height: 1;
+    color: #ff2d2d;
     letter-spacing: -1px;
+    text-shadow:
+        0 0 14px rgba(255,45,45,0.80),
+        0 0 32px rgba(255,45,45,0.40);
 }
 .compat-lbl {
-    font-size: 0.52rem;
-    font-weight: 800;
-    color: rgba(255,255,255,0.82);
-    letter-spacing: 2px;
+    margin-top: 4px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #ffffff;
+    opacity: 0.90;
     text-transform: uppercase;
-    margin-top: 2px;
+    text-shadow: none;
 }
 
 /* ══ HALO ROUGE DERRIÈRE LE #1 MATCH (derrière la carte seulement) ══ */
