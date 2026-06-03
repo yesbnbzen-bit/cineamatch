@@ -2464,16 +2464,14 @@ const App = {
             // Wrapper quinconce + numéro de rang
             const wrapper = document.createElement('div');
             wrapper.className = `card-wrapper rank-${idx + 1}`;
-            // Fondu doux : #1 en premier, puis #2 et #3 avec stagger léger
-            // Easing professionnel : cubic-bezier(0.25, 0.46, 0.45, 0.94) = ease-out-quad
+            // Fondu professionnel — opacity seule, mouvement minimal
+            wrapper.classList.add('card-bright'); // toutes les cartes démarrent lumineuses
             if (idx === 0) {
-                wrapper.style.animation = 'topMatchEnter 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s both';
+                wrapper.style.animation = 'cardReveal 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s both';
             } else if (idx === 1) {
-                wrapper.classList.add('card-bright');
-                wrapper.style.animation = 'sideCardEnterL 0.80s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.14s both';
+                wrapper.style.animation = 'cardReveal 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s both';
             } else {
-                wrapper.classList.add('card-bright');
-                wrapper.style.animation = 'sideCardEnterR 0.80s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.28s both';
+                wrapper.style.animation = 'cardReveal 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.30s both';
             }
 
             const rankNum = document.createElement('div');
