@@ -2795,6 +2795,8 @@ input[type="text"]:focus {
         grid-template-rows: auto auto;
         align-items: start;
         padding-top: 20px;
+        max-width: 1100px;
+        gap: 1.5rem;
     }
     /* Placement explicite par colonne — #2 gauche, #1 centre, #3 droite */
     .card-wrapper.rank-1 { grid-column: 2; grid-row: 1; }
@@ -2804,6 +2806,14 @@ input[type="text"]:focus {
     .movies-grid > div:not(.card-wrapper) {
         grid-column: 1 / -1;
         grid-row: 2;
+    }
+    /* Posters plus compacts sur desktop */
+    .poster-container { height: 220px !important; }
+    .movie-card.top-match .poster-container { height: 252px !important; }
+    /* Reflet miroir sous chaque carte — effet verre */
+    .card-wrapper {
+        -webkit-box-reflect: below 6px
+            linear-gradient(transparent 45%, rgba(0,0,0,0.28) 100%);
     }
 }
 
