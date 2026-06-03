@@ -2464,15 +2464,16 @@ const App = {
             // Wrapper quinconce + numéro de rang
             const wrapper = document.createElement('div');
             wrapper.className = `card-wrapper rank-${idx + 1}`;
-            // Séquence podium : #1 → #2 → #3, côtés démarrent lumineux puis s'assombrissent
+            // Fondu doux : #1 en premier, puis #2 et #3 avec stagger léger
+            // Easing professionnel : cubic-bezier(0.25, 0.46, 0.45, 0.94) = ease-out-quad
             if (idx === 0) {
-                wrapper.style.animation = 'topMatchEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0s both';
+                wrapper.style.animation = 'topMatchEnter 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0s both';
             } else if (idx === 1) {
                 wrapper.classList.add('card-bright');
-                wrapper.style.animation = 'sideCardEnterL 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both';
+                wrapper.style.animation = 'sideCardEnterL 0.80s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.14s both';
             } else {
                 wrapper.classList.add('card-bright');
-                wrapper.style.animation = 'sideCardEnterR 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.52s both';
+                wrapper.style.animation = 'sideCardEnterR 0.80s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.28s both';
             }
 
             const rankNum = document.createElement('div');
@@ -2648,11 +2649,11 @@ const App = {
             if (topCard) topCard.classList.add('spotlight-done');
             if (rankNum) rankNum.classList.add('rank-pulse');
         }, 1100);
-        // Retirer card-bright → transition douce vers l'assombrissement
+        // Retirer card-bright → assombrissement très progressif
         setTimeout(() => {
             ui.dom.moviesGrid.querySelectorAll('.card-wrapper.card-bright')
                 .forEach(w => w.classList.remove('card-bright'));
-        }, 1450);
+        }, 1700);
 
         // ── Bouton Partager — sous la grille, aligné à droite ──
         // Nettoyer l'ancien bouton si déjà présent (évite les duplicates au reroll)

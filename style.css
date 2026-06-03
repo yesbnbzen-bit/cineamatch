@@ -2745,24 +2745,19 @@ input[type="text"]:focus {
     to   { opacity: 1; transform: translateY(0)    translateZ(0); }
 }
 
-/* ══ ANIMATIONS RÉSULTATS — chute podium avec rotation ══ */
+/* ══ ANIMATIONS RÉSULTATS — fondu professionnel (style Apple / Linear) ══ */
 @keyframes sideCardEnterL {
-    0%   { opacity: 0; transform: translateY(-70px) translateX(-30px) rotate(-4deg) scale(0.9); }
-    55%  { opacity: 1; transform: translateY(8px) translateX(2px) rotate(0.5deg) scale(1.01); }
-    75%  { transform: translateY(-3px) rotate(0) scale(0.99); }
-    100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+    0%   { opacity: 0; transform: translateY(22px) translateX(-12px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
 }
 @keyframes sideCardEnterR {
-    0%   { opacity: 0; transform: translateY(-70px) translateX(30px) rotate(4deg) scale(0.9); }
-    55%  { opacity: 1; transform: translateY(8px) translateX(-2px) rotate(-0.5deg) scale(1.01); }
-    75%  { transform: translateY(-3px) rotate(0) scale(0.99); }
-    100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+    0%   { opacity: 0; transform: translateY(22px) translateX(12px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
 }
 @keyframes topMatchEnter {
-    0%   { opacity: 0; transform: scale(0.88) translateY(-50px); filter: blur(4px); }
-    60%  { opacity: 1; transform: scale(1.02) translateY(5px); filter: blur(0); }
-    80%  { transform: scale(0.99) translateY(-2px); }
-    100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+    0%   { opacity: 0; transform: translateY(28px) scale(0.96); filter: blur(2px); }
+    60%  { filter: blur(0); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 @keyframes topMatchSpotlight {
     0%   { box-shadow:
@@ -2924,7 +2919,7 @@ input[type="text"]:focus {
     .card-wrapper.rank-3 .movie-card {
         background: linear-gradient(145deg, #131313 0%, #0a0a0a 100%);
         filter: brightness(0.52) saturate(0.55);
-        transition: filter 0.65s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+        transition: filter 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.35s cubic-bezier(0.16,1,0.3,1);
     }
     /* Classe temporaire pour garder la luminosité pendant l'entrée */
     .card-wrapper.rank-2.card-bright .movie-card,
