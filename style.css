@@ -2907,28 +2907,28 @@ input[type="text"]:focus {
     .poster-container { height: 220px !important; }
     .movie-card.top-match .poster-container { height: 252px !important; }
 
-    /* ── Cartes #2 et #3 : overlay sombre via pseudo-element (n'affecte pas les boutons) ── */
-    .card-wrapper.rank-2,
-    .card-wrapper.rank-3 {
+    /* ── Cartes #2 et #3 : overlay sur la carte seulement (pas sur les chiffres) ── */
+    .card-wrapper.rank-2 .movie-card,
+    .card-wrapper.rank-3 .movie-card {
         position: relative;
     }
-    .card-wrapper.rank-2::after,
-    .card-wrapper.rank-3::after {
+    .card-wrapper.rank-2 .movie-card::after,
+    .card-wrapper.rank-3 .movie-card::after {
         content: '';
         position: absolute;
         inset: 0;
-        border-radius: 20px;
-        background: rgba(0,0,0,0.38);
+        background: rgba(0,0,0,0.25);
         pointer-events: none;
         transition: opacity 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        z-index: 3;
+        z-index: 10;
+        border-radius: inherit;
     }
-    /* Pendant l'animation (card-bright) : overlay invisible */
-    .card-wrapper.rank-2.card-bright::after,
-    .card-wrapper.rank-3.card-bright::after { opacity: 0; }
-    /* Hover : overlay invisible */
-    .card-wrapper.rank-2:hover::after,
-    .card-wrapper.rank-3:hover::after { opacity: 0; }
+    /* card-bright (pendant l'animation) : overlay transparent */
+    .card-wrapper.rank-2.card-bright .movie-card::after,
+    .card-wrapper.rank-3.card-bright .movie-card::after { opacity: 0; }
+    /* Hover : overlay transparent */
+    .card-wrapper.rank-2:hover .movie-card::after,
+    .card-wrapper.rank-3:hover .movie-card::after { opacity: 0; }
 
     /* ── Chiffres : réaction au survol ── */
     .card-rank-num {
