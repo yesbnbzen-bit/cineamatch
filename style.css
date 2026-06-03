@@ -2813,11 +2813,11 @@ input[type="text"]:focus {
 
 /* Numéro de rang au-dessus de chaque carte */
 .card-rank-num {
-    font-size: 5.5rem;
+    font-size: 4rem;
     font-weight: 900;
     line-height: 1;
     text-align: center;
-    letter-spacing: -4px;
+    letter-spacing: -3px;
     margin-bottom: 4px;
     padding-bottom: 0;
     background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
@@ -2828,8 +2828,8 @@ input[type="text"]:focus {
     pointer-events: none;
 }
 .card-wrapper.rank-1 .card-rank-num {
-    font-size: 6.5rem;
-    background: linear-gradient(180deg, rgba(229,9,20,0.55) 0%, rgba(180,0,100,0.20) 100%);
+    font-size: 4.8rem;
+    background: linear-gradient(180deg, rgba(229,9,20,0.90) 0%, rgba(180,0,60,0.40) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -2930,19 +2930,27 @@ input[type="text"]:focus {
     .card-wrapper.rank-2:hover .movie-card::after,
     .card-wrapper.rank-3:hover .movie-card::after { opacity: 0; }
 
-    /* ── Chiffres : réaction au survol ── */
+    /* ── Chiffres : monte vers le haut au survol (suit la carte) ── */
     .card-rank-num {
-        transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease;
+        transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease, background 0.35s ease;
     }
     .card-wrapper.rank-2 .card-rank-num,
     .card-wrapper.rank-3 .card-rank-num { opacity: 0.32; }
-    .card-wrapper.rank-2:hover .card-rank-num {
-        opacity: 1; transform: translateX(-5px) scale(1.07);
-    }
+
+    /* 02 et 03 au survol : monte + devient blanc */
+    .card-wrapper.rank-2:hover .card-rank-num,
     .card-wrapper.rank-3:hover .card-rank-num {
-        opacity: 1; transform: translateX(5px) scale(1.07);
+        opacity: 1;
+        transform: translateY(-8px);
+        background: linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(255,255,255,0.40) 100%) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
     }
-    .card-wrapper.rank-1:hover .card-rank-num { transform: scale(1.04); }
+    /* 01 au survol : monte aussi */
+    .card-wrapper.rank-1:hover .card-rank-num {
+        transform: translateY(-8px);
+    }
 
     /* Reflet miroir UNIQUEMENT sur le #1 Match */
     .card-wrapper.rank-1 {
