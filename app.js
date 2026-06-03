@@ -2595,8 +2595,8 @@ const App = {
                             </p>
                             <p class="ai-reason">${m.match_reason ? `"${escapeHtml(m.match_reason)}"` : `"${escapeHtml(App._autoReason(m))}"`}</p>
                         </div>
-                        <!-- Notation & Déjà vu (si connecté) -->
-                        <div class="rating-row" id="rating-row-${m.id}" style="display:none;">
+                        <!-- Notation & Déjà vu (visible pour tous) -->
+                        <div class="rating-row" id="rating-row-${m.id}" style="display:flex;">
                             <div class="rating-left">
                                 <span class="rating-label">Notez</span>
                                 <div class="rating-stars" id="stars-${m.id}">
@@ -3339,9 +3339,69 @@ const App = {
         }
     },
 
+    // ── Popup invitation inscription (favori / déjà vu) ──
+    _showSaveGate(feature) {
+        const existing = document.getElementById('save-gate-overlay');
+        if (existing) existing.remove();
+
+        const isHeart = feature === 'watchlist';
+        const overlay = document.createElement('div');
+        overlay.id = 'save-gate-overlay';
+        overlay.style.cssText = `
+            position:fixed;inset:0;z-index:9999;
+            background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);
+            display:flex;align-items:center;justify-content:center;padding:20px;`;
+        overlay.innerHTML = `
+            <div style="background:linear-gradient(160deg,#1a1a1a,#111);border-radius:20px;
+                border:1px solid rgba(229,9,20,0.2);padding:32px 28px;max-width:360px;width:100%;
+                text-align:center;box-shadow:0 40px 80px rgba(0,0,0,0.8);">
+                <div style="font-size:2.2rem;margin-bottom:12px;">${isHeart ? '❤️' : '✅'}</div>
+                <h3 style="font-size:1.15rem;font-weight:800;margin:0 0 10px;color:#fff;">
+                    ${isHeart
+                        ? (getLang()==='en' ? 'Save your favourites' : 'Sauvegarde tes favoris')
+                        : (getLang()==='en' ? 'Track what you\'ve seen' : 'Retrouve tes films vus')
+                    }
+                </h3>
+                <p style="font-size:0.85rem;color:rgba(255,255,255,0.55);margin:0 0 24px;line-height:1.5;">
+                    ${isHeart
+                        ? (getLang()==='en' ? 'Create a free account to keep your watchlist forever across all devices.' : 'Crée un compte gratuit pour retrouver ta liste sur tous tes appareils.')
+                        : (getLang()==='en' ? 'Create a free account to track films you\'ve already seen and get better recommendations.' : 'Crée un compte gratuit pour suivre les films déjà vus et affiner tes recommandations.')
+                    }
+                </p>
+                <button id="save-gate-signup" style="width:100%;padding:14px;border-radius:50px;border:none;
+                    background:linear-gradient(120deg,#e5091a 0%,#c0006e 55%,#8b00d4 100%);
+                    color:#fff;font-size:0.95rem;font-weight:800;cursor:pointer;margin-bottom:10px;">
+                    ${getLang()==='en' ? '🚀 Create free account' : '🚀 Créer un compte gratuit'}
+                </button>
+                <button id="save-gate-signin" style="width:100%;padding:12px;border-radius:50px;border:1px solid rgba(255,255,255,0.15);
+                    background:transparent;color:rgba(255,255,255,0.7);font-size:0.85rem;cursor:pointer;margin-bottom:8px;">
+                    ${getLang()==='en' ? 'Already have an account? Sign in' : 'Déjà un compte ? Se connecter'}
+                </button>
+                <button id="save-gate-close" style="background:none;border:none;color:rgba(255,255,255,0.35);
+                    font-size:0.8rem;cursor:pointer;padding:4px;">
+                    ${getLang()==='en' ? 'Continue without account' : 'Continuer sans compte'}
+                </button>
+            </div>`;
+        document.body.appendChild(overlay);
+
+        document.getElementById('save-gate-signup').onclick = () => {
+            overlay.remove();
+            import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signup'));
+        };
+        document.getElementById('save-gate-signin').onclick = () => {
+            overlay.remove();
+            import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signin'));
+        };
+        document.getElementById('save-gate-close').onclick = () => overlay.remove();
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    },
+
     // ── Marquer / démarquer "déjà vu" ──
     async toggleSeen(movieId) {
-        if (!store.currentUser) return;
+        if (!store.currentUser) {
+            this._showSaveGate('seen');
+            return;
+        }
         const movie = store._lastMovies?.find(m => m.id === movieId);
         if (!movie) return;
         const btn = document.getElementById(`seen-btn-${movieId}`);
@@ -3366,8 +3426,7 @@ const App = {
     // ── Charger l'état notation existant pour un film ──
     async loadMovieRating(movie) {
         if (!store.currentUser) return;
-        const row = document.getElementById(`rating-row-${movie.id}`);
-        if (row) row.style.display = 'flex';
+        // La row est déjà display:flex — on charge juste la note existante
 
         const existing = await ratingsService.getRating(store.currentUser.id, movie.id);
         if (!existing) return;
@@ -3435,6 +3494,10 @@ const App = {
             const movie = store._lastMovies?.find(m => Number(m.id) === id);
             store.watchlist.push(movie || { id });
             if (store.currentUser && movie) watchlistService.add(store.currentUser.id, movie);
+            // Inviter les non-connectés à créer un compte après le premier ajout
+            if (!store.currentUser) {
+                setTimeout(() => this._showSaveGate('watchlist'), 400);
+            }
         }
         localStorage.setItem('watchlist', JSON.stringify(store.watchlist));
 
