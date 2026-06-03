@@ -2759,9 +2759,9 @@ input[type="text"]:focus {
     100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
 }
 @keyframes topMatchEnter {
-    0%   { opacity: 0; transform: scale(0.78) translateY(-90px); filter: blur(8px); }
-    55%  { opacity: 1; transform: scale(1.04) translateY(8px); filter: blur(0); }
-    72%  { transform: scale(0.98) translateY(-4px); }
+    0%   { opacity: 0; transform: scale(0.88) translateY(-50px); filter: blur(4px); }
+    60%  { opacity: 1; transform: scale(1.02) translateY(5px); filter: blur(0); }
+    80%  { transform: scale(0.99) translateY(-2px); }
     100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 @keyframes topMatchSpotlight {
@@ -2845,10 +2845,53 @@ input[type="text"]:focus {
     background-clip: text;
 }
 
+/* ══ HALO ROUGE DERRIÈRE LE #1 MATCH ══ */
+.card-wrapper.rank-1 {
+    position: relative;
+}
+.card-wrapper.rank-1::before {
+    content: '';
+    position: absolute;
+    inset: -80px -60px;
+    background: radial-gradient(ellipse 75% 65% at 50% 38%,
+        rgba(229,9,20,0.28) 0%,
+        rgba(180,0,60,0.10) 45%,
+        transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+    border-radius: 50%;
+}
+
+/* ══ LUMIÈRE AU SOL SOUS LES 3 CARTES ══ */
+.movies-grid {
+    position: relative;
+}
+.movies-grid::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 60px;
+    background: radial-gradient(ellipse 70% 100% at 50% 100%,
+        rgba(229,9,20,0.18) 0%,
+        rgba(180,0,80,0.06) 50%,
+        transparent 75%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ══ GLOW SUR LE CHIFFRE "01" ══ */
+.card-wrapper.rank-1 .card-rank-num {
+    filter: drop-shadow(0 0 18px rgba(229,9,20,0.6)) drop-shadow(0 0 40px rgba(229,9,20,0.25));
+}
+
 /* ══ LAYOUT QUINCONCE DESKTOP (≥1025px) ══ */
 @media (min-width: 1025px) {
     /* Réduit l'espace entre le titre et les cartes */
     #results h2 { margin-bottom: 0 !important; }
+    #results.active { padding-top: 3rem !important; }
     .movies-grid {
         grid-template-columns: 1fr 1.1fr 1fr;
         grid-template-rows: auto auto;

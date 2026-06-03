@@ -2464,13 +2464,13 @@ const App = {
             // Wrapper quinconce + numéro de rang
             const wrapper = document.createElement('div');
             wrapper.className = `card-wrapper rank-${idx + 1}`;
-            // Animation différenciée : côtés depuis gauche/droite, #1 depuis le centre
+            // Animation simultanée : toutes les cartes apparaissent ensemble
             if (idx === 0) {
-                wrapper.style.animation = 'topMatchEnter 0.78s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both';
+                wrapper.style.animation = 'topMatchEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both';
             } else if (idx === 1) {
-                wrapper.style.animation = 'sideCardEnterL 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0s both';
+                wrapper.style.animation = 'sideCardEnterL 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0s both';
             } else {
-                wrapper.style.animation = 'sideCardEnterR 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both';
+                wrapper.style.animation = 'sideCardEnterR 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both';
             }
 
             const rankNum = document.createElement('div');
