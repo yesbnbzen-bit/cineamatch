@@ -2574,13 +2574,27 @@ const App = {
                     onclick="event.stopPropagation()">${t('trailer.search')}</a>`;
 
             // Métadonnées
-            const rankLabels = ['👑 #1 Match', '#2 Match', '#3 Match'];
-            const rankColors = ['rgba(229,9,20,0.7)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.12)'];
+            const rankLabels = ['#2 Match', '#3 Match'];
+            const rankColors = ['rgba(255,255,255,0.12)', 'rgba(255,255,255,0.12)'];
             const year       = m.release_date ? m.release_date.split('-')[0] : '';
             const genres     = (m.genres || []).slice(0, 3).map(g => `<span class="genre-tag">${escapeHtml(g.name)}</span>`).join('');
             const actors     = (m.credits?.cast || []).slice(0, 3).map(a => escapeHtml(a.name)).join(' · ');
 
             const isInWatchlist = store.watchlist.some(w => Number(w.id) === Number(m.id));
+            // Badge top-left : % compatibilité pour #1, rang pour #2/#3
+            const _compatLabel = getLang() === 'en' ? 'COMPATIBLE' : 'COMPATIBLE';
+            const _topBadge = idx === 0
+                ? `<div class="poster-compat-badge">
+                    <span class="compat-pct">${m.match_score}%</span>
+                    <span class="compat-lbl">${_compatLabel}</span>
+                   </div>`
+                : `<div style="position:absolute;top:14px;left:14px;z-index:10;
+                        background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);
+                        border:1px solid ${rankColors[idx - 1]};border-radius:100px;
+                        padding:4px 12px;font-size:0.62rem;font-weight:800;letter-spacing:1px;
+                        color:rgba(255,255,255,0.8);text-transform:uppercase;">
+                        ${rankLabels[idx - 1]}
+                   </div>`;
             card.innerHTML = `
                 <div class="poster-container" onclick="window.open('https://www.themoviedb.org/movie/${m.id}', '_blank')">
                     <div class="poster-bg" style="background-image:url('https://image.tmdb.org/t/p/w500${m.poster_path}')"></div>
@@ -2589,13 +2603,7 @@ const App = {
                          onerror="this.src='https://via.placeholder.com/500x750/1a1a1a/E50914?text=${encodeURIComponent(m.title)}'">
                     <div class="poster-overlay"></div>
                     ${trailerBtnHtml}
-                    <div style="position:absolute;top:14px;left:14px;z-index:10;
-                        background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);
-                        border:1px solid ${rankColors[idx]};border-radius:100px;
-                        padding:4px 12px;font-size:0.62rem;font-weight:800;letter-spacing:1px;
-                        color:${idx === 0 ? '#E50914' : 'rgba(255,255,255,0.8)'};text-transform:uppercase;">
-                        ${rankLabels[idx]}
-                    </div>
+                    ${_topBadge}
                     <button class="watchlist-btn${isInWatchlist ? ' active' : ''}" id="wl-btn-${m.id}"
                         onclick="toggleWatchlist(event, ${m.id})" title="${isInWatchlist ? t('results.remove') : t('results.add')}">
                         <svg width="16" height="16" viewBox="0 0 24 24"

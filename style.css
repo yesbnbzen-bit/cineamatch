@@ -2860,6 +2860,39 @@ input[type="text"]:focus {
 
 .rank-laurel-svg { flex-shrink: 0; }
 
+/* ══ BADGE COMPATIBILITÉ #1 MATCH (sur le poster) ══ */
+.poster-compat-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 10;
+    background: rgba(229,9,20,0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 7px 13px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    box-shadow: 0 4px 20px rgba(229,9,20,0.45);
+}
+.compat-pct {
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.compat-lbl {
+    font-size: 0.52rem;
+    font-weight: 800;
+    color: rgba(255,255,255,0.82);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
 /* ══ HALO ROUGE DERRIÈRE LE #1 MATCH (derrière la carte seulement) ══ */
 .card-wrapper.rank-1 {
     position: relative;
