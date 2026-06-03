@@ -2801,6 +2801,11 @@ input[type="text"]:focus {
     .card-wrapper.rank-2 { order: 1; margin-top: 72px; }
     /* #3 → colonne droite, décalé vers le bas */
     .card-wrapper.rank-3 { order: 3; margin-top: 72px; }
+    /* Reroll + tout élément non-wrapper → pleine largeur en bas */
+    .movies-grid > div:not(.card-wrapper) {
+        order: 99;
+        grid-column: 1 / -1;
+    }
 }
 
 /* Stagger d'apparition des cartes films */
