@@ -2464,13 +2464,15 @@ const App = {
             // Wrapper quinconce + numéro de rang
             const wrapper = document.createElement('div');
             wrapper.className = `card-wrapper rank-${idx + 1}`;
-            // Animation simultanée : toutes les cartes apparaissent ensemble
+            // Séquence podium : #1 → #2 → #3, côtés démarrent lumineux puis s'assombrissent
             if (idx === 0) {
-                wrapper.style.animation = 'topMatchEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both';
+                wrapper.style.animation = 'topMatchEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0s both';
             } else if (idx === 1) {
-                wrapper.style.animation = 'sideCardEnterL 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0s both';
+                wrapper.classList.add('card-bright');
+                wrapper.style.animation = 'sideCardEnterL 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both';
             } else {
-                wrapper.style.animation = 'sideCardEnterR 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both';
+                wrapper.classList.add('card-bright');
+                wrapper.style.animation = 'sideCardEnterR 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.52s both';
             }
 
             const rankNum = document.createElement('div');
@@ -2639,13 +2641,18 @@ const App = {
             }
         });
 
-        // ── Spotlight sur le #1 Match après l'entrée des cartes ──
+        // ── Spotlight #1 + assombrissement des cartes 2 et 3 après leur entrée ──
         setTimeout(() => {
             const topCard = ui.dom.moviesGrid.querySelector('.movie-card.top-match');
             const rankNum = ui.dom.moviesGrid.querySelector('.card-wrapper.rank-1 .card-rank-num');
             if (topCard) topCard.classList.add('spotlight-done');
             if (rankNum) rankNum.classList.add('rank-pulse');
-        }, 1050);
+        }, 1100);
+        // Retirer card-bright → transition douce vers l'assombrissement
+        setTimeout(() => {
+            ui.dom.moviesGrid.querySelectorAll('.card-wrapper.card-bright')
+                .forEach(w => w.classList.remove('card-bright'));
+        }, 1450);
 
         // ── Bouton Partager — sous la grille, aligné à droite ──
         // Nettoyer l'ancien bouton si déjà présent (évite les duplicates au reroll)

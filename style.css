@@ -2845,21 +2845,23 @@ input[type="text"]:focus {
     background-clip: text;
 }
 
-/* ══ HALO ROUGE DERRIÈRE LE #1 MATCH ══ */
+/* ══ HALO ROUGE DERRIÈRE LE #1 MATCH (derrière la carte seulement) ══ */
 .card-wrapper.rank-1 {
     position: relative;
 }
 .card-wrapper.rank-1::before {
     content: '';
     position: absolute;
-    inset: -80px -60px;
-    background: radial-gradient(ellipse 75% 65% at 50% 38%,
-        rgba(229,9,20,0.28) 0%,
-        rgba(180,0,60,0.10) 45%,
-        transparent 70%);
+    top: 28%;   /* commence sous le chiffre "01" */
+    left: -70px;
+    right: -70px;
+    bottom: -50px;
+    background: radial-gradient(ellipse 85% 75% at 50% 30%,
+        rgba(229,9,20,0.32) 0%,
+        rgba(180,0,60,0.12) 50%,
+        transparent 75%);
     pointer-events: none;
     z-index: -1;
-    border-radius: 50%;
 }
 
 /* ══ LUMIÈRE AU SOL SOUS LES 3 CARTES ══ */
@@ -2884,7 +2886,11 @@ input[type="text"]:focus {
 
 /* ══ GLOW SUR LE CHIFFRE "01" ══ */
 .card-wrapper.rank-1 .card-rank-num {
-    filter: drop-shadow(0 0 18px rgba(229,9,20,0.6)) drop-shadow(0 0 40px rgba(229,9,20,0.25));
+    background: linear-gradient(180deg, rgba(229,9,20,0.92) 0%, rgba(200,0,80,0.55) 60%, rgba(140,0,60,0.15) 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    filter: drop-shadow(0 0 16px rgba(229,9,20,0.65)) drop-shadow(0 0 36px rgba(229,9,20,0.3));
 }
 
 /* ══ LAYOUT QUINCONCE DESKTOP (≥1025px) ══ */
@@ -2913,12 +2919,17 @@ input[type="text"]:focus {
     /* Posters plus compacts sur desktop */
     .poster-container { height: 220px !important; }
     .movie-card.top-match .poster-container { height: 252px !important; }
-    /* ── Cartes #2 et #3 : assombries + désaturées par défaut ── */
+    /* ── Cartes #2 et #3 : assombries par défaut, lumineuses pendant l'animation ── */
     .card-wrapper.rank-2 .movie-card,
     .card-wrapper.rank-3 .movie-card {
         background: linear-gradient(145deg, #131313 0%, #0a0a0a 100%);
-        filter: brightness(0.55) saturate(0.6);
-        transition: filter 0.45s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease;
+        filter: brightness(0.52) saturate(0.55);
+        transition: filter 0.65s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    /* Classe temporaire pour garder la luminosité pendant l'entrée */
+    .card-wrapper.rank-2.card-bright .movie-card,
+    .card-wrapper.rank-3.card-bright .movie-card {
+        filter: brightness(1) saturate(1) !important;
     }
     .card-wrapper.rank-2:hover .movie-card,
     .card-wrapper.rank-3:hover .movie-card {
