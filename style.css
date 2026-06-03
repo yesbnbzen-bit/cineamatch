@@ -2810,10 +2810,10 @@ input[type="text"]:focus {
     /* Posters plus compacts sur desktop */
     .poster-container { height: 220px !important; }
     .movie-card.top-match .poster-container { height: 252px !important; }
-    /* Reflet miroir sous chaque carte — effet verre */
+    /* Reflet miroir discret — court et subtil, effet sol en verre */
     .card-wrapper {
-        -webkit-box-reflect: below 6px
-            linear-gradient(transparent 45%, rgba(0,0,0,0.28) 100%);
+        -webkit-box-reflect: below 3px
+            linear-gradient(rgba(0,0,0,0.10) 0%, transparent 35%);
     }
 }
 
