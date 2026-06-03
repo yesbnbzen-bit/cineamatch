@@ -2464,7 +2464,14 @@ const App = {
             // Wrapper quinconce + numéro de rang
             const wrapper = document.createElement('div');
             wrapper.className = `card-wrapper rank-${idx + 1}`;
-            wrapper.style.animation = `fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.18}s both`;
+            // Animation différenciée : côtés depuis gauche/droite, #1 depuis le centre
+            if (idx === 0) {
+                wrapper.style.animation = 'topMatchEnter 0.78s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both';
+            } else if (idx === 1) {
+                wrapper.style.animation = 'sideCardEnterL 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0s both';
+            } else {
+                wrapper.style.animation = 'sideCardEnterR 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both';
+            }
 
             const rankNum = document.createElement('div');
             rankNum.className = 'card-rank-num';
@@ -2631,6 +2638,14 @@ const App = {
                 this.loadMovieRating(m);
             }
         });
+
+        // ── Spotlight sur le #1 Match après l'entrée des cartes ──
+        setTimeout(() => {
+            const topCard = ui.dom.moviesGrid.querySelector('.movie-card.top-match');
+            const rankNum = ui.dom.moviesGrid.querySelector('.card-wrapper.rank-1 .card-rank-num');
+            if (topCard) topCard.classList.add('spotlight-done');
+            if (rankNum) rankNum.classList.add('rank-pulse');
+        }, 1050);
 
         // ── Bouton Partager — sous la grille, aligné à droite ──
         // Nettoyer l'ancien bouton si déjà présent (évite les duplicates au reroll)

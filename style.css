@@ -2745,6 +2745,58 @@ input[type="text"]:focus {
     to   { opacity: 1; transform: translateY(0)    translateZ(0); }
 }
 
+/* ══ ANIMATIONS RÉSULTATS — séquence podium ══ */
+@keyframes sideCardEnterL {
+    from { opacity: 0; transform: translateX(-55px) translateY(18px) scale(0.94); }
+    to   { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+}
+@keyframes sideCardEnterR {
+    from { opacity: 0; transform: translateX(55px) translateY(18px) scale(0.94); }
+    to   { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+}
+@keyframes topMatchEnter {
+    0%   { opacity: 0; transform: scale(0.82) translateY(45px); filter: blur(3px); }
+    65%  { opacity: 1; transform: scale(1.035) translateY(-7px); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+@keyframes topMatchSpotlight {
+    0%   { box-shadow:
+               0 0 0 1px rgba(229,9,20,0.15),
+               0 8px 40px rgba(229,9,20,0.22),
+               0 2px 8px rgba(0,0,0,0.6); }
+    35%  { box-shadow:
+               0 0 0 2px rgba(229,9,20,0.7),
+               0 0 80px 20px rgba(229,9,20,0.45),
+               0 0 140px 40px rgba(200,0,80,0.2),
+               0 16px 60px rgba(229,9,20,0.3); }
+    100% { box-shadow:
+               0 0 0 1px rgba(229,9,20,0.15),
+               0 8px 40px rgba(229,9,20,0.22),
+               0 2px 8px rgba(0,0,0,0.6); }
+}
+@keyframes rankNumEnter {
+    0%   { opacity: 0; transform: scale(2.2); filter: blur(10px); }
+    60%  { opacity: 1; transform: scale(0.96); filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); }
+}
+@keyframes rankNumPulse {
+    0%   { opacity: 1; }
+    40%  { opacity: 0.85; transform: scale(1.06); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Carte #1 après spotlight */
+.movie-card.top-match.spotlight-done {
+    animation: topMatchSpotlight 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+/* Numéro 01 animation spéciale */
+.card-wrapper.rank-1 .card-rank-num {
+    animation: rankNumEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+.card-wrapper.rank-1 .card-rank-num.rank-pulse {
+    animation: rankNumPulse 0.6s ease-out forwards;
+}
+
 .movies-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
