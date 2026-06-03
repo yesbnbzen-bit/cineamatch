@@ -2475,8 +2475,18 @@ const App = {
             }
 
             const rankNum = document.createElement('div');
-            rankNum.className = 'card-rank-num';
-            rankNum.textContent = String(idx + 1).padStart(2, '0');
+            rankNum.className = `card-rank-num rank-badge rank-badge-${idx + 1}`;
+            const _isFr = getLang() !== 'en';
+            const _rankLabels = _isFr
+                ? ['MATCH PARFAIT', 'TRÈS BON CHOIX', 'À DÉCOUVRIR']
+                : ['PERFECT MATCH', 'GREAT CHOICE', 'WORTH WATCHING'];
+            rankNum.innerHTML = `
+                <span class="rank-laurel">&#10094;</span>
+                <div class="rank-inner">
+                    <div class="rank-number">${idx + 1}</div>
+                    <div class="rank-label">${_rankLabels[idx]}</div>
+                </div>
+                <span class="rank-laurel">&#10095;</span>`;
             wrapper.appendChild(rankNum);
 
             const card = document.createElement('div');

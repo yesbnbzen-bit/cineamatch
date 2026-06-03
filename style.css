@@ -2812,27 +2812,59 @@ input[type="text"]:focus {
 }
 
 /* Numéro de rang au-dessus de chaque carte */
+/* ══ BADGE RANG — lauriers + chiffre + label ══ */
 .card-rank-num {
-    font-size: 4rem;
-    font-weight: 900;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     text-align: center;
-    letter-spacing: -3px;
-    margin-bottom: 4px;
-    padding-bottom: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    margin-bottom: 6px;
     user-select: none;
     pointer-events: none;
+    background: none !important;
+    -webkit-text-fill-color: unset !important;
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease;
 }
-.card-wrapper.rank-1 .card-rank-num {
-    font-size: 4.8rem;
-    background: linear-gradient(180deg, rgba(229,9,20,0.90) 0%, rgba(180,0,60,0.40) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.rank-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+.rank-number {
+    font-size: 3.6rem;
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -2px;
+}
+.rank-label {
+    font-size: 0.52rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+.rank-laurel {
+    font-size: 2.4rem;
+    font-weight: 300;
+    opacity: 0.65;
+    line-height: 1;
+    display: block;
+}
+
+/* Couleurs par rang */
+.rank-badge-1 {
+    color: #e5091a;
+    text-shadow: 0 0 22px rgba(229,9,20,0.50);
+}
+.rank-badge-2 {
+    color: #7b9fc4;
+    text-shadow: 0 0 18px rgba(123,159,196,0.40);
+}
+.rank-badge-3 {
+    color: #c87941;
+    text-shadow: 0 0 18px rgba(200,121,65,0.40);
 }
 
 /* ══ HALO ROUGE DERRIÈRE LE #1 MATCH (derrière la carte seulement) ══ */
@@ -2874,14 +2906,7 @@ input[type="text"]:focus {
     z-index: 0;
 }
 
-/* ══ CHIFFRE "01" — rouge sans glow excessif ══ */
-.card-wrapper.rank-1 .card-rank-num {
-    background: linear-gradient(180deg, rgba(229,9,20,0.90) 0%, rgba(180,0,60,0.40) 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    filter: none;
-}
+/* Suppression ancienne règle gradient 01 — remplacée par .rank-badge */
 
 /* ══ LAYOUT QUINCONCE DESKTOP (≥1025px) ══ */
 @media (min-width: 1025px) {
@@ -2930,27 +2955,24 @@ input[type="text"]:focus {
     .card-wrapper.rank-2:hover .movie-card::after,
     .card-wrapper.rank-3:hover .movie-card::after { opacity: 0; }
 
-    /* ── Chiffres : monte vers le haut au survol (suit la carte) ── */
-    .card-rank-num {
-        transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease, background 0.35s ease;
-    }
+    /* ── Badges rang : opacité réduite sur 2 et 3, monte au hover ── */
     .card-wrapper.rank-2 .card-rank-num,
-    .card-wrapper.rank-3 .card-rank-num { opacity: 0.32; }
+    .card-wrapper.rank-3 .card-rank-num { opacity: 0.45; }
 
-    /* 02 et 03 au survol : monte + devient blanc */
-    .card-wrapper.rank-2:hover .card-rank-num,
+    .card-wrapper:hover .card-rank-num { transform: translateY(-8px); }
+
+    /* 02 et 03 au hover : plus lumineux + couleur renforcée */
+    .card-wrapper.rank-2:hover .card-rank-num {
+        opacity: 1;
+        color: #a8c8e8 !important;
+        text-shadow: 0 0 24px rgba(168,200,232,0.70) !important;
+    }
     .card-wrapper.rank-3:hover .card-rank-num {
         opacity: 1;
-        transform: translateY(-8px);
-        background: linear-gradient(180deg, rgba(255,255,255,0.90) 0%, rgba(255,255,255,0.40) 100%) !important;
-        -webkit-background-clip: text !important;
-        background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
+        color: #e89050 !important;
+        text-shadow: 0 0 24px rgba(232,144,80,0.65) !important;
     }
-    /* 01 au survol : monte aussi */
-    .card-wrapper.rank-1:hover .card-rank-num {
-        transform: translateY(-8px);
-    }
+    .card-wrapper.rank-1:hover .card-rank-num { opacity: 1; }
 
     /* Reflet miroir UNIQUEMENT sur le #1 Match */
     .card-wrapper.rank-1 {
