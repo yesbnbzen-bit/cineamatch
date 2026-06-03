@@ -2461,9 +2461,18 @@ const App = {
         store._lastMovies = movies;
 
         movies.forEach((m, idx) => {
+            // Wrapper quinconce + numéro de rang
+            const wrapper = document.createElement('div');
+            wrapper.className = `card-wrapper rank-${idx + 1}`;
+            wrapper.style.animation = `fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.18}s both`;
+
+            const rankNum = document.createElement('div');
+            rankNum.className = 'card-rank-num';
+            rankNum.textContent = String(idx + 1).padStart(2, '0');
+            wrapper.appendChild(rankNum);
+
             const card = document.createElement('div');
             card.className = 'movie-card' + (idx === 0 ? ' top-match' : '');
-            card.style.animation = `fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.18}s both`;
 
             // Infos providers (informatif seulement)
             const frProviders = m['watch/providers']?.results?.FR || {};
@@ -2612,7 +2621,8 @@ const App = {
                     </div>
                 </div>`;
 
-            ui.dom.moviesGrid.appendChild(card);
+            wrapper.appendChild(card);
+            ui.dom.moviesGrid.appendChild(wrapper);
 
             // Sauvegarder dans l'historique si connecté
             if (store.currentUser) {

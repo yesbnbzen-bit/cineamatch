@@ -2757,10 +2757,56 @@ input[type="text"]:focus {
     margin-right: auto;
 }
 
+/* ══ WRAPPER CARTE + NUMÉRO DE RANG ══ */
+.card-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* Numéro de rang au-dessus de chaque carte */
+.card-rank-num {
+    font-size: 5.5rem;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    letter-spacing: -4px;
+    margin-bottom: 4px;
+    padding-bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    user-select: none;
+    pointer-events: none;
+}
+.card-wrapper.rank-1 .card-rank-num {
+    font-size: 6.5rem;
+    background: linear-gradient(180deg, rgba(229,9,20,0.55) 0%, rgba(180,0,100,0.20) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ══ LAYOUT QUINCONCE DESKTOP (≥1025px) ══ */
+@media (min-width: 1025px) {
+    .movies-grid {
+        grid-template-columns: 1fr 1.18fr 1fr;
+        align-items: start;
+        padding-top: 20px;
+    }
+    /* #1 Match → colonne centrale */
+    .card-wrapper.rank-1 { order: 2; }
+    /* #2 → colonne gauche, décalé vers le bas */
+    .card-wrapper.rank-2 { order: 1; margin-top: 72px; }
+    /* #3 → colonne droite, décalé vers le bas */
+    .card-wrapper.rank-3 { order: 3; margin-top: 72px; }
+}
+
 /* Stagger d'apparition des cartes films */
-.movie-card:nth-child(1) { animation-delay: 0ms;   }
-.movie-card:nth-child(2) { animation-delay: 80ms;  }
-.movie-card:nth-child(3) { animation-delay: 160ms; }
+.card-wrapper:nth-child(1) { animation-delay: 0ms;   }
+.card-wrapper:nth-child(2) { animation-delay: 80ms;  }
+.card-wrapper:nth-child(3) { animation-delay: 160ms; }
 .movie-card:nth-child(4) { animation-delay: 240ms; }
 .movie-card:nth-child(5) { animation-delay: 320ms; }
 .movie-card:nth-child(6) { animation-delay: 400ms; }
@@ -6529,6 +6575,11 @@ html.duo-link #duo-welcome {
     .movies-grid {
         gap: 1.5rem;
     }
+
+    /* Wrapper mobile : pas de quinconce, numéros petits */
+    .card-wrapper { order: unset !important; margin-top: 0 !important; }
+    .card-rank-num { font-size: 2.8rem !important; margin-bottom: 2px; }
+    .card-wrapper.rank-1 .card-rank-num { font-size: 3.2rem !important; }
 
     .movie-card {
         border-radius: 16px;
