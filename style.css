@@ -2853,19 +2853,12 @@ input[type="text"]:focus {
     display: block;
 }
 
-/* Couleurs par rang */
-.rank-badge-1 {
-    color: #e5091a;
-    text-shadow: 0 0 22px rgba(229,9,20,0.50);
-}
-.rank-badge-2 {
-    color: #7b9fc4;
-    text-shadow: 0 0 18px rgba(123,159,196,0.40);
-}
-.rank-badge-3 {
-    color: #c87941;
-    text-shadow: 0 0 18px rgba(200,121,65,0.40);
-}
+/* Couleurs par rang — sans text-shadow éblouissant */
+.rank-badge-1 { color: #e5091a; }
+.rank-badge-2 { color: #7b9fc4; }
+.rank-badge-3 { color: #c87941; }
+
+.rank-laurel-svg { flex-shrink: 0; }
 
 /* ══ HALO ROUGE DERRIÈRE LE #1 MATCH (derrière la carte seulement) ══ */
 .card-wrapper.rank-1 {
@@ -2964,13 +2957,11 @@ input[type="text"]:focus {
     /* 02 et 03 au hover : plus lumineux + couleur renforcée */
     .card-wrapper.rank-2:hover .card-rank-num {
         opacity: 1;
-        color: #a8c8e8 !important;
-        text-shadow: 0 0 24px rgba(168,200,232,0.70) !important;
+        color: #b8d4f0 !important;
     }
     .card-wrapper.rank-3:hover .card-rank-num {
         opacity: 1;
         color: #e89050 !important;
-        text-shadow: 0 0 24px rgba(232,144,80,0.65) !important;
     }
     .card-wrapper.rank-1:hover .card-rank-num { opacity: 1; }
 
