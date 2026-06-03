@@ -2745,18 +2745,23 @@ input[type="text"]:focus {
     to   { opacity: 1; transform: translateY(0)    translateZ(0); }
 }
 
-/* ══ ANIMATIONS RÉSULTATS — séquence podium ══ */
+/* ══ ANIMATIONS RÉSULTATS — chute podium avec rotation ══ */
 @keyframes sideCardEnterL {
-    from { opacity: 0; transform: translateX(-55px) translateY(18px) scale(0.94); }
-    to   { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+    0%   { opacity: 0; transform: translateY(-70px) translateX(-30px) rotate(-4deg) scale(0.9); }
+    55%  { opacity: 1; transform: translateY(8px) translateX(2px) rotate(0.5deg) scale(1.01); }
+    75%  { transform: translateY(-3px) rotate(0) scale(0.99); }
+    100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
 }
 @keyframes sideCardEnterR {
-    from { opacity: 0; transform: translateX(55px) translateY(18px) scale(0.94); }
-    to   { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+    0%   { opacity: 0; transform: translateY(-70px) translateX(30px) rotate(4deg) scale(0.9); }
+    55%  { opacity: 1; transform: translateY(8px) translateX(-2px) rotate(-0.5deg) scale(1.01); }
+    75%  { transform: translateY(-3px) rotate(0) scale(0.99); }
+    100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
 }
 @keyframes topMatchEnter {
-    0%   { opacity: 0; transform: scale(0.82) translateY(45px); filter: blur(3px); }
-    65%  { opacity: 1; transform: scale(1.035) translateY(-7px); filter: blur(0); }
+    0%   { opacity: 0; transform: scale(0.78) translateY(-90px); filter: blur(8px); }
+    55%  { opacity: 1; transform: scale(1.04) translateY(8px); filter: blur(0); }
+    72%  { transform: scale(0.98) translateY(-4px); }
     100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 @keyframes topMatchSpotlight {
@@ -2842,13 +2847,16 @@ input[type="text"]:focus {
 
 /* ══ LAYOUT QUINCONCE DESKTOP (≥1025px) ══ */
 @media (min-width: 1025px) {
+    /* Réduit l'espace entre le titre et les cartes */
+    #results h2 { margin-bottom: 0 !important; }
     .movies-grid {
         grid-template-columns: 1fr 1.1fr 1fr;
         grid-template-rows: auto auto;
         align-items: start;
-        padding-top: 20px;
+        padding-top: 10px;
         max-width: 1280px;
         gap: 1.4rem;
+        margin-top: 0.5rem;
     }
     /* Placement explicite par colonne — #2 gauche, #1 centre, #3 droite */
     .card-wrapper.rank-1 { grid-column: 2; grid-row: 1; }
@@ -2862,10 +2870,36 @@ input[type="text"]:focus {
     /* Posters plus compacts sur desktop */
     .poster-container { height: 220px !important; }
     .movie-card.top-match .poster-container { height: 252px !important; }
-    /* Fond légèrement plus sombre pour les cartes #2 et #3 */
+    /* ── Cartes #2 et #3 : assombries + désaturées par défaut ── */
     .card-wrapper.rank-2 .movie-card,
     .card-wrapper.rank-3 .movie-card {
         background: linear-gradient(145deg, #131313 0%, #0a0a0a 100%);
+        filter: brightness(0.55) saturate(0.6);
+        transition: filter 0.45s ease, transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease;
+    }
+    .card-wrapper.rank-2:hover .movie-card,
+    .card-wrapper.rank-3:hover .movie-card {
+        filter: brightness(1) saturate(1);
+    }
+    /* ── Chiffres : réaction au survol de la carte ── */
+    .card-rank-num {
+        transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+    }
+    .card-wrapper.rank-2 .card-rank-num,
+    .card-wrapper.rank-3 .card-rank-num {
+        opacity: 0.35;
+        transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+    }
+    .card-wrapper.rank-2:hover .card-rank-num {
+        opacity: 1;
+        transform: translateX(-6px) scale(1.08);
+    }
+    .card-wrapper.rank-3:hover .card-rank-num {
+        opacity: 1;
+        transform: translateX(6px) scale(1.08);
+    }
+    .card-wrapper.rank-1:hover .card-rank-num {
+        transform: scale(1.05);
     }
     /* Reflet miroir discret — court et subtil, effet sol en verre */
     .card-wrapper {
