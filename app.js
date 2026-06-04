@@ -125,7 +125,7 @@ function renderLoadingBgLogos() {
         const H = box.clientHeight || 700;
         const margin   = W * 0.22;
         const total    = W + 2 * margin;
-        const edgeSize = Math.min(W * 0.19, 360);   // GÉANT sur les côtés
+        const edgeSize = Math.min(W * 0.28, 520);   // GÉANT sur les côtés
         const cy = H * 0.5;
         imgs.forEach((img, i) => {
             let f = ((i / N) + t * speed) % 1;
