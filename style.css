@@ -2067,6 +2067,43 @@ h1 {
     min-height: 1.1em;
     transition: color 0.3s;
 }
+
+/* ── Ligne de réassurance plateformes (sous le questionnaire) ── */
+.platform-reassure {
+    margin: 2.5rem auto 0;
+    max-width: 850px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.pr-label {
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.38);
+}
+.pr-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+.pr-chip {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 100px;
+    padding: 4px 13px;
+}
+.pr-chip.pr-more {
+    background: transparent;
+    border-color: transparent;
+    color: rgba(255,255,255,0.35);
+    font-weight: 400;
+}
 .multi-hint.complete {
     color: rgba(80, 200, 120, 0.9);
     font-weight: 600;
