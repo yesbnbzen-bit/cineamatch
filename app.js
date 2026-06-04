@@ -111,8 +111,9 @@ function renderLoadingMarquee() {
     } catch (e) { /* ignore */ }
     if (logos.length < 4) logos = FALLBACK_PROVIDER_LOGOS;   // 1er run
     const seq = [...logos, ...logos];                         // duplication = boucle fluide
+    // Chaque logo sur une pastille blanche = couleurs nettes sur fond sombre
     track.innerHTML = seq.map(l =>
-        `<img class="lm-logo${l.mono ? ' lm-mono' : ''}" height="28" style="height:28px;width:auto" src="${l.src}" alt="" loading="eager" onerror="this.remove()">`
+        `<span class="lm-tile"><img class="lm-logo" height="24" style="height:24px;width:auto" src="${l.src}" alt="" loading="eager" onerror="this.closest('.lm-tile').remove()"></span>`
     ).join('');
 }
 

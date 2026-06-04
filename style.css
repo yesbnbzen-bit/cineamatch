@@ -2119,19 +2119,26 @@ h1 {
 .loading-marquee-track {
     display: flex;
     align-items: center;
-    gap: 28px;
+    gap: 16px;
     width: max-content;
-    animation: lm-scroll 20s linear infinite;
+    animation: lm-scroll 22s linear infinite;
+}
+.lm-tile {
+    flex: 0 0 auto;
+    height: 42px;
+    min-width: 42px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 11px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
 .lm-logo {
-    height: 28px;
+    height: 24px;
     width: auto;
-    border-radius: 6px;
-    flex: 0 0 auto;
-}
-.lm-mono {
-    filter: invert(1);
-    opacity: 0.78;
+    display: block;
 }
 @keyframes lm-scroll {
     from { transform: translateX(0); }
