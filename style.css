@@ -2070,12 +2070,14 @@ h1 {
 
 /* ── Ligne de réassurance plateformes (sous le questionnaire) ── */
 .platform-reassure {
-    margin: 2.5rem auto 0;
-    max-width: 850px;
+    margin: 1.8rem auto 0;
+    max-width: 760px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    padding-top: 1.7rem;
+    border-top: 1px solid rgba(255,255,255,0.07);
 }
 .pr-label {
     font-size: 0.7rem;
@@ -2088,22 +2090,21 @@ h1 {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 26px;
+    gap: 30px;
 }
 .pr-logo {
-    height: 21px;
+    height: 22px;
     width: auto;
-    filter: invert(0.62);            /* logos noirs → gris discret */
-    opacity: 0.85;
-    transition: filter 0.25s ease, opacity 0.25s ease;
+    filter: invert(1);               /* logos noirs → blancs */
+    opacity: 0.72;
+    transition: opacity 0.25s ease;
 }
 .pr-logo:hover {
-    filter: invert(0.92);
     opacity: 1;
 }
 .pr-more {
     font-size: 0.78rem;
-    color: rgba(255,255,255,0.35);
+    color: rgba(255,255,255,0.3);
 }
 .multi-hint.complete {
     color: rgba(80, 200, 120, 0.9);
