@@ -2812,53 +2812,62 @@ input[type="text"]:focus {
 }
 
 /* Numéro de rang au-dessus de chaque carte */
-/* ══ BADGE RANG — lauriers + chiffre + label ══ */
+/* ══ BADGE RANG — chiffre + label + lignes horizontales ══ */
 .card-rank-num {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     text-align: center;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     user-select: none;
     pointer-events: none;
     background: none !important;
     -webkit-text-fill-color: unset !important;
     transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease;
 }
+/* Lignes horizontales qui s'étendent des deux côtés */
+.card-rank-num::before,
+.card-rank-num::after {
+    content: '';
+    position: absolute;
+    top: 42%;
+    width: 55px;
+    height: 1px;
+    opacity: 0.45;
+}
+.card-rank-num::before {
+    right: calc(100% + 6px);
+    background: linear-gradient(90deg, transparent, currentColor);
+}
+.card-rank-num::after {
+    left: calc(100% + 6px);
+    background: linear-gradient(90deg, currentColor, transparent);
+}
 .rank-inner {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1px;
+    gap: 2px;
 }
 .rank-number {
-    font-size: 3.6rem;
+    font-size: 3.2rem;
     font-weight: 900;
-    line-height: 0.85;
+    line-height: 0.9;
     letter-spacing: -2px;
 }
 .rank-label {
-    font-size: 0.52rem;
+    font-size: 0.50rem;
     font-weight: 800;
     letter-spacing: 2.5px;
     text-transform: uppercase;
-    opacity: 0.85;
-}
-.rank-laurel {
-    font-size: 2.4rem;
-    font-weight: 300;
-    opacity: 0.65;
-    line-height: 1;
-    display: block;
+    opacity: 0.80;
 }
 
-/* Couleurs par rang — sans text-shadow éblouissant */
-.rank-badge-1 { color: #e5091a; }
-.rank-badge-2 { color: #7b9fc4; }
+/* Couleurs par rang */
+.rank-badge-1 { color: #ff1e2d; }
+.rank-badge-2 { color: #8fafc8; }
 .rank-badge-3 { color: #c87941; }
-
-.rank-laurel-svg { flex-shrink: 0; }
 
 /* ══ BADGE COMPATIBILITÉ #1 MATCH — style score IA premium ══ */
 .poster-compat-badge {
@@ -2964,6 +2973,26 @@ input[type="text"]:focus {
     /* Posters plus compacts */
     .poster-container { height: 220px !important; }
     .movie-card.top-match .poster-container { height: 252px !important; }
+
+    /* ── Bordures par rang — design podium ── */
+    /* #1 Match : rouge vif + glow */
+    .movie-card.top-match {
+        border: 1.5px solid rgba(255,30,45,0.90) !important;
+        box-shadow: 0 0 32px rgba(255,30,45,0.30), 0 24px 70px rgba(0,0,0,0.65) !important;
+        background: linear-gradient(180deg, #1a080a 0%, #0e0507 60%, #0b0b0d 100%) !important;
+    }
+    /* #2 : blanc subtil */
+    .card-wrapper.rank-2 .movie-card {
+        border: 1px solid rgba(255,255,255,0.16) !important;
+        box-shadow: 0 20px 55px rgba(0,0,0,0.55) !important;
+        background: linear-gradient(180deg, #131313 0%, #0b0b0d 100%) !important;
+    }
+    /* #3 : ambre/orange subtil */
+    .card-wrapper.rank-3 .movie-card {
+        border: 1px solid rgba(255,140,20,0.38) !important;
+        box-shadow: 0 20px 55px rgba(0,0,0,0.55) !important;
+        background: linear-gradient(180deg, #131310 0%, #0b0b09 100%) !important;
+    }
 
     /* ── Cartes #2 et #3 : overlay sur la carte seulement (pas sur les chiffres) ── */
     .card-wrapper.rank-2 .movie-card,

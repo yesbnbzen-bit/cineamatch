@@ -2480,28 +2480,11 @@ const App = {
             const _rankLabels = _isFr
                 ? ['MATCH PARFAIT', 'TRÈS BON CHOIX', 'À DÉCOUVRIR']
                 : ['PERFECT MATCH', 'GREAT CHOICE', 'WORTH WATCHING'];
-            const _laurelSVG = `<svg class="rank-laurel-svg" viewBox="0 0 16 42" width="13" height="38" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 2 Q6 10 7 40" stroke="currentColor" stroke-width="1.1" fill="none" opacity="0.5" stroke-linecap="round"/>
-                <ellipse cx="9" cy="7"  rx="5.5" ry="2.2" transform="rotate(-45 9 7)"  opacity="0.9"/>
-                <ellipse cx="8" cy="14" rx="5.5" ry="2.2" transform="rotate(-30 8 14)" opacity="0.85"/>
-                <ellipse cx="7" cy="22" rx="5"   ry="2"   transform="rotate(-15 7 22)" opacity="0.8"/>
-                <ellipse cx="7" cy="30" rx="4.5" ry="1.8" transform="rotate(-5 7 30)"  opacity="0.72"/>
-                <ellipse cx="7" cy="37" rx="4"   ry="1.6" transform="rotate(5 7 37)"   opacity="0.62"/>
-            </svg>`;
             rankNum.innerHTML = `
-                ${_laurelSVG}
                 <div class="rank-inner">
                     <div class="rank-number">${idx + 1}</div>
                     <div class="rank-label">${_rankLabels[idx]}</div>
-                </div>
-                <svg class="rank-laurel-svg rank-laurel-r" viewBox="0 0 16 42" width="13" height="38" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 2 Q10 10 9 40" stroke="currentColor" stroke-width="1.1" fill="none" opacity="0.5" stroke-linecap="round"/>
-                    <ellipse cx="7"  cy="7"  rx="5.5" ry="2.2" transform="rotate(45 7 7)"   opacity="0.9"/>
-                    <ellipse cx="8"  cy="14" rx="5.5" ry="2.2" transform="rotate(30 8 14)"   opacity="0.85"/>
-                    <ellipse cx="9"  cy="22" rx="5"   ry="2"   transform="rotate(15 9 22)"   opacity="0.8"/>
-                    <ellipse cx="9"  cy="30" rx="4.5" ry="1.8" transform="rotate(5 9 30)"    opacity="0.72"/>
-                    <ellipse cx="9"  cy="37" rx="4"   ry="1.6" transform="rotate(-5 9 37)"   opacity="0.62"/>
-                </svg>`;
+                </div>`;
             wrapper.appendChild(rankNum);
 
             const card = document.createElement('div');
