@@ -102,15 +102,15 @@ function cacheProviderLogos(movies) {
     } catch (e) { /* localStorage indispo : on ignore */ }
 }
 
-function renderLoadingMarquee() {
-    const track = document.getElementById('loading-marquee-track');
-    if (!track) return;
-    const logos = PLATFORM_DOMAINS.map(d => `https://www.google.com/s2/favicons?sz=128&domain=${d}`);
-    const seq = [...logos, ...logos];   // duplication = boucle fluide
-    // Icône officielle colorée de chaque plateforme
-    track.innerHTML = seq.map(src =>
-        `<span class="lm-tile"><img class="lm-logo" height="34" width="34" style="height:34px;width:34px" src="${src}" alt="" loading="eager" onerror="this.closest('.lm-tile').remove()"></span>`
-    ).join('');
+function renderLoadingBgLogos() {
+    const box = document.getElementById('loading-bg-logos');
+    if (!box) return;
+    const xs = [20, 40, 60, 80, 32, 68];   // positions horizontales variées
+    box.innerHTML = PLATFORM_DOMAINS.map((d, i) => {
+        const x = xs[i % xs.length];
+        const delay = (i * 1.7).toFixed(1);
+        return `<img class="lbg-logo" style="left:${x}%;animation-delay:${delay}s" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.remove()">`;
+    }).join('');
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -530,7 +530,7 @@ const App = {
         try {
             // Afficher un écran de chargement rapide
             ui.switchView('loading');
-            renderLoadingMarquee();
+            renderLoadingBgLogos();
             const loadingText = document.getElementById('loading-text');
             if (loadingText) loadingText.textContent = t('loading.movie');
 
@@ -1221,7 +1221,7 @@ const App = {
     async processResults(isReroll = false) {
         this._clearSession();
         ui.switchView('loading');
-        renderLoadingMarquee();
+        renderLoadingBgLogos();
         const loadingText = document.getElementById('loading-text');
 
         // ── D : Helper feedback visuel live ──

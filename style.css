@@ -2107,40 +2107,35 @@ h1 {
     color: rgba(255,255,255,0.3);
 }
 
-/* ── Carrousel de logos sur l'écran de chargement ── */
-.loading-marquee {
-    margin: 2.4rem auto 0;
-    width: 100%;
-    max-width: 440px;
+/* ── Logos en profondeur derrière l'écran de chargement ── */
+#loading { position: relative; overflow: hidden; }
+#loading .loader-content { position: relative; z-index: 2; }
+.loading-bg-logos {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
-            mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
 }
-.loading-marquee-track {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    width: max-content;
-    animation: lm-scroll 22s linear infinite;
+.lbg-logo {
+    position: absolute;
+    top: 50%;
+    width: 210px;
+    height: 210px;
+    border-radius: 42px;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.6);
+    animation: lbg-recede 10.2s linear infinite;
+    will-change: transform, opacity;
 }
-.lm-tile {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.lm-logo {
-    height: 34px;
-    width: 34px;
-    border-radius: 8px;
-    display: block;
-}
-@keyframes lm-scroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+@keyframes lbg-recede {
+    0%   { opacity: 0;    transform: translate(-50%,-50%) scale(1.65); }
+    14%  { opacity: 0.16; }
+    78%  { opacity: 0.05; }
+    100% { opacity: 0;    transform: translate(-50%,-50%) scale(0.32); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .loading-marquee-track { animation: none; }
+    .lbg-logo { animation: none; opacity: 0.08; transform: translate(-50%,-50%) scale(1); }
 }
 .multi-hint.complete {
     color: rgba(80, 200, 120, 0.9);
