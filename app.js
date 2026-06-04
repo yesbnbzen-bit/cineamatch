@@ -76,11 +76,12 @@ function getNextScore(rerollCount) {
 }
 
 // ── Logos plateformes : carrousel de l'écran de chargement ──
-// On mémorise les vrais logos colorés TMDB vus dans les résultats, et on s'en
-// sert pour le défilé. 1er run (cache vide) → fallback monochrome fiable.
-const FALLBACK_PROVIDER_LOGOS = [
-    'netflix', 'primevideo', 'appletv', 'max', 'paramountplus'
-].map(s => ({ src: `https://cdn.jsdelivr.net/npm/simple-icons@13/icons/${s}.svg`, mono: true }));
+// Vrais logos COLORÉS (icône officielle de chaque plateforme) via le service
+// de favicons Google — fiable, coloré, immédiat. Posés sur pastille blanche.
+const PLATFORM_DOMAINS = [
+    'netflix.com', 'primevideo.com', 'disneyplus.com', 'canalplus.com',
+    'tv.apple.com', 'max.com', 'paramountplus.com'
+];
 
 function cacheProviderLogos(movies) {
     try {
@@ -104,16 +105,11 @@ function cacheProviderLogos(movies) {
 function renderLoadingMarquee() {
     const track = document.getElementById('loading-marquee-track');
     if (!track) return;
-    let logos = [];
-    try {
-        const map = JSON.parse(localStorage.getItem('cm_provider_logos') || '{}');
-        logos = Object.values(map).map(path => ({ src: `https://image.tmdb.org/t/p/w185${path}`, mono: false }));
-    } catch (e) { /* ignore */ }
-    if (logos.length < 4) logos = FALLBACK_PROVIDER_LOGOS;   // 1er run
-    const seq = [...logos, ...logos];                         // duplication = boucle fluide
-    // Chaque logo sur une pastille blanche = couleurs nettes sur fond sombre
-    track.innerHTML = seq.map(l =>
-        `<span class="lm-tile"><img class="lm-logo" height="24" style="height:24px;width:auto" src="${l.src}" alt="" loading="eager" onerror="this.closest('.lm-tile').remove()"></span>`
+    const logos = PLATFORM_DOMAINS.map(d => `https://www.google.com/s2/favicons?sz=64&domain=${d}`);
+    const seq = [...logos, ...logos];   // duplication = boucle fluide
+    // Icône officielle colorée de chaque plateforme, sur pastille blanche
+    track.innerHTML = seq.map(src =>
+        `<span class="lm-tile"><img class="lm-logo" height="26" width="26" style="height:26px;width:26px" src="${src}" alt="" loading="eager" onerror="this.closest('.lm-tile').remove()"></span>`
     ).join('');
 }
 
