@@ -65,7 +65,7 @@ const MAX_LOVED_MOVIES      = 3;   // films de référence max ("que tu as aimé
 const REROLL_MAX_SCORES     = [95, 87, 79, 71, 64, 58, 54, 50, 47, 45, 43];
 const REROLL_FREE_LIMIT     = 0;   // sans compte : 0 reroll (1er clic → inscription)
 const REROLL_LOGGED_LIMIT   = 2;   // compte gratuit : 2 rerolls (3 batches total)
-const REROLL_PREMIUM_LIMIT  = 8;   // premium : 8 rerolls
+const REROLL_PREMIUM_LIMIT  = 5;   // premium : 5 rerolls (au-delà → surcharge de choix / fatigue décisionnelle)
 
 function getMaxScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount, REROLL_MAX_SCORES.length - 1)];
@@ -2390,10 +2390,10 @@ const App = {
                 width:100%;max-width:860px;margin:0 auto 1rem;
                 background:linear-gradient(135deg,rgba(99,179,237,0.1),rgba(49,130,206,0.07));
                 border:1px solid rgba(99,179,237,0.3);border-radius:12px;
-                padding:11px 18px;display:flex;align-items:center;gap:10px;
-                font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.4;
+                padding:11px 18px;display:flex;align-items:center;justify-content:center;gap:10px;
+                font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.4;text-align:center;
                 animation:fadeIn 0.4s ease;`;
-            cb.innerHTML = `<span style="flex:1">${conflictMsg}</span>`;
+            cb.innerHTML = `<span>${conflictMsg}</span>`;
             ui.dom.moviesGrid.before(cb);
         }
 
@@ -2419,10 +2419,10 @@ const App = {
                 width:100%;max-width:860px;margin:0 auto 1.5rem;
                 background:linear-gradient(135deg,rgba(229,160,9,0.12),rgba(229,9,20,0.08));
                 border:1px solid rgba(229,160,9,0.3);border-radius:12px;
-                padding:12px 18px;display:flex;align-items:center;gap:10px;
-                font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.4;
+                padding:12px 18px;display:flex;align-items:center;justify-content:center;gap:10px;
+                font-size:0.82rem;color:rgba(255,255,255,0.75);line-height:1.4;text-align:center;
                 animation:fadeIn 0.4s ease;`;
-            banner.innerHTML = `<span style="flex:1">${msg}</span>`;
+            banner.innerHTML = `<span>${msg}</span>`;
             ui.dom.moviesGrid.before(banner);
         }
 
@@ -2726,6 +2726,39 @@ const App = {
                     ${t('results.reroll')}
                 </button>`;
         } else {
+            // Dès le 2e reroll : on pivote vers l'intention (ajuster les critères)
+            // plutôt que la loterie infinie — réduit fatigue décisionnelle / surcharge de choix.
+            const nudgeAdjust  = store.rerollCount >= 2 && !isLastRoll;
+            const counterHtml  = (!isLoggedIn || isPremium)
+                ? ''
+                : ` <span class="reroll-counter">${rerollsLeft} ${t('results.reroll.left')}${getLang() === 'fr' && rerollsLeft > 1 ? 's' : ''}</span>`;
+            let actionsHtml;
+            if (isLastRoll) {
+                actionsHtml = `<button class="btn-secondary" style="margin:0 auto;" onclick="App.startFlow()">
+                        ${t('results.redo')}
+                       </button>`;
+            } else if (nudgeAdjust) {
+                // Bouton principal = ajuster ; reroll relégué en lien discret
+                actionsHtml = `
+                    <button class="btn-primary btn-reroll-main" style="margin:0 auto;" onclick="App.startFlow()">
+                        ${t('results.adjust')}
+                    </button>
+                    <button class="reroll-more-link" id="reroll-btn" style="margin:0 auto;background:none;border:none;
+                        color:#9ca3af;font-size:0.8rem;text-decoration:underline;cursor:pointer;padding:4px;">
+                        ${t('results.adjust.more')}${counterHtml}
+                    </button>`;
+            } else {
+                actionsHtml = `
+                    <button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
+                        ${t('results.reroll')}${counterHtml}
+                    </button>
+                    ${store.rerollCount === 0
+                        ? `<div class="reroll-hint-badge">
+                            <span class="reroll-hint-icon">✦</span>
+                            <span class="reroll-hint-text">${t('results.reroll.hint')}</span>
+                           </div>`
+                        : ''}`;
+            }
             rerollContainer.innerHTML = `
                 ${store.rerollCount > 0 ? `
                     <p style="font-size:0.73rem;color:#9ca3af;margin:0;">
@@ -2735,22 +2768,7 @@ const App = {
                             ? t('results.limit')
                             : t('results.nexttrio').replace('${pct}', nextPct)}
                     </p>` : ''}
-                ${!isLastRoll
-                    ? `<button class="btn-secondary btn-reroll-main" id="reroll-btn" style="margin:0 auto;">
-                        ${t('results.reroll')}${(!isLoggedIn || isPremium)
-                            ? ''
-                            : ` <span class="reroll-counter">${rerollsLeft} ${t('results.reroll.left')}${getLang() === 'fr' && rerollsLeft > 1 ? 's' : ''}</span>`}
-                       </button>
-                       ${store.rerollCount === 0
-                        ? `<div class="reroll-hint-badge">
-                            <span class="reroll-hint-icon">✦</span>
-                            <span class="reroll-hint-text">${t('results.reroll.hint')}</span>
-                           </div>`
-                        : ''}`
-                    : `<button class="btn-secondary" style="margin:0 auto;" onclick="App.startFlow()">
-                        ${t('results.redo')}
-                       </button>`
-                }`;
+                ${actionsHtml}`;
         }
 
         ui.dom.moviesGrid.appendChild(rerollContainer);
