@@ -105,14 +105,15 @@ function cacheProviderLogos(movies) {
 function renderLoadingBgLogos() {
     const box = document.getElementById('loading-bg-logos');
     if (!box) return;
-    // Frise ondulée (creux) : décalages verticaux répétés le long de la bande
-    const wave = [0, 38, 66, 66, 38, 0];
-    const unit = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS];   // motif
-    const seq  = [...unit, ...unit];                          // dupliqué = boucle fluide
-    box.innerHTML = '<div class="loading-bg-track">' + seq.map((d, i) => {
-        const y = wave[i % wave.length];
-        return `<img class="lbg-logo" style="transform:translateY(${y}px)" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.remove()">`;
-    }).join('') + '</div>';
+    // Anneau 3D : chaque logo placé autour d'un cercle (effet studio)
+    const domains = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS.slice(0, 2)]; // 8 pour un anneau plein
+    const N = domains.length;
+    const R = 440;
+    const inner = domains.map((d, i) => {
+        const angle = (i * 360 / N).toFixed(2);
+        return `<img class="lbg-logo" style="transform:rotateY(${angle}deg) translateZ(${R}px)" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.style.display='none'">`;
+    }).join('');
+    box.innerHTML = `<div class="loading-bg-ring">${inner}</div>`;
 }
 
 // ─────────────────────────────────────────────────────────────────

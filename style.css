@@ -2118,29 +2118,34 @@ h1 {
     overflow: hidden;
     display: flex;
     align-items: center;
+    justify-content: center;
+    perspective: 1200px;
 }
-.loading-bg-track {
-    display: flex;
-    align-items: center;
-    gap: 70px;
-    width: max-content;
-    padding-bottom: 80px;          /* marge pour le creux de l'onde */
-    animation: lbg-scroll 30s linear infinite;
+.loading-bg-ring {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    transform-style: preserve-3d;
+    animation: lbg-spin 26s linear infinite;
     will-change: transform;
 }
 .lbg-logo {
-    flex: 0 0 auto;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 240px;
     height: 240px;
-    border-radius: 50px;
-    opacity: 0.12;
+    border-radius: 52px;
+    opacity: 0.16;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
-@keyframes lbg-scroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
+@keyframes lbg-spin {
+    from { transform: rotateY(0deg); }
+    to   { transform: rotateY(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .loading-bg-track { animation: none; }
+    .loading-bg-ring { animation: none; }
 }
 .multi-hint.complete {
     color: rgba(80, 200, 120, 0.9);
@@ -2786,14 +2791,17 @@ input[type="text"]:focus {
 .trivia-box {
     margin-top: 2rem;
     padding: 1.25rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(14, 14, 17, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-    backdrop-filter: blur(20px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
     max-width: 350px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+    z-index: 3;
 }
 
 .trivia-box p#trivia-content {
