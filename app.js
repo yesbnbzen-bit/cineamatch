@@ -111,7 +111,9 @@ function renderLoadingBgLogos() {
     const domains = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS.slice(0, 3)]; // 9 = remplit l'écran
     const N = domains.length;
     box.innerHTML = '<div class="loading-bg-stage">' + domains.map(d =>
-        `<img class="lbg-logo" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.style.display='none'">`
+        `<img class="lbg-logo" src="https://logo.clearbit.com/${d}?size=512&format=png"
+              data-fav="https://www.google.com/s2/favicons?sz=256&domain=${d}"
+              alt="" onerror="this.onerror=null;this.src=this.dataset.fav;">`
     ).join('') + '</div>';
     const imgs = box.querySelectorAll('.lbg-logo');
     const speed = 0.02;

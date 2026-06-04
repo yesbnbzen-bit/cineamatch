@@ -2134,6 +2134,7 @@ h1 {
     top: 0;
     left: 0;
     opacity: 0;
+    object-fit: contain;
     will-change: transform, opacity;
 }
 @media (prefers-reduced-motion: reduce) {
