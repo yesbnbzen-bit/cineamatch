@@ -2831,8 +2831,16 @@ input[type="text"]:focus {
     z-index: 5;
     user-select: none;
     pointer-events: none;
-    transition: opacity 0.4s ease;
+    transition: transform 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
     white-space: nowrap;
+}
+
+/* Survol : l'onglet suit le mouvement de sa carte (reste collé) */
+.card-wrapper:has(.movie-card:hover) .card-rank-num {
+    transform: translateX(-50%) translateY(-8px);
+}
+.card-wrapper.rank-1:has(.movie-card:hover) .card-rank-num {
+    transform: translateX(-50%) translateY(-10px) scale(1.01);
 }
 
 /* Badge #1 — rouge */
