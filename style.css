@@ -2130,9 +2130,9 @@ h1 {
     justify-content: center;
 }
 .lm-logo {
-    height: 30px;
-    width: 30px;
-    border-radius: 7px;
+    height: 34px;
+    width: 34px;
+    border-radius: 8px;
     display: block;
 }
 @keyframes lm-scroll {

@@ -79,7 +79,7 @@ function getNextScore(rerollCount) {
 // Vrais logos COLORÉS (icône officielle de chaque plateforme) via le service
 // de favicons Google — fiable, coloré, immédiat. Posés sur pastille blanche.
 const PLATFORM_DOMAINS = [
-    'netflix.com', 'primevideo.com', 'disneyplus.com', 'canalplus.com',
+    'netflix.com', 'primevideo.com', 'disneyplus.com',
     'tv.apple.com', 'max.com', 'paramountplus.com'
 ];
 
@@ -105,11 +105,11 @@ function cacheProviderLogos(movies) {
 function renderLoadingMarquee() {
     const track = document.getElementById('loading-marquee-track');
     if (!track) return;
-    const logos = PLATFORM_DOMAINS.map(d => `https://www.google.com/s2/favicons?sz=64&domain=${d}`);
+    const logos = PLATFORM_DOMAINS.map(d => `https://www.google.com/s2/favicons?sz=128&domain=${d}`);
     const seq = [...logos, ...logos];   // duplication = boucle fluide
-    // Icône officielle colorée de chaque plateforme, sur pastille blanche
+    // Icône officielle colorée de chaque plateforme
     track.innerHTML = seq.map(src =>
-        `<span class="lm-tile"><img class="lm-logo" height="26" width="26" style="height:26px;width:26px" src="${src}" alt="" loading="eager" onerror="this.closest('.lm-tile').remove()"></span>`
+        `<span class="lm-tile"><img class="lm-logo" height="34" width="34" style="height:34px;width:34px" src="${src}" alt="" loading="eager" onerror="this.closest('.lm-tile').remove()"></span>`
     ).join('');
 }
 
