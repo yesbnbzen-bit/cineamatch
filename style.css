@@ -2784,12 +2784,13 @@ input[type="text"]:focus {
 .movie-card.top-match.spotlight-done {
     animation: topMatchSpotlight 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
-/* Numéro 01 animation spéciale */
+/* Animation badge rank-1 : opacity seulement, sans toucher au transform */
 .card-wrapper.rank-1 .card-rank-num {
-    animation: rankNumEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+    animation: badgeFadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
 }
-.card-wrapper.rank-1 .card-rank-num.rank-pulse {
-    animation: rankNumPulse 0.6s ease-out forwards;
+@keyframes badgeFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 .movies-grid {
@@ -2804,18 +2805,12 @@ input[type="text"]:focus {
     margin-right: auto;
 }
 
-/* ══ WRAPPER CARTE + NUMÉRO DE RANG ══ */
-.card-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-/* Numéro de rang au-dessus de chaque carte */
-/* ══ BADGE RANG — tab collé en haut de la carte (style podium ChatGPT) ══ */
+/* ══ WRAPPER CARTE — contient badge absolu + movie-card ══ */
 .card-wrapper {
     position: relative;
-    padding-top: 48px; /* espace pour le badge absolu */
+    display: flex;
+    flex-direction: column;
+    padding-top: 48px; /* espace réservé pour le badge */
 }
 
 .card-rank-num {
