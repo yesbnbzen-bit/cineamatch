@@ -2116,36 +2116,26 @@ h1 {
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 1200px;
+    perspective: 1000px;
 }
-.loading-bg-ring {
-    position: relative;
-    width: 240px;
-    height: 240px;
+.loading-bg-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     transform-style: preserve-3d;
-    animation: lbg-spin 26s linear infinite;
-    will-change: transform;
 }
 .lbg-logo {
     position: absolute;
     top: 0;
     left: 0;
-    width: 240px;
-    height: 240px;
-    border-radius: 52px;
-    opacity: 0.16;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-}
-@keyframes lbg-spin {
-    from { transform: rotateY(0deg); }
-    to   { transform: rotateY(360deg); }
+    width: 250px;
+    height: 250px;
+    border-radius: 54px;
+    opacity: 0;
+    will-change: transform, opacity;
 }
 @media (prefers-reduced-motion: reduce) {
-    .loading-bg-ring { animation: none; }
+    .lbg-logo { opacity: 0.08 !important; }
 }
 .multi-hint.complete {
     color: rgba(80, 200, 120, 0.9);
