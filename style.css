@@ -1803,10 +1803,10 @@ h1 {
 }
 
 .question-container {
-    /* Conteneur transparent (comme mobile) — laisse passer le fond dégradé,
-       look moderne et contrasté, identique sur ordi / tablette / mobile. */
+    /* Conteneur transparent + fine bordure (comme mobile) — laisse passer le fond
+       dégradé, garde le cadre subtil, identique sur ordi / tablette / mobile. */
     background: transparent;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 2.5rem 2rem;
     border-radius: 24px;
     width: 100%;
