@@ -75,6 +75,47 @@ function getNextScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount + 1, REROLL_MAX_SCORES.length - 1)];
 }
 
+// ── Logos plateformes : carrousel de l'écran de chargement ──
+// On mémorise les vrais logos colorés TMDB vus dans les résultats, et on s'en
+// sert pour le défilé. 1er run (cache vide) → fallback monochrome fiable.
+const FALLBACK_PROVIDER_LOGOS = [
+    'netflix', 'primevideo', 'appletv', 'max', 'paramountplus'
+].map(s => ({ src: `https://cdn.jsdelivr.net/npm/simple-icons@13/icons/${s}.svg`, mono: true }));
+
+function cacheProviderLogos(movies) {
+    try {
+        const map = JSON.parse(localStorage.getItem('cm_provider_logos') || '{}');
+        (movies || []).forEach(m => {
+            const fr = m['watch/providers']?.results?.FR || {};
+            [...(fr.flatrate || []), ...(fr.rent || []), ...(fr.free || []), ...(fr.ads || [])]
+                .forEach(p => {
+                    if (p.logo_path && p.provider_name && !map[p.provider_name]) {
+                        map[p.provider_name] = p.logo_path;
+                    }
+                });
+        });
+        const keys = Object.keys(map).slice(0, 14);
+        const capped = {};
+        keys.forEach(k => capped[k] = map[k]);
+        localStorage.setItem('cm_provider_logos', JSON.stringify(capped));
+    } catch (e) { /* localStorage indispo : on ignore */ }
+}
+
+function renderLoadingMarquee() {
+    const track = document.getElementById('loading-marquee-track');
+    if (!track) return;
+    let logos = [];
+    try {
+        const map = JSON.parse(localStorage.getItem('cm_provider_logos') || '{}');
+        logos = Object.values(map).map(path => ({ src: `https://image.tmdb.org/t/p/w185${path}`, mono: false }));
+    } catch (e) { /* ignore */ }
+    if (logos.length < 4) logos = FALLBACK_PROVIDER_LOGOS;   // 1er run
+    const seq = [...logos, ...logos];                         // duplication = boucle fluide
+    track.innerHTML = seq.map(l =>
+        `<img class="lm-logo${l.mono ? ' lm-mono' : ''}" height="28" style="height:28px;width:auto" src="${l.src}" alt="" loading="eager" onerror="this.remove()">`
+    ).join('');
+}
+
 // ─────────────────────────────────────────────────────────────────
 //  Deep links vers les plateformes de streaming
 // ─────────────────────────────────────────────────────────────────
@@ -492,6 +533,7 @@ const App = {
         try {
             // Afficher un écran de chargement rapide
             ui.switchView('loading');
+            renderLoadingMarquee();
             const loadingText = document.getElementById('loading-text');
             if (loadingText) loadingText.textContent = t('loading.movie');
 
@@ -1182,6 +1224,7 @@ const App = {
     async processResults(isReroll = false) {
         this._clearSession();
         ui.switchView('loading');
+        renderLoadingMarquee();
         const loadingText = document.getElementById('loading-text');
 
         // ── D : Helper feedback visuel live ──
@@ -2486,6 +2529,7 @@ const App = {
 
         // Stocker les films pour les fonctions rateMovie/toggleSeen
         store._lastMovies = movies;
+        cacheProviderLogos(movies); // mémorise les logos colorés pour le carrousel de chargement
 
         movies.forEach((m, idx) => {
             // Wrapper quinconce + numéro de rang
