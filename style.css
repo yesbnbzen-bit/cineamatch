@@ -2083,26 +2083,27 @@ h1 {
     text-transform: uppercase;
     color: rgba(255,255,255,0.38);
 }
-.pr-chips {
+.pr-logos {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px;
+    align-items: center;
+    gap: 26px;
 }
-.pr-chip {
+.pr-logo {
+    height: 21px;
+    width: auto;
+    filter: invert(0.62);            /* logos noirs → gris discret */
+    opacity: 0.85;
+    transition: filter 0.25s ease, opacity 0.25s ease;
+}
+.pr-logo:hover {
+    filter: invert(0.92);
+    opacity: 1;
+}
+.pr-more {
     font-size: 0.78rem;
-    font-weight: 600;
-    color: rgba(255,255,255,0.55);
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 100px;
-    padding: 4px 13px;
-}
-.pr-chip.pr-more {
-    background: transparent;
-    border-color: transparent;
     color: rgba(255,255,255,0.35);
-    font-weight: 400;
 }
 .multi-hint.complete {
     color: rgba(80, 200, 120, 0.9);
