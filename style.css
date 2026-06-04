@@ -2125,19 +2125,14 @@ h1 {
 }
 .lm-tile {
     flex: 0 0 auto;
-    height: 42px;
-    min-width: 42px;
-    padding: 0 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
-    border-radius: 11px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
 .lm-logo {
-    height: 24px;
-    width: auto;
+    height: 30px;
+    width: 30px;
+    border-radius: 7px;
     display: block;
 }
 @keyframes lm-scroll {
