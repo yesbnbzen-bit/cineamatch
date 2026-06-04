@@ -2116,26 +2116,31 @@ h1 {
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+.loading-bg-track {
+    display: flex;
+    align-items: center;
+    gap: 70px;
+    width: max-content;
+    padding-bottom: 80px;          /* marge pour le creux de l'onde */
+    animation: lbg-scroll 30s linear infinite;
+    will-change: transform;
 }
 .lbg-logo {
-    position: absolute;
-    top: 50%;
-    width: 210px;
-    height: 210px;
-    border-radius: 42px;
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(1.6);
-    animation: lbg-recede 10.2s linear infinite;
-    will-change: transform, opacity;
+    flex: 0 0 auto;
+    width: 240px;
+    height: 240px;
+    border-radius: 50px;
+    opacity: 0.12;
 }
-@keyframes lbg-recede {
-    0%   { opacity: 0;    transform: translate(-50%,-50%) scale(1.65); }
-    14%  { opacity: 0.16; }
-    78%  { opacity: 0.05; }
-    100% { opacity: 0;    transform: translate(-50%,-50%) scale(0.32); }
+@keyframes lbg-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .lbg-logo { animation: none; opacity: 0.08; transform: translate(-50%,-50%) scale(1); }
+    .loading-bg-track { animation: none; }
 }
 .multi-hint.complete {
     color: rgba(80, 200, 120, 0.9);

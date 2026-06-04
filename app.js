@@ -105,12 +105,14 @@ function cacheProviderLogos(movies) {
 function renderLoadingBgLogos() {
     const box = document.getElementById('loading-bg-logos');
     if (!box) return;
-    const xs = [20, 40, 60, 80, 32, 68];   // positions horizontales variées
-    box.innerHTML = PLATFORM_DOMAINS.map((d, i) => {
-        const x = xs[i % xs.length];
-        const delay = (i * 1.7).toFixed(1);
-        return `<img class="lbg-logo" style="left:${x}%;animation-delay:${delay}s" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.remove()">`;
-    }).join('');
+    // Frise ondulée (creux) : décalages verticaux répétés le long de la bande
+    const wave = [0, 38, 66, 66, 38, 0];
+    const unit = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS];   // motif
+    const seq  = [...unit, ...unit];                          // dupliqué = boucle fluide
+    box.innerHTML = '<div class="loading-bg-track">' + seq.map((d, i) => {
+        const y = wave[i % wave.length];
+        return `<img class="lbg-logo" style="transform:translateY(${y}px)" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.remove()">`;
+    }).join('') + '</div>';
 }
 
 // ─────────────────────────────────────────────────────────────────
