@@ -3044,22 +3044,12 @@ input[type="text"]:focus {
     .card-wrapper.rank-2:hover .movie-card::after,
     .card-wrapper.rank-3:hover .movie-card::after { opacity: 0; }
 
-    /* ── Badges rang : opacité réduite sur 2 et 3, monte au hover ── */
+    /* ── Badges rang desktop : opacité réduite sur 2/3 ── */
     .card-wrapper.rank-2 .card-rank-num,
-    .card-wrapper.rank-3 .card-rank-num { opacity: 0.45; }
-
-    .card-wrapper:hover .card-rank-num { transform: translateY(-8px); }
-
-    /* 02 et 03 au hover : plus lumineux + couleur renforcée */
-    .card-wrapper.rank-2:hover .card-rank-num {
-        opacity: 1;
-        color: #b8d4f0 !important;
-    }
-    .card-wrapper.rank-3:hover .card-rank-num {
-        opacity: 1;
-        color: #e89050 !important;
-    }
-    .card-wrapper.rank-1:hover .card-rank-num { opacity: 1; }
+    .card-wrapper.rank-3 .card-rank-num { opacity: 0.50; }
+    .card-wrapper.rank-2:hover .card-rank-num,
+    .card-wrapper.rank-3:hover .card-rank-num { opacity: 1; }
+    /* NB : le hover "top: -5px" est géré par la règle globale — PAS de transform ici */
 
     /* Reflet miroir UNIQUEMENT sur le #1 Match */
     .card-wrapper.rank-1 {
@@ -6841,10 +6831,14 @@ html.duo-link #duo-welcome {
         gap: 1.5rem;
     }
 
-    /* Wrapper mobile : pas de quinconce, numéros petits */
-    .card-wrapper { order: unset !important; margin-top: 0 !important; }
-    .card-rank-num { font-size: 2.8rem !important; margin-bottom: 2px; }
-    .card-wrapper.rank-1 .card-rank-num { font-size: 3.2rem !important; }
+    /* Wrapper mobile : pas de quinconce, badge redevient statique */
+    .card-wrapper { order: unset !important; margin-top: 0 !important; padding-top: 40px !important; }
+    .card-rank-num {
+        font-size: 1rem !important;
+        padding: 5px 14px 6px !important;
+        min-width: 100px !important;
+    }
+    .rank-number { font-size: 1.3rem !important; }
 
     .movie-card {
         border-radius: 16px;
