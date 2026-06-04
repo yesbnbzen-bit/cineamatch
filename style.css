@@ -2819,10 +2819,11 @@ input[type="text"]:focus {
     left: 50%;
     transform: translateX(-50%);
     min-width: 128px;
-    padding: 8px 22px 10px;
-    background: rgba(10,10,12,0.92);
+    padding: 8px 22px 14px;
+    background: #0e0e11;            /* opaque : la bordure de la carte ne traverse plus */
     border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 16px 16px 6px 6px;
+    border-bottom: none;           /* l'onglet fusionne avec la carte */
+    border-radius: 14px 14px 0 0;  /* bas plat = onglet collé */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2830,34 +2831,16 @@ input[type="text"]:focus {
     z-index: 5;
     user-select: none;
     pointer-events: none;
-    transition: top 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease;
+    transition: opacity 0.4s ease;
     white-space: nowrap;
 }
-/* Lignes horizontales */
-.card-rank-num::before,
-.card-rank-num::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 80px;
-    height: 1px;
-    opacity: 0.38;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
-}
-.card-rank-num::before { right: 100%; }
-.card-rank-num::after  { left: 100%; transform: scaleX(-1); }
 
 /* Badge #1 — rouge */
 .rank-badge-1 {
     background: linear-gradient(180deg, #aa0010 0%, #38000a 100%);
     border-color: rgba(255,30,45,0.80);
-    box-shadow: 0 0 22px rgba(255,30,45,0.40);
+    box-shadow: 0 -2px 22px rgba(255,30,45,0.40);
     color: #fff;
-}
-.rank-badge-1::before,
-.rank-badge-1::after {
-    background: linear-gradient(90deg, transparent, rgba(255,30,45,0.7));
-    opacity: 0.6;
 }
 /* Badge #2 — blanc discret */
 .rank-badge-2 { color: #c0d4e8; }
@@ -2884,10 +2867,9 @@ input[type="text"]:focus {
     opacity: 0.85;
 }
 
-/* Hover : badge monte légèrement */
-.card-wrapper:hover .card-rank-num { top: -5px; }
+/* Onglets #2 / #3 : légèrement atténués mais bg opaque (pas de transparence) */
 .card-wrapper.rank-2 .card-rank-num,
-.card-wrapper.rank-3 .card-rank-num { opacity: 0.55; }
+.card-wrapper.rank-3 .card-rank-num { opacity: 0.9; }
 .card-wrapper.rank-2:hover .card-rank-num,
 .card-wrapper.rank-3:hover .card-rank-num { opacity: 1; }
 
@@ -3039,12 +3021,11 @@ input[type="text"]:focus {
     .card-wrapper.rank-2:hover .movie-card::after,
     .card-wrapper.rank-3:hover .movie-card::after { opacity: 0; }
 
-    /* ── Badges rang desktop : opacité réduite sur 2/3 ── */
+    /* ── Onglets rang desktop : bg opaque, légère atténuation 2/3 ── */
     .card-wrapper.rank-2 .card-rank-num,
-    .card-wrapper.rank-3 .card-rank-num { opacity: 0.50; }
+    .card-wrapper.rank-3 .card-rank-num { opacity: 0.9; }
     .card-wrapper.rank-2:hover .card-rank-num,
     .card-wrapper.rank-3:hover .card-rank-num { opacity: 1; }
-    /* NB : le hover "top: -5px" est géré par la règle globale — PAS de transform ici */
 
     /* Reflet miroir UNIQUEMENT sur le #1 Match */
     .card-wrapper.rank-1 {
