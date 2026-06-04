@@ -2951,15 +2951,17 @@ input[type="text"]:focus {
     gap: 1px;
 }
 .rank-number {
+    font-family: 'Inter', sans-serif;
     font-size: 1.6rem;
     font-weight: 900;
     line-height: 1;
     letter-spacing: -1px;
 }
 .rank-label {
-    font-size: 0.48rem;
-    font-weight: 800;
-    letter-spacing: 2px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.56rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
     text-transform: uppercase;
     opacity: 0.85;
 }
