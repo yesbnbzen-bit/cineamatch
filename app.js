@@ -106,13 +106,15 @@ let _lbgRaf = null;
 function renderLoadingBgLogos() {
     const box = document.getElementById('loading-bg-logos');
     if (!box) return;
-    const domains = PLATFORM_DOMAINS;            // 6 logos géants, bien espacés
+    // Frise pleine largeur : grands logos sur les côtés, qui rapetissent et
+    // s'enfoncent vers le centre (concave vers le fond).
+    const domains = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS.slice(0, 3)]; // 9 = remplit l'écran
     const N = domains.length;
     box.innerHTML = '<div class="loading-bg-stage">' + domains.map(d =>
         `<img class="lbg-logo" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.style.display='none'">`
     ).join('') + '</div>';
     const imgs = box.querySelectorAll('.lbg-logo');
-    const speed = 0.014;
+    const speed = 0.02;
     if (_lbgRaf) cancelAnimationFrame(_lbgRaf);
     let start = null;
     function frame(ts) {
@@ -120,21 +122,26 @@ function renderLoadingBgLogos() {
         if (start === null) start = ts;
         const t = (ts - start) / 1000;
         const W = box.clientWidth || 1400;
-        const size    = Math.min(W * 0.26, 460);     // GÉANT sur ordi
-        const spacing = size * 1.7;                  // > taille → aucun chevauchement
-        const spread  = N * spacing;
-        const maxDepth = 300, frontZ = 30;
+        const H = box.clientHeight || 700;
+        const margin   = W * 0.22;
+        const total    = W + 2 * margin;
+        const edgeSize = Math.min(W * 0.19, 360);   // GÉANT sur les côtés
+        const cy = H * 0.5;
         imgs.forEach((img, i) => {
             let f = ((i / N) + t * speed) % 1;
             if (f < 0) f += 1;
-            const c = 2 * (f - 0.5);                          // -1 (gauche) .. 1 (droite)
-            const x = (f - 0.5) * spread;
-            const z = frontZ - (frontZ + maxDepth) * (1 - c * c);  // concave : centre au fond
-            const fade = Math.max(0, 1 - Math.pow(Math.abs(c), 3));
+            const sx = -margin + f * total;                 // position écran (pleine largeur)
+            const c  = Math.max(-1, Math.min(1, (sx / W - 0.5) * 2));
+            const cc = c * c;                               // 0 centre .. 1 bords
+            const size = edgeSize * (0.36 + 0.64 * cc);     // centre petit (au fond)
+            const yOff = 42 * (1 - cc);                     // léger creux au centre
+            const edgeFade = Math.max(0, Math.min(1, (1 - Math.abs(c)) / 0.14));
             img.style.width = img.style.height = size.toFixed(0) + 'px';
             img.style.borderRadius = (size * 0.22).toFixed(0) + 'px';
-            img.style.transform = `translate(-50%,-50%) translateX(${x.toFixed(1)}px) translateZ(${z.toFixed(1)}px)`;
-            img.style.opacity = (0.18 * fade).toFixed(3);
+            img.style.left = sx.toFixed(1) + 'px';
+            img.style.top  = (cy + yOff).toFixed(1) + 'px';
+            img.style.transform = 'translate(-50%,-50%)';
+            img.style.opacity = ((0.24 + 0.10 * cc) * edgeFade).toFixed(3);
         });
         _lbgRaf = requestAnimationFrame(frame);
     }
