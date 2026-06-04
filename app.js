@@ -61,6 +61,7 @@ function getQuestions() {
 // ─────────────────────────────────────────────────────────────────
 //  Score de match décroissant selon le nombre de rerolls
 // ─────────────────────────────────────────────────────────────────
+const MAX_LOVED_MOVIES      = 3;   // films de référence max ("que tu as aimé")
 const REROLL_MAX_SCORES     = [95, 87, 79, 71, 64, 58, 54, 50, 47, 45, 43];
 const REROLL_FREE_LIMIT     = 0;   // sans compte : 0 reroll (1er clic → inscription)
 const REROLL_LOGGED_LIMIT   = 2;   // compte gratuit : 2 rerolls (3 batches total)
@@ -1097,6 +1098,12 @@ const App = {
 
     async handleSearch(query) {
         const resultsDiv = document.getElementById('search-results');
+        // Limite atteinte : on n'affiche plus de résultats
+        if (store.answers.lastLovedMovies.length >= MAX_LOVED_MOVIES) {
+            resultsDiv.innerHTML = `<div class="search-limit-note">${t('q.search.limit')}</div>`;
+            resultsDiv.style.display = 'flex';
+            return;
+        }
         if (query.length < 2) { resultsDiv.style.display = 'none'; return; }
 
         const data = await tmdbService.searchMovies(query);
@@ -1118,8 +1125,8 @@ const App = {
                     <span>${movie.release_date?.split('-')[0] || ''}</span>
                 </div>`;
             item.onclick = () => {
-                if (store.answers.lastLovedMovies.length < 3 &&
-                    !store.answers.lastLovedMovies.find(m => m.id === movie.id)) {
+                if (store.answers.lastLovedMovies.length >= MAX_LOVED_MOVIES) return;
+                if (!store.answers.lastLovedMovies.find(m => m.id === movie.id)) {
                     store.answers.lastLovedMovies.push(movie);
                 }
                 document.getElementById('movie-search').value = '';
@@ -1156,6 +1163,19 @@ const App = {
         if (pluralEl)  pluralEl.textContent = count > 1 ? 's' : '';
         if (nextBtn)   nextBtn.style.display = count > 0 ? 'block' : 'none';
         if (skipBtn)   skipBtn.style.display = count > 0 ? 'none'  : 'block';
+
+        // ── Verrou visuel quand la limite est atteinte ──
+        const input = document.getElementById('movie-search');
+        if (input) {
+            const atLimit = count >= MAX_LOVED_MOVIES;
+            input.disabled = atLimit;
+            input.placeholder = atLimit ? t('q.search.limit') : t('q.search.placeholder');
+            input.classList.toggle('input-locked', atLimit);
+            if (atLimit) {
+                const rd = document.getElementById('search-results');
+                if (rd) rd.style.display = 'none';
+            }
+        }
     },
 
     // ── Traitement des résultats ──
@@ -2038,20 +2058,27 @@ const App = {
             });
 
             // ── Normalisation des scores avec spread contenu ──
-            // Objectif : #1 = maxAllowed, écart max entre #1 et #3 = 15 pts
-            // Ex : scores IA [88, 74, 61] → normalisés [95, 89, 83] — pas de 67% qui fait peur
-            const maxAllowed = getMaxScore(store.rerollCount);
+            // Objectif : #1 affiché dans une fourchette crédible (pas un 95% figé),
+            // écart max entre #1 et #3 = 15 pts. Ex : [88,74,61] → [96,90,84].
             const SPREAD_MAX = 15; // écart maximum autorisé entre #1 et le dernier affiché
             const scores = rankedDeduped.map(r => r.match_score || 0);
             const topRaw = scores[0] || 100;
             const botRaw = Math.min(...scores.slice(0, Math.min(scores.length, 5)));
             const rawRange = Math.max(topRaw - botRaw, 1);
 
+            // Plafond décroissant selon le reroll (95, 87, 79…), MAIS le #1 reçoit
+            // une petite variation déterministe (basée sur le film) → ne reste jamais
+            // collé à un chiffre rond. Jamais ≥ 98 % pour rester crédible.
+            const ceiling   = getMaxScore(store.rerollCount);
+            const _topId    = Number(rankedDeduped[0]?.tmdb_id || rankedDeduped[0]?.id || 0);
+            const _jitter   = (_topId % 7) - 4;                 // -4 … +2
+            const topScore  = Math.min(97, Math.max(ceiling - 4, ceiling + _jitter));
+
             rankedDeduped.forEach(r => {
                 const raw = r.match_score || 0;
-                // Mapping linéaire compressé : topRaw → maxAllowed, botRaw → (maxAllowed - SPREAD_MAX)
-                const normalized = maxAllowed - ((topRaw - raw) / rawRange) * SPREAD_MAX;
-                r.match_score = Math.round(Math.max(maxAllowed - SPREAD_MAX, Math.min(maxAllowed, normalized)));
+                // Mapping linéaire compressé : topRaw → topScore, botRaw → (topScore - SPREAD_MAX)
+                const normalized = topScore - ((topRaw - raw) / rawRange) * SPREAD_MAX;
+                r.match_score = Math.round(Math.max(topScore - SPREAD_MAX, Math.min(topScore, normalized)));
             });
 
             // ── Récupérer les détails complets des 3 meilleurs ──
@@ -2477,9 +2504,12 @@ const App = {
             const rankNum = document.createElement('div');
             rankNum.className = `card-rank-num rank-badge rank-badge-${idx + 1}`;
             const _isFr = getLang() !== 'en';
-            const _rankLabels = _isFr
-                ? ['MATCH PARFAIT 🔥', 'MATCH', 'MATCH']
-                : ['PERFECT MATCH 🔥', 'MATCH', 'MATCH'];
+            const _isReroll = (store.rerollCount || 0) > 0;
+            // 1er lot : "MATCH PARFAIT". Suggestions suivantes : "LE TOP" (plus honnête).
+            const _topLabel = _isFr
+                ? (_isReroll ? 'LE TOP 🔥' : 'MATCH PARFAIT 🔥')
+                : (_isReroll ? 'TOP PICK 🔥' : 'PERFECT MATCH 🔥');
+            const _rankLabels = [_topLabel, 'MATCH', 'MATCH'];
             rankNum.innerHTML = `
                 <div class="rank-inner">
                     <div class="rank-number">${idx + 1}</div>

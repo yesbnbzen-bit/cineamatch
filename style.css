@@ -2188,6 +2188,24 @@ input[type="text"]:focus {
     scrollbar-color: var(--primary-color) transparent;
 }
 
+/* Message "limite atteinte" + input verrouillé */
+.search-limit-note {
+    width: 100%;
+    text-align: center;
+    padding: 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #5dd97a;
+    background: rgba(93,217,122,0.08);
+    border: 1px solid rgba(93,217,122,0.25);
+    border-radius: 12px;
+}
+#movie-search.input-locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+    border-color: rgba(93,217,122,0.35);
+}
+
 .search-item {
     flex: 0 0 120px;
     cursor: pointer;
@@ -2784,10 +2802,8 @@ input[type="text"]:focus {
 .movie-card.top-match.spotlight-done {
     animation: topMatchSpotlight 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
-/* Animation badge rank-1 : opacity seulement, sans toucher au transform */
-.card-wrapper.rank-1 .card-rank-num {
-    animation: badgeFadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both;
-}
+/* Le badge #1 fond avec sa carte (wrapper cardReveal) — plus d'animation
+   séparée retardée qui faisait "réapparaître" l'onglet après la carte. */
 @keyframes badgeFadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
