@@ -106,31 +106,35 @@ let _lbgRaf = null;
 function renderLoadingBgLogos() {
     const box = document.getElementById('loading-bg-logos');
     if (!box) return;
-    const domains = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS];   // densité
+    const domains = PLATFORM_DOMAINS;            // 6 logos géants, bien espacés
     const N = domains.length;
     box.innerHTML = '<div class="loading-bg-stage">' + domains.map(d =>
         `<img class="lbg-logo" src="https://www.google.com/s2/favicons?sz=256&domain=${d}" alt="" onerror="this.style.display='none'">`
     ).join('') + '</div>';
     const imgs = box.querySelectorAll('.lbg-logo');
-    const maxDepth = 560;       // profondeur du creux central
-    const frontZ   = 120;       // les bords viennent vers nous
-    const speed    = 0.016;     // tours par seconde (lent = classe)
+    const speed = 0.014;
     if (_lbgRaf) cancelAnimationFrame(_lbgRaf);
     let start = null;
     function frame(ts) {
         if (!box.isConnected || box.offsetParent === null) { _lbgRaf = null; return; }
         if (start === null) start = ts;
         const t = (ts - start) / 1000;
-        const spread = Math.max(box.clientWidth * 0.92, 1100);
+        const W = box.clientWidth || 1400;
+        const size    = Math.min(W * 0.26, 460);     // GÉANT sur ordi
+        const spacing = size * 1.7;                  // > taille → aucun chevauchement
+        const spread  = N * spacing;
+        const maxDepth = 300, frontZ = 30;
         imgs.forEach((img, i) => {
             let f = ((i / N) + t * speed) % 1;
             if (f < 0) f += 1;
-            const c = 2 * (f - 0.5);                         // -1 (gauche) .. 1 (droite)
+            const c = 2 * (f - 0.5);                          // -1 (gauche) .. 1 (droite)
             const x = (f - 0.5) * spread;
             const z = frontZ - (frontZ + maxDepth) * (1 - c * c);  // concave : centre au fond
-            const fade = Math.max(0, 1 - Math.pow(Math.abs(c), 2.4));
+            const fade = Math.max(0, 1 - Math.pow(Math.abs(c), 3));
+            img.style.width = img.style.height = size.toFixed(0) + 'px';
+            img.style.borderRadius = (size * 0.22).toFixed(0) + 'px';
             img.style.transform = `translate(-50%,-50%) translateX(${x.toFixed(1)}px) translateZ(${z.toFixed(1)}px)`;
-            img.style.opacity = (0.2 * fade).toFixed(3);
+            img.style.opacity = (0.18 * fade).toFixed(3);
         });
         _lbgRaf = requestAnimationFrame(frame);
     }
