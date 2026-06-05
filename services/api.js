@@ -807,8 +807,10 @@ Réponds UNIQUEMENT par ce JSON strict (pas de markdown, pas de texte autour) :
 
         // ── Ancrage ADN pour les match reasons ──
         const dnaAnchor = likedMovies && likedMovies.length > 0
-            ? `Films de référence de cet utilisateur : ${user_dna}. Dans tes raisons de match, fais des LIENS EXPLICITES avec ces films quand c'est pertinent (ex: "Dans la lignée de [Film X]", "Le même souffle que [Film Y]").`
-            : `Pas de films de référence fournis. Base tes raisons sur le mood et l'envie.`;
+            ? `Films de référence de cet utilisateur : ${user_dna}.
+→ Sers-toi de ces références pour COMPRENDRE ce qu'il aime ressentir (le style, l'émotion, le rythme) et choisir des films qui touchent la même corde.
+→ MAIS ne cite le titre d'un film de référence que dans UNE seule des 3 raisons maximum, et seulement si le lien est évident et éclairant. Surtout PAS la même accroche pour les 3 films — ça sonne robotique.`
+            : `Pas de films de référence fournis. Base tes raisons sur le mood et l'envie ressentie.`;
 
         // ── Contexte re-roll ──
         const rerollVariant = preferences?.rerollVariant || '';
@@ -1144,14 +1146,17 @@ MATCH REASONS — RÈGLES DE RÉDACTION
 ═══════════════════════════════════════════
 ${dnaAnchor}
 
-Chaque match_reason doit :
-1. Être rédigée en ${lang === 'en' ? 'ANGLAIS' : 'FRANÇAIS'}, 1-2 phrases percutantes (max 180 caractères).
-2. Mentionner CE QUI EST SPÉCIFIQUE à ce film (une scène emblématique, un thème unique, un style distinctif).
-3. Faire le PONT avec le profil : relier explicitement au mood, à l'envie, ou à un film aimé.
-4. VARIER le style d'accroche : parfois factuel, parfois émotionnel, parfois surprenant.
-5. Ne jamais être générique (interdit : "un film parfait pour toi", "correspond à tes goûts").
+Objectif : chaque match_reason doit donner une envie IRRÉSISTIBLE de lancer le film maintenant, et faire ressentir à l'utilisateur "il m'a compris". Écris comme un ami cinéphile qui connaît parfaitement ses goûts — chaleureux, sûr de lui, jamais commercial.
 
-Exemples de bons débuts : "Dans la lignée de [film aimé]...", "Si tu cherches [envie], ce film...", "L'atmosphère [adj] de [titre] va...", "Rarement un film [caractéristique unique]..."
+Chaque match_reason doit :
+1. Être rédigée en ${lang === 'en' ? 'ANGLAIS' : 'FRANÇAIS'}, 1-2 phrases percutantes (max 200 caractères).
+2. S'ANCRER sur un élément CONCRET et vrai du film : une scène marquante, un personnage, un ton précis, une sensation unique. JAMAIS une généralité.
+3. Relier au RESSENTI recherché (le mood, l'envie du moment) — pas juste au genre. Montre que tu as compris ce qu'il cherche à vivre ce soir.
+4. VARIER radicalement l'accroche d'une raison à l'autre (factuelle, sensorielle, intrigante, complice…). Les 3 raisons ne doivent surtout PAS commencer de la même façon.
+5. Citer un film de référence dans UNE seule raison maximum — et seulement si le lien est vraiment éclairant.
+6. INTERDITS (formules creuses) : "parfait pour toi", "correspond à tes goûts", "idéal pour une soirée X", "un moment de pur divertissement", "casting diversifié", "à ne pas manquer", "te plonge dans un univers". Bannis-les.
+
+Exemples d'accroches variées : "La scène où [X] suffit à…", "Tu vas t'attacher à [personnage], un(e)…", "Sous ses airs de [genre], c'est en vrai…", "Rare : un film qui ose [caractéristique unique]…"
 
 ═══════════════════════════════════════════
 FORMAT JSON OBLIGATOIRE
@@ -1247,7 +1252,7 @@ Applique le scoring dynamique, garantis la diversité du top 3, et génère des 
         const prompt = isFr
             ? `Tu es un critique de cinéma expert. Un utilisateur cherche ${mood ? `un film pour "${mood}"` : 'un film'} ${context ? `dans le contexte "${context}"` : ''}${lovedMovies ? `. Ses films de référence : ${lovedMovies}` : ''}.
 
-Pour chaque film ci-dessous, génère une raison personnalisée de 2 phrases max (max 200 caractères) expliquant POURQUOI ce film spécifique correspond à ce profil. Sois précis, mentionne des éléments concrets du film (réalisateur, atmosphère, thème unique). Ne sois jamais générique.
+Pour chaque film ci-dessous, écris comme un ami cinéphile qui connaît ses goûts : une raison de 2 phrases max (max 200 caractères) qui donne une envie irrésistible de lancer CE film et fait sentir "il m'a compris". Ancre-toi sur un élément concret et vrai (une scène, un personnage, un ton précis). Varie les accroches d'un film à l'autre. INTERDITS : "parfait pour toi", "idéal pour une soirée", "un moment de pur divertissement", "à ne pas manquer", "te plonge dans un univers".
 
 ${filmList}
 
