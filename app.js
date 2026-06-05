@@ -108,7 +108,7 @@ function renderLoadingBgLogos() {
     if (!box) return;
     // Frise pleine largeur : grands logos sur les côtés, qui rapetissent et
     // s'enfoncent vers le centre (concave vers le fond).
-    const domains = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS.slice(0, 1)]; // 7 = espacé, sans chevauchement
+    const domains = [...PLATFORM_DOMAINS, ...PLATFORM_DOMAINS.slice(0, 2)]; // 8
     const N = domains.length;
     box.innerHTML = '<div class="loading-bg-stage">' + domains.map(d =>
         `<img class="lbg-logo" src="https://logo.clearbit.com/${d}?size=512&format=png"
@@ -125,9 +125,9 @@ function renderLoadingBgLogos() {
         const t = (ts - start) / 1000;
         const W = box.clientWidth || 1400;
         const H = box.clientHeight || 700;
-        const margin   = W * 0.30;                  // plus de marge = moins de chevauchement
+        const margin   = W * 0.15;                  // moins de marge = logos plus rapprochés
         const total    = W + 2 * margin;
-        const edgeSize = Math.min(W * 0.23, 440);   // GÉANT sur les côtés
+        const edgeSize = Math.min(W * 0.27, 500);   // GÉANT sur les côtés
         const cy = H * 0.5;
         imgs.forEach((img, i) => {
             let f = ((i / N) + t * speed) % 1;
@@ -135,15 +135,15 @@ function renderLoadingBgLogos() {
             const sx = -margin + f * total;                 // position écran (pleine largeur)
             const c  = Math.max(-1, Math.min(1, (sx / W - 0.5) * 2));
             const cc = c * c;                               // 0 centre .. 1 bords
-            const size = edgeSize * (0.22 + 0.78 * cc);     // centre bien plus petit = plus profond
+            const size = edgeSize * (0.26 + 0.74 * cc);     // centre plus petit = profondeur
             const yOff = 32 * (1 - cc);                     // léger creux au centre
-            const edgeFade = Math.max(0, Math.min(1, (1 - Math.abs(c)) / 0.14));
+            const edgeFade = Math.max(0, Math.min(1, (1 - Math.abs(c)) / 0.12));
             img.style.width = img.style.height = size.toFixed(0) + 'px';
             img.style.borderRadius = (size * 0.22).toFixed(0) + 'px';
             img.style.left = sx.toFixed(1) + 'px';
             img.style.top  = (cy + yOff).toFixed(1) + 'px';
             img.style.transform = 'translate(-50%,-50%)';
-            img.style.opacity = ((0.24 + 0.10 * cc) * edgeFade).toFixed(3);
+            img.style.opacity = ((0.34 + 0.12 * cc) * edgeFade).toFixed(3);
         });
         _lbgRaf = requestAnimationFrame(frame);
     }
