@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineaMatch — Robot de test (10 profils)</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; background:#0a070d; color:#eaeaf0; font-family:'Inter',system-ui,sans-serif; padding:24px; }
+  h1 { font-size:1.5rem; margin:0 0 4px; }
+  h1 span { color:#E50914; }
+  .sub { color:#9aa0a8; font-size:0.9rem; margin:0 0 20px; }
+  button { background:linear-gradient(135deg,#E50914,#8b1fd6); color:#fff; border:none; border-radius:10px;
+           padding:12px 22px; font-size:1rem; font-weight:700; cursor:pointer; }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  .bar { height:6px; background:#1c1820; border-radius:6px; overflow:hidden; margin:16px 0; }
+  .bar > i { display:block; height:100%; width:0; background:#E50914; transition:width .3s; }
+  .keys { font-size:0.8rem; color:#9aa0a8; margin:8px 0 0; }
+  .keys b { color:#5dd97a; }
+  .keys b.bad { color:#ff6b6b; }
+  .card { background:#14111a; border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:16px 18px; margin:14px 0; }
+  .card h2 { font-size:1.05rem; margin:0 0 2px; }
+  .crit { font-size:0.8rem; color:#9aa0a8; margin:0 0 12px; }
+  .crit code { background:#23202a; padding:1px 6px; border-radius:4px; color:#cfcfe0; }
+  .film { display:flex; gap:12px; padding:10px 0; border-top:1px solid rgba(255,255,255,0.06); }
+  .rank { flex:0 0 26px; height:26px; border-radius:7px; background:#23202a; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; }
+  .rank.r1 { background:#aa0010; }
+  .film-main { flex:1; min-width:0; }
+  .film-title { font-weight:700; }
+  .film-meta { font-size:0.78rem; color:#9aa0a8; margin:2px 0; }
+  .film-reason { font-size:0.85rem; color:#d4d4e0; font-style:italic; }
+  .score { flex:0 0 56px; text-align:right; font-weight:800; color:#f5c518; }
+  .verdict { margin-top:10px; font-size:0.85rem; font-weight:700; }
+  .ok { color:#5dd97a; }
+  .ko { color:#ff6b6b; }
+  .err { color:#ff6b6b; font-size:0.85rem; }
+  .flag { color:#ff6b6b; }
+</style>
+</head>
+<body>
+  <h1>CINEA<span>MATCH</span> — Robot de test</h1>
+  <p class="sub">Exécute le moteur de reco (sélection TMDB + scoring IA) sur 10 profils variés, sans le questionnaire. Vérifie origine + mood automatiquement.</p>
+  <p class="keys" id="keys">Vérification des clés…</p>
+  <button id="run">▶ Lancer les 10 tests</button>
+  <div class="bar"><i id="prog"></i></div>
+  <div id="out"></div>
+
+<script type="module">
+import { tmdbService, openaiService } from './services/api.js?v=66';
+
+const MOOD_LABELS = {
+  '35,10751': 'Comédie', '28,12': 'Action / Aventure', '53': 'Thriller / Suspense',
+  '27': 'Horreur', '18,10749': 'Émouvant / Inspirant', '878,9648': 'SF / Mystère'
+};
+const LANG_LABELS = { en:'Américain 🇺🇸', fr:'Français 🇫🇷', ko:'Asiatique 🌏', es:'Hispanique 🇪🇸', any:'Toutes origines 🌍' };
+const CONTEXT_LABELS = { alone:'Seul', couple:'En couple', family:'En famille', friends:'Entre amis' };
+const DURATION_LABELS = { short:'Court (<1h45)', long:'Long (>2h)', any:'Peu importe' };
+
+// 10 profils variés
+const PROFILES = [
+  { mood:'35,10751',  language:'en', context:'friends', duration:'any',  era:'any', exclude:[],        ref:'The Hangover' },
+  { mood:'28,12',     language:'en', context:'alone',   duration:'any',  era:'any', exclude:[],        ref:'John Wick' },
+  { mood:'18,10749',  language:'fr', context:'couple',  duration:'any',  era:'any', exclude:['sad'],   ref:'Intouchables' },
+  { mood:'53',        language:'en', context:'alone',   duration:'any',  era:'any', exclude:[],        ref:'Se7en' },
+  { mood:'27',        language:'en', context:'alone',   duration:'any',  era:'any', exclude:[],        ref:'Hereditary' },
+  { mood:'878,9648',  language:'en', context:'alone',   duration:'long', era:'any', exclude:[],        ref:'Inception' },
+  { mood:'18,10749',  language:'en', context:'couple',  duration:'any',  era:'any', exclude:['sad'],   ref:'La La Land' },
+  { mood:'53',        language:'ko', context:'alone',   duration:'any',  era:'any', exclude:[],        ref:'Parasite' },
+  { mood:'35,10751',  language:'fr', context:'friends', duration:'any',  era:'any', exclude:[],        ref:'Le Dîner de Cons' },
+  { mood:'18,10749',  language:'en', context:'alone',   duration:'any',  era:'new', exclude:['sad'],   ref:'The Pursuit of Happyness' },
+];
+
+// ── Vérif clés ──
+const tmdbKey = localStorage.getItem('tmdb_key') || '';
+const openaiKey = localStorage.getItem('openai_key') || '';
+if (tmdbKey) tmdbService.init(tmdbKey);
+if (openaiKey && openaiService.init) openaiService.init(openaiKey);
+document.getElementById('keys').innerHTML =
+  `Clé TMDB : <b class="${tmdbKey?'':'bad'}">${tmdbKey?'OK':'MANQUANTE — connecte-toi au site d’abord'}</b> · ` +
+  `Clé OpenAI : <b class="${openaiKey?'':'bad'}">${openaiKey?'OK':'(fallback dev possible)'}</b>`;
+
+const out = document.getElementById('out');
+const prog = document.getElementById('prog');
+
+function langOK(profileLang, originCountry, originalLang) {
+  if (profileLang === 'en') return (originCountry||[]).includes('US') && !(originCountry||[]).some(c=>c==='NG'||c==='IN');
+  if (profileLang === 'fr') return originalLang === 'fr';
+  if (profileLang === 'ko') return ['ko','ja','zh','th','vi'].includes(originalLang);
+  if (profileLang === 'es') return originalLang === 'es';
+  return true;
+}
+
+async function runProfile(p, idx) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const moodLabel = MOOD_LABELS[p.mood] || p.mood;
+  card.innerHTML = `<h2>Profil ${idx+1} — ${moodLabel} · ${LANG_LABELS[p.language]}</h2>
+    <p class="crit">Réf : <code>${p.ref}</code> · Contexte : <code>${CONTEXT_LABELS[p.context]}</code> · Durée : <code>${DURATION_LABELS[p.duration]||p.duration}</code> · Exclu : <code>${p.exclude.join(', ')||'—'}</code></p>
+    <p class="film-meta">⏳ Recherche en cours…</p>`;
+  out.appendChild(card);
+
+  try {
+    // 1. Film de référence
+    let likedMovies = [];
+    if (p.ref) {
+      const sr = await tmdbService.searchMovies(p.ref);
+      if (sr?.results?.length) likedMovies = [sr.results[0]];
+    }
+    // 2. Préférences
+    const prefs = {
+      mood: p.mood, blendedGenreIds: p.mood,
+      language: p.language, detectedLanguage: p.language !== 'any' ? p.language : null,
+      era: p.era, duration: p.duration, context: p.context, exclude: p.exclude,
+      contextLabel: CONTEXT_LABELS[p.context], moodLabel, durationLabel: DURATION_LABELS[p.duration]||p.duration,
+      excludeLabels: p.exclude.join(', ') || 'Aucune', lastLovedMovies: likedMovies, _userPlatforms: []
+    };
+    // 3. Candidats
+    const candidates = await tmdbService.getAdvancedDiscovery(prefs, {}, false, 1, []);
+    if (!candidates || candidates.length === 0) { card.querySelector('.film-meta').innerHTML = '<span class="err">Aucun candidat TMDB.</span>'; return; }
+    // 4. Scoring IA
+    const ranked = await openaiService.getDeepRecommendations(likedMovies, prefs, candidates, false, [], 'fr');
+    if (!ranked || ranked.length === 0) { card.querySelector('.film-meta').innerHTML = '<span class="err">Le scoring IA n’a rien renvoyé.</span>'; return; }
+    const byId = new Map(candidates.map(c => [Number(c.id), c]));
+    const top3 = [...ranked].sort((a,b)=>(b.match_score||0)-(a.match_score||0)).slice(0,3);
+
+    // 5. Détails (origine) + rendu
+    card.querySelector('.film-meta').remove();
+    let issues = 0;
+    for (let i=0;i<top3.length;i++){
+      const r = top3[i];
+      const m = byId.get(Number(r.tmdb_id)) || {};
+      let originCountry = m.origin_country || [];
+      try { const d = await tmdbService.getMovieDetails(r.tmdb_id); if (d) { originCountry = d.origin_country || (d.production_countries||[]).map(c=>c.iso_3166_1) || []; } } catch(e){}
+      const ok = langOK(p.language, originCountry, m.original_language);
+      if (!ok) issues++;
+      const year = (m.release_date||'').split('-')[0] || '?';
+      const row = document.createElement('div');
+      row.className = 'film';
+      row.innerHTML = `<div class="rank ${i===0?'r1':''}">${i+1}</div>
+        <div class="film-main">
+          <div class="film-title">${m.title||'?'} ${ok?'':'<span class="flag">⚠️ origine '+(originCountry.join(',')||m.original_language||'?')+'</span>'}</div>
+          <div class="film-meta">${year} · ${(m.original_language||'?').toUpperCase()} · origine ${originCountry.join(',')||'?'}</div>
+          <div class="film-reason">${r.match_reason||'(pas de raison)'}</div>
+        </div>
+        <div class="score">${r.match_score||0}%</div>`;
+      card.appendChild(row);
+    }
+    const v = document.createElement('div');
+    v.className = 'verdict ' + (issues===0?'ok':'ko');
+    v.textContent = issues===0 ? '✓ Origine respectée sur les 3 films' : `✗ ${issues} film(s) hors origine demandée`;
+    card.appendChild(v);
+  } catch (e) {
+    const meta = card.querySelector('.film-meta');
+    if (meta) meta.innerHTML = `<span class="err">Erreur : ${e.message}</span>`;
+    else { const er=document.createElement('div'); er.className='err'; er.textContent='Erreur : '+e.message; card.appendChild(er); }
+  }
+}
+
+document.getElementById('run').onclick = async () => {
+  const btn = document.getElementById('run');
+  btn.disabled = true; out.innerHTML = '';
+  for (let i=0;i<PROFILES.length;i++){
+    await runProfile(PROFILES[i], i);
+    prog.style.width = Math.round(((i+1)/PROFILES.length)*100) + '%';
+  }
+  btn.disabled = false; btn.textContent = '▶ Relancer les 10 tests';
+};
+</script>
+</body>
+</html>
