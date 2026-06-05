@@ -2439,7 +2439,7 @@ const App = {
             badge.id = 'personalized-badge';
             badge.style.cssText = `
                 display:flex;align-items:center;justify-content:center;gap:6px;
-                width:fit-content;margin:0 auto 1.5rem;
+                width:fit-content;margin:0.9rem auto 1.5rem;
                 background:linear-gradient(135deg,rgba(229,9,20,0.15),rgba(139,92,246,0.12));
                 border:1px solid rgba(229,9,20,0.3);border-radius:100px;
                 padding:5px 14px;font-size:0.75rem;font-weight:700;
