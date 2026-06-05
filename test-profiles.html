@@ -71,14 +71,16 @@ const PROFILES = [
   { mood:'18,10749',  language:'en', context:'alone',   duration:'any',  era:'new', exclude:['sad'],   ref:'The Pursuit of Happyness' },
 ];
 
-// ── Vérif clés ──
+// ── Clés : en PROD, TMDB & OpenAI passent par les proxys serveur (/api/tmdb, /api/openai).
+// Les gardes internes exigent juste une clé non-vide ; le proxy injecte la vraie clé côté serveur.
+const IS_PROD = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 const tmdbKey = localStorage.getItem('tmdb_key') || '';
 const openaiKey = localStorage.getItem('openai_key') || '';
-if (tmdbKey) tmdbService.init(tmdbKey);
-if (openaiKey && openaiService.init) openaiService.init(openaiKey);
-document.getElementById('keys').innerHTML =
-  `Clé TMDB : <b class="${tmdbKey?'':'bad'}">${tmdbKey?'OK':'MANQUANTE — connecte-toi au site d’abord'}</b> · ` +
-  `Clé OpenAI : <b class="${openaiKey?'':'bad'}">${openaiKey?'OK':'(fallback dev possible)'}</b>`;
+tmdbService.init(IS_PROD ? (tmdbKey || 'PROXY') : tmdbKey);
+if (openaiService.init) openaiService.init(IS_PROD ? (openaiKey || 'PROXY') : openaiKey);
+document.getElementById('keys').innerHTML = IS_PROD
+  ? 'Mode production : TMDB & OpenAI via <b>proxy serveur</b> — clés OK'
+  : `Clé TMDB : <b class="${tmdbKey?'':'bad'}">${tmdbKey?'OK':'MANQUANTE'}</b> · Clé OpenAI : <b>${openaiKey?'OK':'(dev)'}</b>`;
 
 const out = document.getElementById('out');
 const prog = document.getElementById('prog');
