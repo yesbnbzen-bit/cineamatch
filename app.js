@@ -75,6 +75,17 @@ function getNextScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount + 1, REROLL_MAX_SCORES.length - 1)];
 }
 
+// « Américain » = origine USA réelle. origin_country est le signal fiable ;
+// production_countries est pollué par Netflix US (co-liste "US" sur des films
+// nigérians/indiens). On exclut explicitement Nollywood/Bollywood (NG/IN).
+function passesUSFilter(details, lang) {
+    if (lang !== 'en' || !details) return true;
+    const orig = details.origin_country || [];
+    const prod = (details.production_countries || []).map(c => c.iso_3166_1);
+    if ([...orig, ...prod].some(c => c === 'NG' || c === 'IN')) return false;
+    return orig.length > 0 ? orig.includes('US') : prod.includes('US');
+}
+
 // ── Logos plateformes : carrousel de l'écran de chargement ──
 // Vrais logos COLORÉS (icône officielle de chaque plateforme) via le service
 // de favicons Google — fiable, coloré, immédiat. Posés sur pastille blanche.
@@ -2223,6 +2234,11 @@ const App = {
                     console.warn(`⛔ Langue rejetée (details TMDB) : ${details.title} (${details.original_language}) — filtre: ${[...langFilterSet].join(',')}`);
                     continue;
                 }
+                // ✅ « Américain » = origine USA réelle (exclut Nollywood/UK/etc. même anglophones)
+                if (!passesUSFilter(details, store.answers.language)) {
+                    console.warn(`⛔ Non-US rejeté (Américain) : ${details.title} — origine: ${(details.origin_country || []).join(',') || '?'}`);
+                    continue;
+                }
                 // ✅ Double-vérification via spoken_languages pour TOUTES les langues explicites
                 // Corrige les erreurs de classification TMDB (ex: film espagnol taggé 'en')
                 if (langFilterSet && store.answers.language && store.answers.language !== 'any'
@@ -2279,6 +2295,7 @@ const App = {
                     // Strict : même règle que passe 1 — providers vides = rejeté
                     if (!_checkPlatform(details)) continue;
                     if (!details.overview?.trim()) continue;
+                    if (!passesUSFilter(details, store.answers.language)) continue;
                     finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
                     store.suggestedMovieIds.push(Number(c.id));
                     store.suggestedTitles.push(details.title);
@@ -2310,6 +2327,7 @@ const App = {
                         if (!details || Number(details.id) !== Number(c.id)) continue;
                         if (!_checkPlatform(details)) continue; // strict
                         if (!details.overview?.trim()) continue;
+                        if (!passesUSFilter(details, store.answers.language)) continue;
                         finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 });
                         store.suggestedMovieIds.push(Number(c.id));
                         store.suggestedTitles.push(details.title);
