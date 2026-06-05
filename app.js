@@ -2180,7 +2180,13 @@ const App = {
             // ── Filtre plateforme final — calculé une fois pour les deux passes ──
             const _finalPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
             const _checkPlatform = (details) => {
-                if (_finalPlatIds.size === 0) return true;
+                const _fr = details['watch/providers']?.results?.FR || {};
+                if (_finalPlatIds.size === 0) {
+                    // Aucune plateforme choisie → on exige quand même AU MOINS un fournisseur
+                    // FR (streaming, location, gratuit ou pub) : pas de film fantôme "Où voir ?".
+                    const _any = [...( _fr.flatrate||[]), ...(_fr.rent||[]), ...(_fr.free||[]), ...(_fr.ads||[])];
+                    return _any.length > 0;
+                }
                 const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
                 if (frFlatrate.length === 0) return false; // ⛔ strict : pas de données = film rejeté
                 const frAll = [
