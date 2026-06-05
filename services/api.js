@@ -354,6 +354,11 @@ export const tmdbService = {
             }
         } else if (preferences.detectedLanguage) {
             url += `&with_original_language=${preferences.detectedLanguage}`;
+            // « Américain » = anglophone ET origine USA → exclut Nollywood/UK/etc.
+            if (preferences.detectedLanguage === 'en' && preferences.language === 'en') {
+                url += `&with_origin_country=US`;
+                console.log('🇺🇸 Origine verrouillée : US (Américain)');
+            }
             console.log(`🌍 Langue détectée depuis ADN : ${preferences.detectedLanguage}`);
         }
 
@@ -690,7 +695,7 @@ ${userAnswers.context === 'family' ? '⛔ CONTRAINTE ABSOLUE : Contexte famille 
 ${(userAnswers.language && userAnswers.language !== 'any') ? `⛔ RÈGLE LANGUE ABSOLUE — NE PAS CONTOURNER :
 L'utilisateur a sélectionné "${({fr:'Films français',en:'Films américains/anglais',ko:'Films asiatiques',es:'Films hispaniques'}[userAnswers.language] || userAnswers.language)}".
 → Tous tes titres dans "specific_suggestions" DOIVENT être dans cette langue originale.
-→ Pour "Films américains/anglais" : UNIQUEMENT des films en anglais (original_language = "en"). JAMAIS de films espagnols, français, coréens, latins ou autres.
+→ Pour "Films américains/anglais" : UNIQUEMENT des films AMÉRICAINS (origine USA, Hollywood), en anglais. JAMAIS de films espagnols, français, coréens, latins — ni de films anglophones non-américains (nigérians/Nollywood, indiens/Bollywood, etc.).
 → Cette règle est ABSOLUE. Elle prime sur toute logique de variété ou d'exploration culturelle.` : ''}
 
 ⛔ RÈGLE PAR DÉFAUT — AUDIENCE ADULTE :
