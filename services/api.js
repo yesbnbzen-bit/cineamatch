@@ -394,20 +394,31 @@ export const tmdbService = {
         } else if (isReroll) {
             url += `&sort_by=vote_average.desc&vote_count.lte=4000&vote_average.gte=7.0`;
         } else {
-            // Seuil min 300 votes pour la qualité, pas de cap max
-            url += `&sort_by=vote_average.desc&vote_count.gte=300`;
+            // Seuil de votes adaptatif : les films RÉCENTS (2020+) ont mécaniquement moins de
+            // votes → un seuil à 300 vide le pool « récent ». On l'abaisse pour cette époque.
+            const _minVotes = era === 'new' ? 80 : 300;
+            url += `&sort_by=vote_average.desc&vote_count.gte=${_minVotes}`;
         }
 
         // Rotation du pool : la page de départ avance à chaque nouvelle recherche de l'utilisateur
         // → un usage quotidien sur le MÊME créneau voit des films toujours frais (sur ~15 pages).
-        const randomPage = isReroll
+        let randomPage = isReroll
             ? Math.floor(Math.random() * 6) + 1
             : 1 + ((preferences._poolRotation || 0) % 15);
-        const finalUrl = url + `&page=${randomPage}&_=${Date.now()}`;
+        let finalUrl = url + `&page=${randomPage}&_=${Date.now()}`;
 
         let resp = await fetch(finalUrl, { cache: 'no-store' });
         if (!resp.ok) { console.warn(`getAdvancedDiscovery HTTP ${resp.status}`); return []; }
         let data = await resp.json();
+        // Sécurité rotation : si la page de départ dépasse les résultats dispo (créneau à peu
+        // de pages, ex. récent), on revient dans une zone valide au lieu de vider le pool.
+        const _totalPages = data.total_pages || 1;
+        if (!isReroll && randomPage > Math.max(1, _totalPages - 2)) {
+            randomPage = 1 + ((preferences._poolRotation || 0) % Math.max(1, _totalPages - 2));
+            finalUrl = url + `&page=${randomPage}&_=${Date.now()}`;
+            resp = await fetch(finalUrl, { cache: 'no-store' });
+            data = await resp.json();
+        }
         let results = data.results || [];
 
         // Élargissement du pool : on récupère 2 pages de plus (≈60 films au total) en
