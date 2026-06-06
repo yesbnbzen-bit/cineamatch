@@ -398,7 +398,11 @@ export const tmdbService = {
             url += `&sort_by=vote_average.desc&vote_count.gte=300`;
         }
 
-        const randomPage = isReroll ? Math.floor(Math.random() * 6) + 1 : 1;
+        // Rotation du pool : la page de départ avance à chaque nouvelle recherche de l'utilisateur
+        // → un usage quotidien sur le MÊME créneau voit des films toujours frais (sur ~15 pages).
+        const randomPage = isReroll
+            ? Math.floor(Math.random() * 6) + 1
+            : 1 + ((preferences._poolRotation || 0) % 15);
         const finalUrl = url + `&page=${randomPage}&_=${Date.now()}`;
 
         let resp = await fetch(finalUrl, { cache: 'no-store' });
@@ -406,11 +410,22 @@ export const tmdbService = {
         let data = await resp.json();
         let results = data.results || [];
 
+        // Élargissement du pool : on récupère 2 pages de plus (≈60 films au total) en
+        // parallèle, avec déduplication. Plus de candidats = moins de relâchement des critères.
         try {
-            const resp2 = await fetch(finalUrl.replace(`page=${randomPage}`, `page=${randomPage + 1}`), { cache: 'no-store' });
-            const data2 = await resp2.json();
-            if (data2.results) results = [...results, ...data2.results];
-        } catch(e) { console.warn("Next page fetch failed"); }
+            const [resp2, resp3] = await Promise.all([
+                fetch(finalUrl.replace(`page=${randomPage}`, `page=${randomPage + 1}`), { cache: 'no-store' }),
+                fetch(finalUrl.replace(`page=${randomPage}`, `page=${randomPage + 2}`), { cache: 'no-store' })
+            ]);
+            const [data2, data3] = await Promise.all([
+                resp2.json().catch(() => ({})),
+                resp3.json().catch(() => ({}))
+            ]);
+            const _seen = new Set(results.map(x => x.id));
+            [...(data2.results || []), ...(data3.results || [])].forEach(f => {
+                if (f && !_seen.has(f.id)) { _seen.add(f.id); results.push(f); }
+            });
+        } catch(e) { console.warn("Extra pages fetch failed"); }
 
         // Option B — Boost pool secondaire selon la polarité émotionnelle détectée
         if ((preferences.mood === '18,10749' || preferences.blendedGenreIds?.includes('18')) && !isReroll) {

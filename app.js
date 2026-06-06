@@ -1322,6 +1322,12 @@ const App = {
                 store.suggestedMovieIds = [];
                 store.suggestedTitles   = [];
                 store.rerollCount       = 0;
+                // Rotation du pool : +1 à chaque nouvelle recherche → page de départ différente
+                // (films frais au quotidien, même sur un créneau identique). Persisté localement.
+                let _rot = parseInt(localStorage.getItem('cm_pool_rotation') || '0', 10) || 0;
+                _rot = (_rot + 1) % 100000;
+                localStorage.setItem('cm_pool_rotation', String(_rot));
+                store.answers._poolRotation = _rot;
             }
 
             // ── Variante de reroll : chaque reroll explore un angle différent ──
