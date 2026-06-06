@@ -67,11 +67,14 @@ create table if not exists ratings (
     movie_id    integer not null,
     title       text,
     poster_path text,
+    genre_ids   integer[],
     rating      integer check (rating between 1 and 5),
     seen        boolean default false,
     rated_at    timestamptz default now(),
     unique(user_id, movie_id)
 );
+-- Si la table existe déjà sans la colonne genre_ids, exécuter dans Supabase :
+--   alter table ratings add column if not exists genre_ids integer[];
 
 
 -- ═══════════════════════════════════════════════════════════

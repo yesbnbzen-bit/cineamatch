@@ -216,9 +216,24 @@ export const historyService = {
 
 export const ratingsService = {
 
+    // Upsert résilient : si la colonne genre_ids n'existe pas dans la table
+    // (schéma non migré), on réessaie SANS ce champ pour que la notation soit
+    // quand même enregistrée. Évite l'échec silencieux qui empêchait les films
+    // d'apparaître dans "Mes films".
+    async _upsertRating(row) {
+        let { error } = await supabase.from('ratings').upsert(row, { onConflict: 'user_id,movie_id' });
+        if (error && /genre_ids/i.test(error.message || '')) {
+            console.warn('ratings: colonne genre_ids absente → réessai sans ce champ');
+            const { genre_ids, ...rowSansGenres } = row;
+            ({ error } = await supabase.from('ratings').upsert(rowSansGenres, { onConflict: 'user_id,movie_id' }));
+        }
+        if (error) console.error('ratings upsert:', error);
+        return !error;
+    },
+
     // Sauvegarder ou mettre à jour une notation
     async rate(userId, movie, rating, seen = true) {
-        const { error } = await supabase.from('ratings').upsert({
+        return this._upsertRating({
             user_id:     userId,
             movie_id:    movie.id,
             title:       movie.title,
@@ -226,21 +241,19 @@ export const ratingsService = {
             genre_ids:   movie.genre_ids || [],
             rating:      rating,
             seen:        seen
-        }, { onConflict: 'user_id,movie_id' });
-        if (error) console.error('ratings rate:', error);
+        });
     },
 
     // Marquer comme "déjà vu" sans noter
     async markSeen(userId, movie) {
-        const { error } = await supabase.from('ratings').upsert({
+        return this._upsertRating({
             user_id:     userId,
             movie_id:    movie.id,
             title:       movie.title,
             poster_path: movie.poster_path,
             genre_ids:   movie.genre_ids || [],
             seen:        true
-        }, { onConflict: 'user_id,movie_id' });
-        if (error) console.error('ratings markSeen:', error);
+        });
     },
 
     // Récupérer la notation d'un film
@@ -280,13 +293,24 @@ export const ratingsService = {
     // Retourne les films adorés, les films ratés, et les genres dominants
     // utilisés pour enrichir le prompt OpenAI à chaque nouvelle recherche
     async getRatingProfile(userId) {
-        const { data } = await supabase
+        let { data, error } = await supabase
             .from('ratings')
             .select('movie_id, title, rating, genre_ids')
             .eq('user_id', userId)
             .not('rating', 'is', null)
             .order('rating', { ascending: false })
             .limit(60);
+
+        // Repli si la colonne genre_ids n'existe pas (schéma non migré)
+        if (error && /genre_ids/i.test(error.message || '')) {
+            ({ data } = await supabase
+                .from('ratings')
+                .select('movie_id, title, rating')
+                .eq('user_id', userId)
+                .not('rating', 'is', null)
+                .order('rating', { ascending: false })
+                .limit(60));
+        }
 
         if (!data || data.length === 0) return null;
 
