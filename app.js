@@ -1815,6 +1815,16 @@ const App = {
             } else {
                 store._moodExclusionConflict = false;
             }
+            // ── Garde-fou exclusions : rejette TOUT film d'un genre exclu, dans toutes les
+            // passes (y compris les passes de secours qui n'appliquent pas les filtres). ──
+            const _isExcludedGenre = (details) => {
+                if (!effectiveExclusions.length || !details) return false;
+                const gids = [
+                    ...((details.genres || []).map(g => Number(g.id))),
+                    ...((details.genre_ids || []).map(Number))
+                ];
+                return gids.some(g => effectiveExclusions.includes(g));
+            };
 
             // IDs TMDB de films explicitement interdits en contexte famille (dark/adulte malgré genre Animation ou SF)
             const FAMILY_BLACKLIST_IDS = new Set([
@@ -2180,13 +2190,7 @@ const App = {
             // ── Filtre plateforme final — calculé une fois pour les deux passes ──
             const _finalPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
             const _checkPlatform = (details) => {
-                const _fr = details['watch/providers']?.results?.FR || {};
-                if (_finalPlatIds.size === 0) {
-                    // Aucune plateforme choisie → on exige quand même AU MOINS un fournisseur
-                    // FR (streaming, location, gratuit ou pub) : pas de film fantôme "Où voir ?".
-                    const _any = [...( _fr.flatrate||[]), ...(_fr.rent||[]), ...(_fr.free||[]), ...(_fr.ads||[])];
-                    return _any.length > 0;
-                }
+                if (_finalPlatIds.size === 0) return true;
                 const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
                 if (frFlatrate.length === 0) return false; // ⛔ strict : pas de données = film rejeté
                 const frAll = [
@@ -2243,6 +2247,11 @@ const App = {
                 // ✅ « Américain » = origine USA réelle (exclut Nollywood/UK/etc. même anglophones)
                 if (!passesUSFilter(details, store.answers.language)) {
                     console.warn(`⛔ Non-US rejeté (Américain) : ${details.title} — origine: ${(details.origin_country || []).join(',') || '?'}`);
+                    continue;
+                }
+                // ✅ Garde-fou exclusions (animation, ado…) — même en passe de secours
+                if (_isExcludedGenre(details)) {
+                    console.warn(`⛔ Genre exclu rejeté : ${details.title} — genres: ${(details.genres||[]).map(g=>g.id).join(',')}`);
                     continue;
                 }
                 // ✅ Double-vérification via spoken_languages pour TOUTES les langues explicites
@@ -2302,6 +2311,7 @@ const App = {
                     if (!_checkPlatform(details)) continue;
                     if (!details.overview?.trim()) continue;
                     if (!passesUSFilter(details, store.answers.language)) continue;
+                    if (_isExcludedGenre(details)) continue;
                     finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
                     store.suggestedMovieIds.push(Number(c.id));
                     store.suggestedTitles.push(details.title);
@@ -2334,6 +2344,7 @@ const App = {
                         if (!_checkPlatform(details)) continue; // strict
                         if (!details.overview?.trim()) continue;
                         if (!passesUSFilter(details, store.answers.language)) continue;
+                        if (_isExcludedGenre(details)) continue;
                         finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 });
                         store.suggestedMovieIds.push(Number(c.id));
                         store.suggestedTitles.push(details.title);
