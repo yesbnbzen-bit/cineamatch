@@ -1914,6 +1914,8 @@ const App = {
                 if ((store.seenRatedMovieIds || []).includes(Number(c.id))) return false;
                 // Téléfilms (TV Movie genre 10770) → exclus par défaut
                 if (genres.includes(10770)) return false;
+                // Films pas encore sortis → jamais recommandés (l'utilisateur veut du regardable le jour J)
+                if (c.release_date && new Date(c.release_date).getTime() > Date.now()) return false;
                 // Filtre époque → s'applique à toutes les sources
                 if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) return false;
                 // Filtre exclusions genres → s'applique à toutes les sources (animation, horreur, etc.)
@@ -2410,6 +2412,15 @@ const App = {
                 await openaiService.generateMissingReasons(finalMovies, store.answers, getLang());
             }
 
+            // ── Films actuellement à l'affiche (badge "Au cinéma") — caché 1×/session ──
+            if (!store._nowPlayingIds) {
+                try {
+                    const _np  = await fetch(tmdbUrl('/movie/now_playing', { language: 'fr-FR', region: 'FR', page: '1' }));
+                    const _npd = await _np.json();
+                    store._nowPlayingIds = new Set((_npd.results || []).map(r => Number(r.id)));
+                } catch (e) { store._nowPlayingIds = new Set(); }
+            }
+
             this.renderResults(finalMovies);
 
         } catch (e) {
@@ -2650,6 +2661,8 @@ const App = {
                 ? encodeURIComponent(m.title.toLowerCase().replace(/[^a-z0-9\s]/g,'').trim().replace(/\s+/g,'-'))
                 : '';
             const jwUrl = `https://www.justwatch.com/fr/recherche?q=${encodeURIComponent(m.title || '')}`;
+            // "Au cinéma" = film réellement à l'affiche en ce moment (liste TMDB now_playing FR)
+            const _isInTheaters = !!(store._nowPlayingIds && store._nowPlayingIds.has(Number(m.id)));
             const providersHtml = displayProviders.length > 0
                 ? displayProviders.slice(0, 4).map(p => {
                     const streamUrl = STREAMING_URLS[p.provider_name]?.(m.title) || jwUrl;
@@ -2659,8 +2672,10 @@ const App = {
                                      style="width:28px;height:28px;border-radius:7px;object-fit:cover;display:block;">
                             </a>`;
                   }).join('') + (isVOD ? `<span class="vod-badge" title="Disponible en location/achat">VOD</span>` : '')
-                : `<a href="${jwUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
-                      class="jw-link">📺 Où voir ?</a>`;
+                : _isInTheaters
+                    ? `<span class="cinema-badge" title="Encore au cinéma — pas encore disponible en streaming">🎬 Au cinéma</span>`
+                    : `<a href="${jwUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
+                          class="jw-link">📺 Où voir ?</a>`;
 
             // Synopsis — fallback si TMDb n'a pas de synopsis pour ce film
             const noSynopsisMsg = getLang() === 'en'
