@@ -263,8 +263,7 @@ export const authUI = {
             `;
             badge.innerHTML = `
                 ${level.icon}
-                <span>L'IA connaît tes goûts</span>
-                <span style="opacity:0.55;font-size:0.72rem;font-weight:500">${ratingProfile.totalRated} film${ratingProfile.totalRated > 1 ? 's' : ''} notés · niveau ${level.label}</span>
+                <span>L'IA connaît déjà tes goûts</span>
             `;
             badge.title = `Films adorés : ${ratingProfile.loved.map(r => r.title).join(', ') || '—'}`;
 
