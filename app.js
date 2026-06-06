@@ -2199,14 +2199,10 @@ const App = {
             // ── Filtre plateforme final — calculé une fois pour les deux passes ──
             const _finalPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
             const _checkPlatform = (details) => {
-                if (_finalPlatIds.size === 0) {
-                    // Aucune plateforme choisie → on garde si REGARDABLE AUJOURD'HUI :
-                    // dispo quelque part (streaming/loc/gratuit/pub) OU actuellement au cinéma.
-                    const _fr = details['watch/providers']?.results?.FR || {};
-                    const _hasProv = [...(_fr.flatrate||[]), ...(_fr.rent||[]), ...(_fr.free||[]), ...(_fr.ads||[])].length > 0;
-                    const _inTheaters = store._nowPlayingIds && store._nowPlayingIds.has(Number(details.id));
-                    return _hasProv || _inTheaters;
-                }
+                // Pas de plateforme choisie → on garde le film (les données de dispo TMDB sont
+                // trop incomplètes pour filtrer dur : ça vidait le pool et relâchait l'époque).
+                // L'affichage distingue de toute façon "Au cinéma" / "Où voir ?".
+                if (_finalPlatIds.size === 0) return true;
                 const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
                 if (frFlatrate.length === 0) return false; // ⛔ strict : pas de données = film rejeté
                 const frAll = [
