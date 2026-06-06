@@ -1215,6 +1215,12 @@ const App = {
                 if (store.answers.lastLovedMovies.length >= MAX_LOVED_MOVIES) return;
                 if (!store.answers.lastLovedMovies.find(m => m.id === movie.id)) {
                     store.answers.lastLovedMovies.push(movie);
+                    // ── Sauvegarde IMMÉDIATE dans "déjà vus" si connecté (5★ + vu) ──
+                    if (store.currentUser) {
+                        ratingsService.rate(store.currentUser.id, movie, 5, true).catch(e => console.warn('rate ref:', e));
+                        historyService.save(store.currentUser.id, movie, 'référence', 100).catch(e => console.warn('history ref:', e));
+                        console.log(`⭐ Film de référence "${movie.title}" enregistré dans déjà vus`);
+                    }
                 }
                 document.getElementById('movie-search').value = '';
                 resultsDiv.style.display = 'none';
@@ -2733,10 +2739,7 @@ const App = {
                 : null;
             const ytSearchUrl  = `https://www.youtube.com/results?search_query=${encodeURIComponent(m.title + ' ' + (m.release_date?.split('-')[0] || '') + ' ' + t('trailer.query'))}`;
             const trailerBtnHtml = trailerSrc
-                ? `<button class="btn-trailer" onclick="event.stopPropagation();
-                    document.getElementById('trailer-modal').style.display='flex';
-                    document.getElementById('trailer-frame').src='${trailerSrc}';
-                    document.getElementById('trailer-yt-fallback').href='${ytSearchUrl}'">${t('trailer.play')}${trailerVersion ? ' · ' + trailerVersion : ''}</button>`
+                ? `<button class="btn-trailer" onclick="event.stopPropagation();App.openTrailer('${trailerSrc}','${ytSearchUrl}')">${t('trailer.play')}${trailerVersion ? ' · ' + trailerVersion : ''}</button>`
                 : `<a class="btn-trailer btn-trailer-yt" href="${ytSearchUrl}" target="_blank" rel="noopener"
                     onclick="event.stopPropagation()">${t('trailer.search')}</a>`;
 
@@ -3632,6 +3635,15 @@ const App = {
     },
 
     // ── Marquer / démarquer "déjà vu" ──
+    openTrailer(src, ytUrl) {
+        const modal = document.getElementById('trailer-modal');
+        const frame = document.getElementById('trailer-frame');
+        const fb    = document.getElementById('trailer-yt-fallback');
+        if (frame) frame.src = src || '';
+        if (fb && ytUrl) fb.href = ytUrl;
+        if (modal) modal.style.display = 'flex';
+    },
+
     async toggleSeen(movieId) {
         if (!store.currentUser) {
             this._showSaveGate('seen');
