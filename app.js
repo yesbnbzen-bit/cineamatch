@@ -2712,13 +2712,17 @@ const App = {
                   </div>`
                 : `<div class="synopsis-box"><p class="synopsis-text${isPlaceholder ? ' synopsis-placeholder' : ''}">${synopsis}</p></div>`;
 
-            // Trailer — priorité VF > VOSTF > VO
+            // Trailer — priorité VF > VOSTF > VO. Au sein de chaque groupe : officiel + récent
+            // d'abord (les vidéos officielles récentes sont bien moins souvent supprimées).
+            const _rank = (a, b) =>
+                (Number(b.official || false) - Number(a.official || false))
+                || (new Date(b.published_at || 0) - new Date(a.published_at || 0));
             const _vids = (m.videos?.results || []).filter(v => v.site === 'YouTube');
             const _isTr = v => v.type === 'Trailer' || v.type === 'Teaser';
-            const _frVids  = _vids.filter(v => v.iso_639_1 === 'fr' && _isTr(v));
+            const _frVids  = _vids.filter(v => v.iso_639_1 === 'fr' && _isTr(v)).sort(_rank);
             const _vfVid   = _frVids.find(v => /\bvf\b|version fran|fran[çc]aise|doubl/i.test(v.name || ''));
             const _vostVid = _frVids.find(v => /vost|sous[\s-]?titr/i.test(v.name || ''));
-            const _voVid   = _vids.find(v => _isTr(v)) || _vids[0];
+            const _voVid   = _vids.filter(_isTr).sort(_rank)[0] || _vids[0];
             let trailerVideo, trailerVersion = '';
             if (_vfVid)            { trailerVideo = _vfVid;     trailerVersion = 'VF'; }
             else if (_vostVid)     { trailerVideo = _vostVid;   trailerVersion = 'VOSTF'; }
@@ -2731,7 +2735,8 @@ const App = {
             const trailerBtnHtml = trailerSrc
                 ? `<button class="btn-trailer" onclick="event.stopPropagation();
                     document.getElementById('trailer-modal').style.display='flex';
-                    document.getElementById('trailer-frame').src='${trailerSrc}'">${t('trailer.play')}${trailerVersion ? ' · ' + trailerVersion : ''}</button>`
+                    document.getElementById('trailer-frame').src='${trailerSrc}';
+                    document.getElementById('trailer-yt-fallback').href='${ytSearchUrl}'">${t('trailer.play')}${trailerVersion ? ' · ' + trailerVersion : ''}</button>`
                 : `<a class="btn-trailer btn-trailer-yt" href="${ytSearchUrl}" target="_blank" rel="noopener"
                     onclick="event.stopPropagation()">${t('trailer.search')}</a>`;
 
