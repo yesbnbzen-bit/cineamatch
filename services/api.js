@@ -835,7 +835,12 @@ Réponds UNIQUEMENT par ce JSON strict (pas de markdown, pas de texte autour) :
         const dnaAnchor = likedMovies && likedMovies.length > 0
             ? `Films de référence de cet utilisateur : ${user_dna}.
 → Sers-toi de ces références pour COMPRENDRE ce qu'il aime ressentir (le style, l'émotion, le rythme) et choisir des films qui touchent la même corde.
-→ MAIS ne cite le titre d'un film de référence que dans UNE seule des 3 raisons maximum, et seulement si le lien est évident et éclairant. Surtout PAS la même accroche pour les 3 films — ça sonne robotique.`
+→ RÈGLE STRICTE pour citer un film de référence dans une raison :
+   • Tu ne cites son titre QUE si le lien est CONCRET et VRAI : même sous-genre, même type de héros, même nature de tension, même émotion. Exemple valable : citer "Taken" pour un thriller de vengeance avec un héros normal poussé à bout.
+   • INTERDIT de citer le film de référence juste parce que les deux sont "de l'action" ou "intenses" — c'est un name-dropping opportuniste qui sonne faux.
+   • INTERDIT ABSOLU des formules qui trahissent un match forcé : "un peu comme X mais avec une touche Y", "dans l'esprit de X", "rappelle X" quand le lien est vague. Si tu dois ajouter un "mais avec une touche…" pour justifier, c'est que le film NE matche PAS la référence → ne cite pas la référence du tout.
+   • Si un film n'a pas de vrai lien avec la référence, NE la mentionne PAS : justifie-le par ses qualités propres (le genre demandé, le mood, une scène concrète).
+   • Cite un film de référence dans UNE seule des 3 raisons maximum. Jamais la même accroche pour les 3 films.`
             : `Pas de films de référence fournis. Base tes raisons sur le mood et l'envie ressentie.`;
 
         // ── Contexte re-roll ──
@@ -1179,8 +1184,8 @@ Chaque match_reason doit :
 2. S'ANCRER sur un élément CONCRET et vrai du film : une scène marquante, un personnage, un ton précis, une sensation unique. JAMAIS une généralité.
 3. Relier au RESSENTI recherché (le mood, l'envie du moment) — pas juste au genre. Montre que tu as compris ce qu'il cherche à vivre ce soir.
 4. VARIER radicalement l'accroche d'une raison à l'autre (factuelle, sensorielle, intrigante, complice…). Les 3 raisons ne doivent surtout PAS commencer de la même façon.
-5. Citer un film de référence dans UNE seule raison maximum — et seulement si le lien est vraiment éclairant.
-6. INTERDITS (formules creuses) : "parfait pour toi", "correspond à tes goûts", "idéal pour une soirée X", "un moment de pur divertissement", "casting diversifié", "à ne pas manquer", "te plonge dans un univers". Bannis-les.
+5. Citer un film de référence dans UNE seule raison maximum — et SEULEMENT si le lien est CONCRET (même sous-genre, même type de héros, même tension). INTERDIT de citer la référence juste parce que les deux sont "de l'action" ou "intenses". Si tu dois écrire "un peu comme X mais avec une touche Y" ou "dans l'esprit de X", c'est que le film ne matche PAS la référence → ne la cite pas, justifie le film par ses qualités propres.
+6. INTERDITS (formules creuses) : "parfait pour toi", "correspond à tes goûts", "idéal pour une soirée X", "un moment de pur divertissement", "casting diversifié", "à ne pas manquer", "te plonge dans un univers", "un peu comme X mais avec une touche Y", "dans l'esprit de". Bannis-les.
 
 Exemples d'accroches variées : "La scène où [X] suffit à…", "Tu vas t'attacher à [personnage], un(e)…", "Sous ses airs de [genre], c'est en vrai…", "Rare : un film qui ose [caractéristique unique]…"
 
@@ -1278,7 +1283,7 @@ Applique le scoring dynamique, garantis la diversité du top 3, et génère des 
         const prompt = isFr
             ? `Tu es un critique de cinéma expert. Un utilisateur cherche ${mood ? `un film pour "${mood}"` : 'un film'} ${context ? `dans le contexte "${context}"` : ''}${lovedMovies ? `. Ses films de référence : ${lovedMovies}` : ''}.
 
-Pour chaque film ci-dessous, écris comme un ami cinéphile qui connaît ses goûts : une raison de 2 phrases max (max 200 caractères) qui donne une envie irrésistible de lancer CE film et fait sentir "il m'a compris". Ancre-toi sur un élément concret et vrai (une scène, un personnage, un ton précis). Varie les accroches d'un film à l'autre. INTERDITS : "parfait pour toi", "idéal pour une soirée", "un moment de pur divertissement", "à ne pas manquer", "te plonge dans un univers".
+Pour chaque film ci-dessous, écris comme un ami cinéphile qui connaît ses goûts : une raison de 2 phrases max (max 200 caractères) qui donne une envie irrésistible de lancer CE film et fait sentir "il m'a compris". Ancre-toi sur un élément concret et vrai (une scène, un personnage, un ton précis). Varie les accroches d'un film à l'autre. Ne cite un film déjà aimé QUE si le lien est concret (même sous-genre/héros/tension) — jamais juste parce que c'est "de l'action". INTERDITS : "parfait pour toi", "idéal pour une soirée", "un moment de pur divertissement", "à ne pas manquer", "te plonge dans un univers", "un peu comme X mais avec une touche Y", "dans l'esprit de".
 
 ${filmList}
 

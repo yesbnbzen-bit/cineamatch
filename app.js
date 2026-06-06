@@ -1838,6 +1838,18 @@ const App = {
                 return gids.some(g => effectiveExclusions.includes(g));
             };
 
+            // ── Garde-fou films futurs : rejette un film dont la date de sortie est dans le
+            // futur SAUF s'il est actuellement à l'affiche (now_playing). On garde donc les
+            // films en salle (ex. Obsession) mais on exclut les films pas encore sortis et
+            // indisponibles partout (ex. un film 2026 avec badge « Où voir ? »). ──
+            const _isUnwatchableFuture = (details) => {
+                if (!details || !details.release_date) return false;
+                const _rel = new Date(details.release_date).getTime();
+                if (!(_rel > Date.now())) return false; // déjà sorti → OK
+                const _inTheaters = store._nowPlayingIds && store._nowPlayingIds.has(Number(details.id));
+                return !_inTheaters; // futur ET pas en salle → pas regardable
+            };
+
             // IDs TMDB de films explicitement interdits en contexte famille (dark/adulte malgré genre Animation ou SF)
             const FAMILY_BLACKLIST_IDS = new Set([
                 38356,  // Batman: The Dark Knight Returns Part 1
@@ -2278,6 +2290,11 @@ const App = {
                     console.warn(`⛔ Genre exclu rejeté : ${details.title} — genres: ${(details.genres||[]).map(g=>g.id).join(',')}`);
                     continue;
                 }
+                // ✅ Garde-fou films futurs non regardables (pas sorti + pas en salle)
+                if (_isUnwatchableFuture(details)) {
+                    console.warn(`📅 Film futur non regardable rejeté : ${details.title} (${details.release_date})`);
+                    continue;
+                }
                 // ✅ Double-vérification via spoken_languages pour TOUTES les langues explicites
                 // Corrige les erreurs de classification TMDB (ex: film espagnol taggé 'en')
                 if (langFilterSet && store.answers.language && store.answers.language !== 'any'
@@ -2336,6 +2353,7 @@ const App = {
                     if (!details.overview?.trim()) continue;
                     if (!passesUSFilter(details, store.answers.language)) continue;
                     if (_isExcludedGenre(details)) continue;
+                    if (_isUnwatchableFuture(details)) continue;
                     finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
                     store.suggestedMovieIds.push(Number(c.id));
                     store.suggestedTitles.push(details.title);
@@ -2369,6 +2387,7 @@ const App = {
                         if (!details.overview?.trim()) continue;
                         if (!passesUSFilter(details, store.answers.language)) continue;
                         if (_isExcludedGenre(details)) continue;
+                        if (_isUnwatchableFuture(details)) continue;
                         finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 });
                         store.suggestedMovieIds.push(Number(c.id));
                         store.suggestedTitles.push(details.title);
@@ -2667,8 +2686,14 @@ const App = {
             const frProviders = m['watch/providers']?.results?.FR || {};
             const flatrate     = frProviders.flatrate || [];
             const rent         = frProviders.rent     || [];
-            const isVOD        = flatrate.length === 0 && rent.length > 0;
-            const rawProviders = flatrate.length > 0 ? flatrate : rent;
+            const buy          = frProviders.buy      || [];
+            // Priorité d'affichage : streaming inclus > location > achat
+            let rawProviders, _availKind;
+            if (flatrate.length > 0)  { rawProviders = flatrate; _availKind = 'flatrate'; }
+            else if (rent.length > 0) { rawProviders = rent;     _availKind = 'rent'; }
+            else if (buy.length > 0)  { rawProviders = buy;      _availKind = 'buy'; }
+            else                      { rawProviders = [];       _availKind = 'none'; }
+            const isVOD = _availKind === 'rent' || _availKind === 'buy';
             // Trier : plateformes préférées de l'utilisateur en premier (comparaison par ID numérique)
             const _userPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
             const displayProviders = [...rawProviders].sort((a, b) => {
@@ -2690,7 +2715,7 @@ const App = {
                                 <img src="https://image.tmdb.org/t/p/original${p.logo_path}" alt="${escapeHtml(p.provider_name)}"
                                      style="width:28px;height:28px;border-radius:7px;object-fit:cover;display:block;">
                             </a>`;
-                  }).join('') + (isVOD ? `<span class="vod-badge" title="Disponible en location/achat">VOD</span>` : '')
+                  }).join('') + (isVOD ? `<span class="vod-badge" title="${_availKind === 'buy' ? 'Disponible à l\'achat uniquement' : 'Disponible en location'}">${_availKind === 'buy' ? '💳 Achat' : 'VOD'}</span>` : '')
                 : _isInTheaters
                     ? `<span class="cinema-badge" title="Encore au cinéma — pas encore disponible en streaming">🎬 Au cinéma</span>`
                     : `<a href="${jwUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()"
@@ -3756,6 +3781,15 @@ const App = {
             btn.title = inList ? t('results.remove') : t('results.add');
             const svg = btn.querySelector('svg');
             if (svg) svg.setAttribute('fill', inList ? 'white' : 'none');
+        }
+
+        // Message de confirmation (favoris) pour les connectés
+        if (store.currentUser) {
+            this._showToast(
+                inList ? (getLang() === 'en' ? '♥ Added to favourites' : '♥ Ajouté aux favoris')
+                       : (getLang() === 'en' ? 'Removed from favourites' : 'Retiré des favoris'),
+                inList ? 'success' : 'info', 2200
+            );
         }
 
         // Si on est sur la page "Ma Liste", rafraîchir la vue
