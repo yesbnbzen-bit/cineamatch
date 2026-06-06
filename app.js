@@ -2763,9 +2763,12 @@ const App = {
                 ? `https://www.youtube.com/embed/${trailerVideo.key}?autoplay=1`
                 : null;
             const ytSearchUrl  = `https://www.youtube.com/results?search_query=${encodeURIComponent(m.title + ' ' + (m.release_date?.split('-')[0] || '') + ' ' + t('trailer.query'))}`;
+            // ⚠️ Pas d'interpolation de chaîne dans onclick : les titres à apostrophe
+            // (ex. "Don't Worry Darling") cassaient le handler → le clic remontait au
+            // poster qui ouvrait TMDB. On passe par des data-attributes + écouteur JS.
             const trailerBtnHtml = trailerSrc
-                ? `<button class="btn-trailer" onclick="event.stopPropagation();App.openTrailer('${trailerSrc}','${ytSearchUrl}')">${t('trailer.play')}${trailerVersion ? ' · ' + trailerVersion : ''}</button>`
-                : `<a class="btn-trailer btn-trailer-yt" href="${ytSearchUrl}" target="_blank" rel="noopener"
+                ? `<button class="btn-trailer" data-trailer-src="${escapeHtml(trailerSrc)}" data-trailer-yt="${escapeHtml(ytSearchUrl)}">${t('trailer.play')}${trailerVersion ? ' · ' + trailerVersion : ''}</button>`
+                : `<a class="btn-trailer btn-trailer-yt" href="${escapeHtml(ytSearchUrl)}" target="_blank" rel="noopener"
                     onclick="event.stopPropagation()">${t('trailer.search')}</a>`;
 
             // Métadonnées
@@ -2845,6 +2848,16 @@ const App = {
 
             wrapper.appendChild(card);
             ui.dom.moviesGrid.appendChild(wrapper);
+
+            // Écouteur bande-annonce (data-attributes → pas de bug d'apostrophe dans le titre)
+            const _trBtn = card.querySelector('.btn-trailer[data-trailer-src]');
+            if (_trBtn) {
+                _trBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    App.openTrailer(_trBtn.dataset.trailerSrc, _trBtn.dataset.trailerYt);
+                });
+            }
 
             // Sauvegarder dans l'historique si connecté
             if (store.currentUser) {
