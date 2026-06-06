@@ -1914,8 +1914,6 @@ const App = {
                 if ((store.seenRatedMovieIds || []).includes(Number(c.id))) return false;
                 // Téléfilms (TV Movie genre 10770) → exclus par défaut
                 if (genres.includes(10770)) return false;
-                // Films pas encore sortis → jamais recommandés (l'utilisateur veut du regardable le jour J)
-                if (c.release_date && new Date(c.release_date).getTime() > Date.now()) return false;
                 // Filtre époque → s'applique à toutes les sources
                 if (eraRange && year > 0 && (year < eraRange.min || year > eraRange.max)) return false;
                 // Filtre exclusions genres → s'applique à toutes les sources (animation, horreur, etc.)
@@ -2189,10 +2187,26 @@ const App = {
             // Construire un Set des IDs candidats valides (anti-hallucination IA)
             const validCandidateIds = new Set(safeCandidates.map(c => Number(c.id)));
 
+            // ── Films actuellement à l'affiche (TMDB now_playing FR) — pour le filtre dispo + badge ──
+            if (!store._nowPlayingIds) {
+                try {
+                    const _np  = await fetch(tmdbUrl('/movie/now_playing', { language: 'fr-FR', region: 'FR', page: '1' }));
+                    const _npd = await _np.json();
+                    store._nowPlayingIds = new Set((_npd.results || []).map(r => Number(r.id)));
+                } catch (e) { store._nowPlayingIds = new Set(); }
+            }
+
             // ── Filtre plateforme final — calculé une fois pour les deux passes ──
             const _finalPlatIds = new Set((store.preferredPlatforms || []).map(p => String(p)));
             const _checkPlatform = (details) => {
-                if (_finalPlatIds.size === 0) return true;
+                if (_finalPlatIds.size === 0) {
+                    // Aucune plateforme choisie → on garde si REGARDABLE AUJOURD'HUI :
+                    // dispo quelque part (streaming/loc/gratuit/pub) OU actuellement au cinéma.
+                    const _fr = details['watch/providers']?.results?.FR || {};
+                    const _hasProv = [...(_fr.flatrate||[]), ...(_fr.rent||[]), ...(_fr.free||[]), ...(_fr.ads||[])].length > 0;
+                    const _inTheaters = store._nowPlayingIds && store._nowPlayingIds.has(Number(details.id));
+                    return _hasProv || _inTheaters;
+                }
                 const frFlatrate = details['watch/providers']?.results?.FR?.flatrate || [];
                 if (frFlatrate.length === 0) return false; // ⛔ strict : pas de données = film rejeté
                 const frAll = [
@@ -2314,7 +2328,6 @@ const App = {
                     if (!details.overview?.trim()) continue;
                     if (!passesUSFilter(details, store.answers.language)) continue;
                     if (_isExcludedGenre(details)) continue;
-                    if (details.release_date && new Date(details.release_date).getTime() > Date.now()) continue;
                     finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
                     store.suggestedMovieIds.push(Number(c.id));
                     store.suggestedTitles.push(details.title);
@@ -2348,7 +2361,6 @@ const App = {
                         if (!details.overview?.trim()) continue;
                         if (!passesUSFilter(details, store.answers.language)) continue;
                         if (_isExcludedGenre(details)) continue;
-                        if (details.release_date && new Date(details.release_date).getTime() > Date.now()) continue;
                         finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 });
                         store.suggestedMovieIds.push(Number(c.id));
                         store.suggestedTitles.push(details.title);
@@ -2373,6 +2385,12 @@ const App = {
                 store.suggestedTitles.splice(0, store.suggestedTitles.length - MAX_SEEN);
             }
 
+            // Filet de sécurité : si le filtre dispo a TOUT écarté, on récupère la réserve
+            // (mieux vaut afficher des films "Où voir ?" que de planter avec une erreur).
+            if (!finalMovies.length && platformRejected.length) {
+                console.warn('⚠️ Pool vide après filtre dispo — repli sur la réserve plateforme');
+                finalMovies.push(...platformRejected.slice(0, 3));
+            }
             if (!finalMovies.length) throw new Error("Impossible de récupérer les détails des films");
 
             // Si toujours < 3 malgré tout (pool IA trop restreint), relancer une fois max
@@ -2412,15 +2430,6 @@ const App = {
             const missingReasons = finalMovies.filter(m => !m.match_reason);
             if (missingReasons.length > 0) {
                 await openaiService.generateMissingReasons(finalMovies, store.answers, getLang());
-            }
-
-            // ── Films actuellement à l'affiche (badge "Au cinéma") — caché 1×/session ──
-            if (!store._nowPlayingIds) {
-                try {
-                    const _np  = await fetch(tmdbUrl('/movie/now_playing', { language: 'fr-FR', region: 'FR', page: '1' }));
-                    const _npd = await _np.json();
-                    store._nowPlayingIds = new Set((_npd.results || []).map(r => Number(r.id)));
-                } catch (e) { store._nowPlayingIds = new Set(); }
             }
 
             this.renderResults(finalMovies);
