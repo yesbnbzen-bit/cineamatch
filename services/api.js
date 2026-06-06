@@ -104,19 +104,19 @@ export const tmdbService = {
         }
         const data = await resp.json();
 
-        // TMDb filtre les vidéos par langue → presque aucune bande-annonce en fr-FR
-        // Si aucune vidéo trouvée, on refait la requête sans langue pour récupérer les trailers YouTube
-        if (!data.videos?.results?.length) {
-            try {
-                const videoResp = await fetch(
-                    tmdbUrl(`/movie/${movieId}/videos`)
-                );
-                if (videoResp.ok) {
-                    const videoData = await videoResp.json();
-                    data.videos = videoData;
-                }
-            } catch(e) { /* silencieux */ }
-        }
+        // On fusionne les vidéos FR (append en fr-FR) AVEC toutes les vidéos (VO),
+        // pour pouvoir choisir VF > VOSTF > VO côté affichage.
+        try {
+            const videoResp = await fetch(tmdbUrl(`/movie/${movieId}/videos`));
+            if (videoResp.ok) {
+                const videoData = await videoResp.json();
+                const frVids  = data.videos?.results || [];
+                const allVids = videoData.results || [];
+                const merged  = [...frVids];
+                allVids.forEach(v => { if (!merged.some(x => x.id === v.id)) merged.push(v); });
+                data.videos = { results: merged };
+            }
+        } catch(e) { /* silencieux */ }
 
         // Mettre en cache pour les appels suivants (reroll, rescue pass, etc.)
         this._detailsCache.set(cacheKey, data);

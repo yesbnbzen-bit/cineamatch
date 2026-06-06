@@ -2314,6 +2314,7 @@ const App = {
                     if (!details.overview?.trim()) continue;
                     if (!passesUSFilter(details, store.answers.language)) continue;
                     if (_isExcludedGenre(details)) continue;
+                    if (details.release_date && new Date(details.release_date).getTime() > Date.now()) continue;
                     finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 65 });
                     store.suggestedMovieIds.push(Number(c.id));
                     store.suggestedTitles.push(details.title);
@@ -2347,6 +2348,7 @@ const App = {
                         if (!details.overview?.trim()) continue;
                         if (!passesUSFilter(details, store.answers.language)) continue;
                         if (_isExcludedGenre(details)) continue;
+                        if (details.release_date && new Date(details.release_date).getTime() > Date.now()) continue;
                         finalMovies.push({ ...details, id: c.id, tmdb_id: c.id, match_score: 60 });
                         store.suggestedMovieIds.push(Number(c.id));
                         store.suggestedTitles.push(details.title);
@@ -2699,10 +2701,18 @@ const App = {
                   </div>`
                 : `<div class="synopsis-box"><p class="synopsis-text${isPlaceholder ? ' synopsis-placeholder' : ''}">${synopsis}</p></div>`;
 
-            // Trailer
-            const trailerVideo = m.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Trailer')
-                || m.videos?.results?.find(v => v.site === 'YouTube' && v.type === 'Teaser')
-                || m.videos?.results?.find(v => v.site === 'YouTube');
+            // Trailer — priorité VF > VOSTF > VO
+            const _vids = (m.videos?.results || []).filter(v => v.site === 'YouTube');
+            const _isTr = v => v.type === 'Trailer' || v.type === 'Teaser';
+            const _frVids  = _vids.filter(v => v.iso_639_1 === 'fr' && _isTr(v));
+            const _vfVid   = _frVids.find(v => /\bvf\b|version fran|fran[çc]aise|doubl/i.test(v.name || ''));
+            const _vostVid = _frVids.find(v => /vost|sous[\s-]?titr/i.test(v.name || ''));
+            const _voVid   = _vids.find(v => _isTr(v)) || _vids[0];
+            let trailerVideo, trailerVersion = '';
+            if (_vfVid)            { trailerVideo = _vfVid;     trailerVersion = 'VF'; }
+            else if (_vostVid)     { trailerVideo = _vostVid;   trailerVersion = 'VOSTF'; }
+            else if (_frVids[0])   { trailerVideo = _frVids[0]; trailerVersion = 'VF'; }
+            else if (_voVid)       { trailerVideo = _voVid;     trailerVersion = 'VO'; }
             const trailerSrc   = trailerVideo
                 ? `https://www.youtube.com/embed/${trailerVideo.key}?autoplay=1`
                 : null;
@@ -2710,7 +2720,7 @@ const App = {
             const trailerBtnHtml = trailerSrc
                 ? `<button class="btn-trailer" onclick="event.stopPropagation();
                     document.getElementById('trailer-modal').style.display='flex';
-                    document.getElementById('trailer-frame').src='${trailerSrc}'">${t('trailer.play')}</button>`
+                    document.getElementById('trailer-frame').src='${trailerSrc}'">${t('trailer.play')}${trailerVersion ? ' · ' + trailerVersion : ''}</button>`
                 : `<a class="btn-trailer btn-trailer-yt" href="${ytSearchUrl}" target="_blank" rel="noopener"
                     onclick="event.stopPropagation()">${t('trailer.search')}</a>`;
 
