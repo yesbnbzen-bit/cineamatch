@@ -4184,36 +4184,42 @@ const App = {
 
         overlay.innerHTML = `
             <div style="
-                background:#111;border:1px solid rgba(255,255,255,0.1);
-                border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;
+                background:linear-gradient(180deg,#1b1722 0%,#100d16 100%);
+                border:1px solid rgba(255,255,255,0.09);
+                border-radius:24px;padding:2.6rem 2rem 2rem;max-width:410px;width:100%;
                 text-align:center;position:relative;
-                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+                box-shadow:0 30px 80px rgba(0,0,0,0.7);">
                 <button id="shg-close" style="
-                    position:absolute;top:1rem;right:1rem;background:none;
-                    border:none;color:rgba(255,255,255,0.35);font-size:1.25rem;
-                    cursor:pointer;line-height:1;">✕</button>
+                    position:absolute;top:1.1rem;right:1.1rem;background:rgba(255,255,255,0.06);
+                    border:none;color:rgba(255,255,255,0.5);font-size:1rem;width:30px;height:30px;
+                    border-radius:50%;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;">✕</button>
 
-                <div style="font-size:2.6rem;margin-bottom:0.9rem;">🎁</div>
+                <div style="
+                    width:64px;height:64px;margin:0 auto 1.2rem;border-radius:50%;
+                    background:linear-gradient(135deg,rgba(229,9,20,0.22),rgba(139,92,246,0.18));
+                    display:flex;align-items:center;justify-content:center;font-size:2rem;
+                    border:1px solid rgba(255,255,255,0.08);">🎁</div>
 
-                <h3 style="font-size:1.3rem;font-weight:800;color:#fff;margin:0 0 0.5rem;letter-spacing:-0.01em;">
-                    Encore une reco offerte
+                <h3 style="font-size:1.4rem;font-weight:800;color:#fff;margin:0 0 0.6rem;letter-spacing:-0.02em;">
+                    Une reco offerte t'attend
                 </h3>
 
-                <p style="color:rgba(255,255,255,0.5);font-size:0.88rem;line-height:1.6;margin:0 0 1.6rem;">
+                <p style="color:rgba(255,255,255,0.55);font-size:0.92rem;line-height:1.65;margin:0 0 1.8rem;">
                     Partage CineaMatch à un proche et débloque
                     <strong style="color:#fff">une recherche de plus</strong>, gratuitement.
                 </p>
 
                 <button id="shg-share" style="
-                    width:100%;padding:0.9rem;background:#E50914;color:#fff;
-                    border:none;border-radius:12px;font-size:1rem;font-weight:800;
-                    cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
-                    📲 Partager pour débloquer
+                    width:100%;padding:1rem;background:linear-gradient(135deg,#E50914,#b30710);
+                    color:#fff;border:none;border-radius:14px;font-size:1.02rem;font-weight:800;
+                    cursor:pointer;margin-bottom:0.7rem;letter-spacing:0.01em;
+                    box-shadow:0 8px 24px rgba(229,9,20,0.35);transition:transform 0.12s;">
+                    Partager &amp; débloquer
                 </button>
                 <button id="shg-premium" style="
-                    width:100%;padding:0.75rem;background:transparent;
-                    color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
-                    border-radius:12px;font-size:0.9rem;cursor:pointer;">
+                    width:100%;padding:0.8rem;background:transparent;
+                    color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.12);
+                    border-radius:13px;font-size:0.88rem;font-weight:600;cursor:pointer;">
                     Ou passe Premium — 2,99€/mois
                 </button>
             </div>`;
@@ -4465,7 +4471,9 @@ const App = {
     // ══════════════════════════════════════════
     async startCheckout(plan, clickedBtn) {
         if (!store.currentUser) {
-            // Utilisateur non connecté → ouvrir la modale d'inscription d'abord
+            // Utilisateur non connecté → mémoriser le plan choisi et ouvrir l'inscription.
+            // Après connexion (onLogin), le checkout Stripe reprend automatiquement.
+            localStorage.setItem('cm_pending_plan', plan);
             this.hidePricingModal();
             document.getElementById('auth-btn')?.click();
             return;

@@ -209,6 +209,15 @@ export const authUI = {
         this.hideModal();
         console.log(`✅ Connecté : ${name}`);
 
+        // ── Reprise auto du checkout Stripe si un plan a été choisi avant connexion ──
+        const pendingPlan = localStorage.getItem('cm_pending_plan');
+        if (pendingPlan) {
+            localStorage.removeItem('cm_pending_plan');
+            if (!isPremium) {
+                setTimeout(() => window.App?.startCheckout(pendingPlan), 400);
+            }
+        }
+
         // Notifier l'app qu'un utilisateur vient de se connecter (utilisé par le Mode Duo)
         window.dispatchEvent(new CustomEvent('cinematch:login', { detail: { user } }));
     },
