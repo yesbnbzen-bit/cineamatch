@@ -2551,10 +2551,14 @@ const App = {
             // ── Combler depuis la réserve souple (hors-époque / peu dispo) AVANT toute
             // re-recherche : on remplit les places manquantes avec ces films de dernier
             // recours → évite la re-recherche complète lente (~2min). ──
-            if (finalMovies.length < 3 && softRejected.length) {
+            if (finalMovies.length < 3 && (softRejected.length || (typeof platformRejected !== 'undefined' && platformRejected.length))) {
                 const _have = new Set(finalMovies.map(f => Number(f.id)));
-                softRejected.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
-                for (const f of softRejected) {
+                // On comble d'abord avec la réserve souple (époque/dispo), puis avec les
+                // films hors-plateforme — évite la re-recherche lente (~2min) quand le
+                // filtre plateforme (ex: Canal+ seul en duo) réduit trop le pool.
+                const _reserve = [...softRejected, ...((typeof platformRejected !== 'undefined' && platformRejected) || [])];
+                _reserve.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+                for (const f of _reserve) {
                     if (finalMovies.length >= 3) break;
                     if (_have.has(Number(f.id))) continue;
                     finalMovies.push(f);

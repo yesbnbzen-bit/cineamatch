@@ -7882,9 +7882,21 @@ html.duo-link #duo-welcome {
        8. RÉSULTATS
     ───────────────────────────────────────────── */
     #results.active {
+        /* Conteneur fixe + scroll interne (comme le questionnaire) → démarre TOUJOURS
+           en haut sur iOS, sans dépendre du scroll de la fenêtre (qui restait bloqué). */
+        position: fixed;
+        inset: 0;
+        z-index: 50;                          /* sous la navbar (z-index plus élevé) */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         padding-top: calc(120px + env(safe-area-inset-top, 0px));
-        padding-bottom: 40px;
+        padding-bottom: max(env(safe-area-inset-bottom, 0px), 40px);
+        padding-left: 16px;
+        padding-right: 16px;
+        justify-content: flex-start;
         align-items: stretch;
+        min-height: unset;
+        box-sizing: border-box;
     }
 
     #results > h2 {
