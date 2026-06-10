@@ -4434,7 +4434,7 @@ body.duo-active {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1; /* DERRIÈRE le contenu (sinon le fond opaque masque toute la page) */
     overflow: hidden;
     background-color: #060104;
     background-image:
