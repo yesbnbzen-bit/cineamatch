@@ -74,6 +74,7 @@ export const TRANSLATIONS = {
         'paywall.sub':       'Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.',
         'paywall.cta':       'Créer un compte gratuit',
         'paywall.footnote':  '100% gratuit · Sans carte bancaire',
+        'auth.connected':    '✓ Tu es connecté',
         'paywall.premium':   'Passer Premium — 2,99€/mois',
 
         // Session resume
@@ -383,6 +384,7 @@ export const TRANSLATIONS = {
         'paywall.sub':       'Create a free account to unlock unlimited suggestions and keep your history.',
         'paywall.cta':       'Create a free account',
         'paywall.footnote':  '100% free · No credit card required',
+        'auth.connected':    '✓ You\'re logged in',
         'paywall.premium':   'Go Premium — €2.99/month',
 
         // Session resume

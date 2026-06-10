@@ -208,6 +208,8 @@ export const authUI = {
 
         this.hideModal();
         console.log(`✅ Connecté : ${name}`);
+        // Confirmation discrète "Tu es connecté"
+        window.App?._showToast?.(t('auth.connected'), 'success', 2500);
 
         // ── Reprise auto du checkout Stripe si un plan a été choisi avant connexion ──
         const pendingPlan = localStorage.getItem('cm_pending_plan');
@@ -799,7 +801,8 @@ export const authUI = {
         if (!btn) return;
         btn.disabled = loading;
         btn.dataset.originalText = btn.dataset.originalText || btn.textContent;
-        btn.textContent = loading ? t('loading.profil') : btn.dataset.originalText;
+        // Juste un cercle de chargement (plus de phrase "Analyse du profil…")
+        btn.innerHTML = loading ? '<span class="btn-spinner"></span>' : btn.dataset.originalText;
     },
 
     showError(id, msg) {
