@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -289,7 +289,7 @@
                             ⚡ Passer Premium
                         </button>
                         <button class="btn-signout-drop"
-                            onclick="import('./modules/auth.js?v=27').then(m => m.authUI.handleSignOut())">
+                            onclick="import('./modules/auth.js?v=28').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>
                         </button>
                     </div>
@@ -1024,9 +1024,9 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=487"></script>
+    <script type="module" src="app.js?v=488"></script>
     <script type="module">
-        import { authUI, getAgeProfile } from './modules/auth.js?v=27';
+        import { authUI, getAgeProfile } from './modules/auth.js?v=28';
         authUI.init();
         // Exposer getAgeProfile globalement pour app.js (modules isolés)
         window.getAgeProfile = getAgeProfile;

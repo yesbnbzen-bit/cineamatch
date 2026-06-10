@@ -206,10 +206,17 @@ export const authUI = {
             window.App?.renderResults(store._lastMovies);
         }
 
-        this.hideModal();
+        // Laisser le bouton "✓ Connecté" visible un court instant, puis fermer la modale
+        // et FORCER le retour en haut de page (sinon on apparaît en bas après connexion).
+        setTimeout(() => {
+            this.hideModal();
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+            const main = document.getElementById('main-container');
+            if (main) main.scrollTop = 0;
+        }, 750);
         console.log(`✅ Connecté : ${name}`);
-        // Confirmation discrète "Tu es connecté"
-        window.App?._showToast?.(t('auth.connected'), 'success', 2500);
 
         // ── Reprise auto du checkout Stripe si un plan a été choisi avant connexion ──
         const pendingPlan = localStorage.getItem('cm_pending_plan');
@@ -627,11 +634,16 @@ export const authUI = {
 
         try {
             await authService.signIn(email, password);
-            // onLogin sera déclenché par onAuthChange
+            // Succès → le bouton passe à "✓ Connecté" (la modale se ferme ensuite via onLogin)
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = t('auth.connected');
+                btn.style.background = '#46d369';
+                btn.style.color = '#0a0a0a';
+            }
         } catch (err) {
             this.showError('signin-error', this.friendlyError(err.message));
-        } finally {
-            this.setLoading(btn, false);
+            this.setLoading(btn, false); // reset uniquement en cas d'erreur
         }
     },
 
