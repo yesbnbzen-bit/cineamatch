@@ -3153,6 +3153,10 @@ const App = {
             }
         }
 
+        // iOS RESTAURE la position de scroll après notre forçage → on désactive cette
+        // restauration automatique, sinon le scroll-to-top est annulé par le navigateur.
+        try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+
         // Force scroll top après rendu complet — robuste iOS (scrollingElement = la racine
         // réelle de scroll sur Safari mobile, sans elle window.scrollTo est parfois ignoré).
         const _forceTop = () => {
@@ -3168,10 +3172,11 @@ const App = {
         requestAnimationFrame(() => requestAnimationFrame(_forceTop));
         setTimeout(_forceTop, 80);
         setTimeout(_forceTop, 250);
-        // Duo / mobile : le contenu peut se réorganiser un peu plus tard (en-tête Duo,
-        // images) → on re-force en haut sur un délai plus long pour être sûr.
+        // Duo / mobile : le contenu peut se réorganiser plus tard (en-tête Duo, images,
+        // rendu asynchrone côté Personne A) → on re-force en haut sur des délais plus longs.
         setTimeout(_forceTop, 600);
         setTimeout(_forceTop, 1100);
+        setTimeout(_forceTop, 2000);
     },
 
     // ══════════════════════════════════════════
