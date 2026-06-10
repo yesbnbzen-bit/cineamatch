@@ -9075,10 +9075,29 @@ html.duo-link #duo-welcome {
 .pricing-footer { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.3); margin: 0; }
 
 @media (max-width: 640px) {
-    .pricing-modal { padding: 1.5rem 1rem 1rem; }
-    .pricing-plans { grid-template-columns: 1fr; }
-    .pricing-card--featured { transform: none; order: -1; }
+    /* Popup responsive : occupe presque tout l'écran, padding réduit */
+    .pricing-modal { width: 95%; max-width: 460px; padding: 1.1rem 0.8rem 0.9rem; max-height: 94vh; }
+    .pricing-header { margin-bottom: 1.2rem; }
+    .pricing-icon { font-size: 2rem; }
+    .pricing-title { font-size: 1.3rem; }
+    .pricing-sub { font-size: 0.78rem; }
+
+    /* Grille 2 colonnes compacte (pas d'empilement) */
+    .pricing-plans { grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+    .pricing-card { padding: 1rem 0.6rem; gap: 0.3rem; border-radius: 12px; }
+    .pricing-card--featured { transform: none; order: 0; }
     .pricing-card--featured:hover { transform: translateY(-2px); }
+    .pricing-card-name { font-size: 0.68rem; letter-spacing: 0.04em; }
+    .pricing-amount { font-size: 1.55rem; }
+    .pricing-period { font-size: 0.72rem; }
+    .pricing-saving { font-size: 0.66rem; line-height: 1.3; }
+    .pricing-features { gap: 0.25rem; }
+    .pricing-features li { font-size: 0.7rem; line-height: 1.3; }
+    .pricing-cta { font-size: 0.82rem; padding: 0.6rem 0.4rem; }
+    .pricing-badge { font-size: 0.58rem; padding: 2px 7px; top: -10px; }
+    .pricing-cancel { font-size: 0.62rem; }
+    .pricing-footer { font-size: 0.68rem; }
+    #pricing-context-banner { font-size: 0.78rem !important; padding: 0.6rem 0.7rem !important; }
 }
 
 /* ── Dropdown user-menu : ouverture au clic en plus du hover ── */
