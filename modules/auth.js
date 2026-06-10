@@ -250,36 +250,9 @@ export const authUI = {
 
         // ── Indicateur d'apprentissage IA ──
         // Aparaît sous la salutation quand ≥3 films sont notés
+        // Badge « L'IA connaît déjà tes goûts » retiré (peu utile) — on nettoie l'ancien s'il traîne
         const existingBadge = document.getElementById('ai-learning-badge');
         if (existingBadge) existingBadge.remove();
-
-        if (ratingProfile && ratingProfile.totalRated >= 3) {
-            const badge = document.createElement('div');
-            badge.id = 'ai-learning-badge';
-
-            // Niveau d'apprentissage selon le nombre de notes
-            const level = ratingProfile.totalRated >= 20 ? { icon: '🧠', label: 'Expert', color: 'rgba(139,92,246,0.25)', border: 'rgba(139,92,246,0.5)' }
-                        : ratingProfile.totalRated >= 10 ? { icon: '🎯', label: 'Avancé',  color: 'rgba(70,211,105,0.15)',  border: 'rgba(70,211,105,0.45)' }
-                        : { icon: '✨', label: 'Actif',    color: 'rgba(229,9,20,0.12)',    border: 'rgba(229,9,20,0.35)' };
-
-            badge.style.cssText = `
-                display:inline-flex; align-items:center; gap:7px;
-                background:${level.color}; border:1px solid ${level.border};
-                border-radius:100px; padding:5px 14px 5px 10px;
-                font-size:0.78rem; font-weight:700; color:rgba(255,255,255,0.85);
-                letter-spacing:0.3px; margin-top:0.9rem; cursor:default;
-                animation:fadeIn 0.6s ease both; animation-delay:0.3s; opacity:0;
-            `;
-            badge.innerHTML = `
-                ${level.icon}
-                <span>L'IA connaît déjà tes goûts</span>
-            `;
-            badge.title = `Films adorés : ${ratingProfile.loved.map(r => r.title).join(', ') || '—'}`;
-
-            // Insérer après la greeting
-            const heroGreeting = document.getElementById('hero-greeting');
-            if (heroGreeting) heroGreeting.after(badge);
-        }
 
         if (history.length > 0 && statsEl) {
             const GENRE_NAMES = {
