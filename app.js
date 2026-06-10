@@ -3091,7 +3091,9 @@ const App = {
                     ${store.rerollCount === 0
                         ? `<div class="reroll-hint-badge">
                             <span class="reroll-hint-icon">✦</span>
-                            <span class="reroll-hint-text">${t('results.reroll.hint')}</span>
+                            <span class="reroll-hint-text">${(store.duoMode && store.duoMerged)
+                                ? (getLang() === 'en' ? 'We\'ll look beyond your shared tastes.' : 'On va chercher au-delà de vos goûts à tous les deux.')
+                                : t('results.reroll.hint')}</span>
                            </div>`
                         : ''}`;
             }
