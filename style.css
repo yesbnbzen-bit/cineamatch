@@ -9081,46 +9081,6 @@ html.duo-link #duo-welcome {
     .pricing-card--featured:hover { transform: translateY(-2px); }
 }
 
-/* ── Modale Premium : thème CLAIR (fond blanc) ── */
-.pricing-modal {
-    background: #ffffff;
-    border: 1px solid rgba(0,0,0,0.08);
-    box-shadow: 0 24px 80px rgba(0,0,0,0.35);
-}
-.pricing-title { color: #15161a; }
-.pricing-sub { color: #6b7280; }
-.pricing-card {
-    background: #f6f7f9;
-    border: 1px solid rgba(0,0,0,0.08);
-}
-.pricing-card:hover { border-color: rgba(229,9,20,0.45); }
-.pricing-card--featured {
-    background: rgba(229,9,20,0.05);
-    border-color: var(--primary-color, #E50914);
-}
-.pricing-card-name { color: #8a8f98; }
-.pricing-amount { color: #15161a; }
-.pricing-period { color: #9ca3af; }
-.pricing-saving { color: #16a34a; }
-.pricing-features li { color: #3f444c; }
-.pricing-cta {
-    background: #ffffff;
-    border: 1px solid rgba(0,0,0,0.18);
-    color: #15161a;
-}
-.pricing-cta:hover { background: #f0f1f3; border-color: rgba(0,0,0,0.3); }
-.pricing-cta--featured { background: var(--primary-color,#E50914); border-color: var(--primary-color,#E50914); color:#fff; }
-.pricing-cta--featured:hover { background: var(--primary-hover,#f40a16); border-color: var(--primary-hover,#f40a16); }
-.pricing-cancel, .pricing-footer { color: #9ca3af; }
-.pricing-modal .auth-close { color: #6b7280; background: rgba(0,0,0,0.05); }
-.pricing-modal .auth-close:hover { color: #15161a; background: rgba(0,0,0,0.1); }
-#pricing-context-banner {
-    background: rgba(229,9,20,0.08) !important;
-    border-color: rgba(229,9,20,0.3) !important;
-    color: #b30710 !important;
-}
-#pricing-context-banner strong { color: #b30710 !important; }
-
 /* ── Dropdown user-menu : ouverture au clic en plus du hover ── */
 .user-menu.open .user-dropdown {
     opacity: 1;
