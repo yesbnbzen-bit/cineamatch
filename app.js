@@ -2651,23 +2651,10 @@ const App = {
             }
         }
 
-        // Badge "Recommandations personnalisées" retiré (peu utile). On conserve juste
-        // la note discrète "filtré selon les plateformes" quand c'est pertinent.
+        // Badge "Recommandations personnalisées" retiré (peu utile).
+        // La note "filtré selon les plateformes" est rendue EN BAS (après les recos).
         document.getElementById('personalized-badge')?.remove();
         document.getElementById('platform-note')?.remove();
-        if (store.currentUser && resultsTitle) {
-            const platformCount = store.preferredPlatforms?.length || 0;
-            if (platformCount > 0) {
-                const _pNote = document.createElement('div');
-                _pNote.id = 'platform-note';
-                _pNote.style.cssText = 'width:fit-content;max-width:90%;margin:0.9rem auto 0;font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:center;line-height:1.4;';
-                const _who = (store.duoMode && store.duoMerged) ? ` de ${store.duoNameA || 'l\'hôte'}` : '';
-                _pNote.textContent = getLang() === 'en'
-                    ? '🎬 Filtered to the streaming platforms on file'
-                    : `🎬 Sélection filtrée selon les plateformes${_who}`;
-                resultsTitle.after(_pNote);
-            }
-        }
 
         ui.dom.moviesGrid.innerHTML = '';
 
@@ -3041,6 +3028,19 @@ const App = {
         ui.dom.moviesGrid.after(shareContainer);
 
         document.getElementById('share-btn').onclick = () => this.shareResults(movies);
+
+        // ── Note plateformes EN BAS (sous les recommandations) ──
+        document.getElementById('platform-note')?.remove();
+        if (store.currentUser && (store.preferredPlatforms?.length || 0) > 0) {
+            const _pNote = document.createElement('div');
+            _pNote.id = 'platform-note';
+            _pNote.style.cssText = 'width:100%;margin:1.6rem auto 0.5rem;font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:center;line-height:1.4;';
+            const _who = (store.duoMode && store.duoMerged) ? ` de ${store.duoNameA || 'l\'hôte'}` : '';
+            _pNote.textContent = getLang() === 'en'
+                ? '🎬 Filtered to the streaming platforms on file'
+                : `🎬 Sélection filtrée selon les plateformes${_who}`;
+            shareContainer.after(_pNote);
+        }
 
         // ── Bouton reroll avec % décroissant + limite free ──
         const nextPct      = getNextScore(store.rerollCount);
