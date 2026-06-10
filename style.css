@@ -5159,6 +5159,7 @@ html.duo-link #duo-welcome {
 
 /* ══ Header recap duo — avant les films ══ */
 #duo-summary-block {
+    margin-top: 1.8rem;
     margin-bottom: 1.2rem;
 }
 
