@@ -4471,11 +4471,11 @@ const App = {
     // ══════════════════════════════════════════
     async startCheckout(plan, clickedBtn) {
         if (!store.currentUser) {
-            // Utilisateur non connecté → mémoriser le plan choisi et ouvrir l'inscription.
-            // Après connexion (onLogin), le checkout Stripe reprend automatiquement.
+            // Utilisateur non connecté → mémoriser le plan choisi et ouvrir directement
+            // l'INSCRIPTION. Après connexion (onLogin), le checkout Stripe reprend tout seul.
             localStorage.setItem('cm_pending_plan', plan);
             this.hidePricingModal();
-            document.getElementById('auth-btn')?.click();
+            import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signup'));
             return;
         }
 
