@@ -1171,16 +1171,33 @@ const App = {
     renderSearchMulti() {
         const group = document.createElement('div');
         group.className = 'search-group';
+        const _isEn  = getLang() === 'en';
+        const _isDuoA = store.duoMode && store.duoRole === 'A';
+        const _isDuoB = store.duoMode && store.duoRole === 'B';
+        // Libellés du bouton final selon le rôle :
+        //  - Solo : « Lancer ma recherche (N film) »
+        //  - Duo A : valide son profil puis envoie le lien → « Valider mon profil »
+        //  - Duo B : c'est lui qui déclenche la recherche commune → « Lancer la recherche Duo »
+        const _submitHtml = _isDuoA
+            ? (_isEn ? 'Validate my profile →' : 'Valider mon profil →')
+            : _isDuoB
+                ? (_isEn ? '🎬 Find our films' : '🎬 Lancer la recherche Duo')
+                : `${t('q.search.submit')} (<span id="count">0</span> film<span id="count-plural"></span>)`;
+        const _skipHtml = _isDuoA
+            ? (_isEn ? 'Continue without a film →' : 'Continuer sans film →')
+            : _isDuoB
+                ? (_isEn ? '🎬 Find our films' : '🎬 Lancer la recherche Duo')
+                : t('q.search.skip');
         group.innerHTML = `
             <div id="selected-movies" class="selected-container"></div>
             <input type="text" id="movie-search" placeholder="${t('q.search.placeholder')}" autocomplete="off">
             <div id="search-results" class="search-results"></div>
             <div id="search-footer" style="display:flex; gap:10px; margin-top:20px;">
                 <button id="search-next-btn" class="btn-primary" style="flex:1; display:none;">
-                    ${t('q.search.submit')} (<span id="count">0</span> film<span id="count-plural"></span>)
+                    ${_submitHtml}
                 </button>
                 <button id="search-skip-btn" class="btn-secondary" style="flex:1;">
-                    ${t('q.search.skip')}
+                    ${_skipHtml}
                 </button>
             </div>`;
         ui.dom.questionContainer.appendChild(group);
@@ -3092,17 +3109,19 @@ const App = {
 
         ui.dom.moviesGrid.appendChild(rerollContainer);
 
-        // ── Bouton "Modifier ma recherche" toujours visible (évite de repasser par l'accueil) ──
-        const modLink = document.createElement('button');
-        modLink.id = 'modify-search-link';
-        modLink.textContent = getLang() === 'en' ? '🔄 Edit my search' : '🔄 Modifier ma recherche';
-        modLink.style.cssText = `margin:0 auto;background:none;border:1px solid rgba(255,255,255,0.15);
-            color:rgba(255,255,255,0.7);font-size:0.85rem;font-weight:600;border-radius:11px;
-            padding:9px 20px;cursor:pointer;display:block;transition:all 0.15s;`;
-        modLink.onmouseenter = () => { modLink.style.background = 'rgba(255,255,255,0.08)'; modLink.style.color = '#fff'; };
-        modLink.onmouseleave = () => { modLink.style.background = 'none'; modLink.style.color = 'rgba(255,255,255,0.7)'; };
-        modLink.onclick = () => this.startFlow();
-        rerollContainer.appendChild(modLink);
+        // ── Bouton "Modifier ma recherche" — solo uniquement (pas de sens en Duo) ──
+        if (!(store.duoMode && store.duoMerged)) {
+            const modLink = document.createElement('button');
+            modLink.id = 'modify-search-link';
+            modLink.textContent = getLang() === 'en' ? '🔄 Edit my search' : '🔄 Modifier ma recherche';
+            modLink.style.cssText = `margin:0 auto;background:none;border:1px solid rgba(255,255,255,0.15);
+                color:rgba(255,255,255,0.7);font-size:0.85rem;font-weight:600;border-radius:11px;
+                padding:9px 20px;cursor:pointer;display:block;transition:all 0.15s;`;
+            modLink.onmouseenter = () => { modLink.style.background = 'rgba(255,255,255,0.08)'; modLink.style.color = '#fff'; };
+            modLink.onmouseleave = () => { modLink.style.background = 'none'; modLink.style.color = 'rgba(255,255,255,0.7)'; };
+            modLink.onclick = () => this.startFlow();
+            rerollContainer.appendChild(modLink);
+        }
 
         const rerollBtn = document.getElementById('reroll-btn');
         if (rerollBtn) {
@@ -3128,6 +3147,10 @@ const App = {
         requestAnimationFrame(() => requestAnimationFrame(_forceTop));
         setTimeout(_forceTop, 80);
         setTimeout(_forceTop, 250);
+        // Duo / mobile : le contenu peut se réorganiser un peu plus tard (en-tête Duo,
+        // images) → on re-force en haut sur un délai plus long pour être sûr.
+        setTimeout(_forceTop, 600);
+        setTimeout(_forceTop, 1100);
     },
 
     // ══════════════════════════════════════════
