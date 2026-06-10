@@ -218,14 +218,14 @@ export const TRANSLATIONS = {
         'profile.empty.hint':        'Lance une recommandation, puis clique ★ sur les films regardés.',
 
         // Paywall features
-        'paywall.feature.1':     'Suggestions illimitées à chaque recherche',
-        'paywall.feature.2':     'Recommandations ultra-personnalisées par l\'IA',
-        'paywall.feature.3':     'Filtres streaming avancés',
+        'paywall.feature.1':     'Recommandations illimitées',
+        'paywall.feature.2':     'Une IA qui affine tes goûts à chaque film',
+        'paywall.feature.3':     'Filtre par plateformes (Netflix, Prime…)',
         'paywall.signin.btn':    'J\'ai déjà un compte',
 
         // Reroll paywall
-        'paywall.reroll.title':  'Rerolls illimités',
-        'paywall.reroll.sub':    'Tu as utilisé tes 3 suggestions gratuites. Passe Premium pour des recommandations sans limite.',
+        'paywall.reroll.title':  'Recommandations illimitées',
+        'paywall.reroll.sub':    'Tu as utilisé tes 3 recos gratuites. Passe Premium pour en trouver autant que tu veux.',
 
         // Bouton suppression historique
         'history.delete':        'Retirer de mes films',
@@ -527,14 +527,14 @@ export const TRANSLATIONS = {
         'profile.empty.hint':        'Start a recommendation, then click ★ on watched films.',
 
         // Paywall features
-        'paywall.feature.1':     'Unlimited suggestions per search',
-        'paywall.feature.2':     'Ultra-personalized AI recommendations',
-        'paywall.feature.3':     'Advanced streaming filters',
+        'paywall.feature.1':     'Unlimited recommendations',
+        'paywall.feature.2':     'An AI that learns your taste with every film',
+        'paywall.feature.3':     'Filter by platform (Netflix, Prime…)',
         'paywall.signin.btn':    'I already have an account',
 
         // Reroll paywall
-        'paywall.reroll.title':  'Unlimited rerolls',
-        'paywall.reroll.sub':    'You\'ve used your 3 free suggestions. Go Premium for unlimited recommendations.',
+        'paywall.reroll.title':  'Unlimited recommendations',
+        'paywall.reroll.sub':    'You\'ve used your 3 free recos. Go Premium to find as many as you want.',
 
         // History/watchlist buttons
         'history.delete':        'Remove from my films',
