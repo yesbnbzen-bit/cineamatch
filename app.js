@@ -1883,6 +1883,20 @@ const App = {
                 return y < _activeEraRange.min || y > _activeEraRange.max;
             };
 
+            // ── Garde-fou DISPONIBILITÉ : rejette un film regardable NULLE PART (ni en salle,
+            // ni en streaming, ni en location, ni à l'achat → badge « Où voir ? »). Respecte la
+            // règle « regardable le jour J ». Passe principale UNIQUEMENT (les passes de secours
+            // ne l'appliquent pas → pas de risque de vider le pool). ──
+            const _isWatchableNowhere = (details) => {
+                if (!details) return false;
+                const inTheaters = store._nowPlayingIds && store._nowPlayingIds.has(Number(details.id));
+                if (inTheaters) return false;
+                const fr = details['watch/providers']?.results?.FR || {};
+                const hasAny = (fr.flatrate?.length || fr.rent?.length || fr.buy?.length
+                              || fr.free?.length || fr.ads?.length);
+                return !hasAny;
+            };
+
             // ── Garde-fou films futurs : rejette un film dont la date de sortie est dans le
             // futur SAUF s'il est actuellement à l'affiche (now_playing). On garde donc les
             // films en salle (ex. Obsession) mais on exclut les films pas encore sortis et
@@ -2387,6 +2401,11 @@ const App = {
                     console.warn(`🕰️ Hors époque rejeté : ${details.title} (${details.release_date}) — plage ${_activeEraRange.min}-${_activeEraRange.max}`);
                     continue;
                 }
+                // ✅ Garde-fou disponibilité (passe principale only) : film regardable nulle part
+                if (_isWatchableNowhere(details)) {
+                    console.warn(`🚫 Regardable nulle part rejeté : ${details.title} (${details.release_date})`);
+                    continue;
+                }
                 // ✅ Double-vérification via spoken_languages pour TOUTES les langues explicites
                 // Corrige les erreurs de classification TMDB (ex: film espagnol taggé 'en')
                 if (langFilterSet && store.answers.language && store.answers.language !== 'any'
@@ -2523,6 +2542,11 @@ const App = {
                     console.warn(`⛔ Max tentatives atteint — affichage partiel (${finalMovies.length} film(s))`);
                 }
             }
+
+            // ── Podium cohérent : trier le top affiché par score (#1 ≥ #2 ≥ #3) ──
+            // Évite qu'un film plafonné (ex. compromis à sens unique à 60) se retrouve
+            // affiché au-dessus d'un meilleur film (la normalisation pouvait inverser l'ordre).
+            finalMovies.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
 
             // ── Sauvegarder les films exacts pour le partage Duo ──
             // Person A pourra afficher ces mêmes résultats sans rappeler l'IA
