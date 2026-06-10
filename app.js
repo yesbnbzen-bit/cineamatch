@@ -3052,10 +3052,15 @@ const App = {
             const _pNote = document.createElement('div');
             _pNote.id = 'platform-note';
             _pNote.style.cssText = 'width:100%;margin:1.6rem auto 0.5rem;font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:center;line-height:1.4;';
-            const _who = (store.duoMode && store.duoMerged) ? ` de ${store.duoNameA || 'l\'hôte'}` : '';
-            _pNote.textContent = getLang() === 'en'
-                ? '🎬 Filtered to the streaming platforms on file'
-                : `🎬 Sélection filtrée selon les plateformes${_who}`;
+            if (store.duoMode && store.duoMerged) {
+                _pNote.textContent = getLang() === 'en'
+                    ? '🎬 Filtered to both of your streaming platforms'
+                    : '🎬 Sélection filtrée selon vos plateformes (les deux)';
+            } else {
+                _pNote.textContent = getLang() === 'en'
+                    ? '🎬 Filtered to your streaming platforms'
+                    : '🎬 Sélection filtrée selon tes plateformes';
+            }
             shareContainer.after(_pNote);
         }
 
@@ -3307,6 +3312,7 @@ const App = {
                 duration: store.answers.duration,
                 exclude:  store.answers.exclude,
                 era:      store.answers.era,
+                platforms: store.preferredPlatforms || [], // plateformes de A → union avec celles de B
                 nameA,    // prénom inclus dans le lien
                 lastLovedMovies: (store.answers.lastLovedMovies || []).map(m => ({
                     id: m.id, title: m.title,
@@ -3615,6 +3621,12 @@ const App = {
     async processDuoResults() {
         // Sauvegarder les réponses B avant fusion (pour l'affichage du résumé)
         store.duoPersonBAnswers = { ...store.answers };
+
+        // ── Plateformes : UNION de celles de A (reçues via le lien) et de B (si connecté) ──
+        // → un film est gardé s'il est dispo sur la plateforme de l'un OU l'autre.
+        const _aPlatforms = store.duoPartnerAnswers?.platforms || [];
+        const _bPlatforms = store.preferredPlatforms || [];
+        store.preferredPlatforms = [...new Set([..._aPlatforms, ..._bPlatforms].map(String))];
 
         const merged = this.mergeDuoProfiles(store.duoPartnerAnswers, store.answers);
         store.answers   = merged;
