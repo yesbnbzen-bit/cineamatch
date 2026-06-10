@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=66';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=67';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1805,9 +1805,11 @@ const App = {
 
             // Genres supplémentaires exclus pour le contexte famille
             const familyExcludedGenres = store.answers.context === 'family' ? [27, 53, 10749] : [];
-            // Pour le mood Comédie : exclure Thriller(53) et Crime(80) — incompatibles avec un vrai film comique
+            // Pour le mood Comédie : exclure Thriller(53) et Crime(80) — incompatibles avec un vrai film comique.
+            // ⚠️ JAMAIS en Mode Duo : si l'autre personne veut du suspense, comédie + thriller EST le compromis
+            // recherché (ex. Knives Out, Game Night). Cette exclusion vidait le pool de tout suspense.
             const isComedyMood = (store.answers.mood || '').includes('35');
-            const comedyHardExclusions = isComedyMood ? [53, 80] : [];
+            const comedyHardExclusions = (isComedyMood && !(store.duoMode && store.duoMerged)) ? [53, 80] : [];
             const allExcludedGenres = [...new Set([...excludedGenreIds, ...familyExcludedGenres, ...prefExcludedGenreIds, ...comedyHardExclusions])];
 
             if (prefExcludedGenreIds.length > 0) console.log(`🚫 Exclusions préfs permanentes : ${(savedPrefs.exclusions||[]).join(', ')} → genres [${prefExcludedGenreIds.join(',')}]`);
@@ -1860,6 +1862,25 @@ const App = {
                     ...((details.genre_ids || []).map(Number))
                 ];
                 return gids.some(g => effectiveExclusions.includes(g));
+            };
+
+            // ── Garde-fou ÉPOQUE : la découverte filtre déjà par époque, mais les suggestions
+            // de l'IA et les recommandations des films de référence l'ignorent → des films
+            // hors époque se glissaient (ex. moderne demandé → film 2024). On rejette donc tout
+            // film hors de la plage demandée dans la passe principale (les passes de secours
+            // n'appliquent PAS ce garde-fou pour pouvoir élargir si le pool est trop maigre). ──
+            const _ERA_BOUNDS = {
+                new:     { min: 2020, max: 9999 }, modern: { min: 2000, max: 2019 },
+                vintage: { min: 1975, max: 1999 }, retro:  { min: 0,    max: 1974 }
+            };
+            const _activeEraRange = (store.duoMode && store.duoMerged && store.answers._duoEraRange)
+                ? store.answers._duoEraRange
+                : _ERA_BOUNDS[store.answers.era];
+            const _isOutsideEra = (details) => {
+                if (!_activeEraRange || !details?.release_date) return false;
+                const y = parseInt(String(details.release_date).slice(0, 4), 10);
+                if (!y) return false;
+                return y < _activeEraRange.min || y > _activeEraRange.max;
             };
 
             // ── Garde-fou films futurs : rejette un film dont la date de sortie est dans le
@@ -2317,6 +2338,11 @@ const App = {
                 // ✅ Garde-fou films futurs non regardables (pas sorti + pas en salle)
                 if (_isUnwatchableFuture(details)) {
                     console.warn(`📅 Film futur non regardable rejeté : ${details.title} (${details.release_date})`);
+                    continue;
+                }
+                // ✅ Garde-fou époque (passe principale only) : respecte la plage demandée
+                if (_isOutsideEra(details)) {
+                    console.warn(`🕰️ Hors époque rejeté : ${details.title} (${details.release_date}) — plage ${_activeEraRange.min}-${_activeEraRange.max}`);
                     continue;
                 }
                 // ✅ Double-vérification via spoken_languages pour TOUTES les langues explicites

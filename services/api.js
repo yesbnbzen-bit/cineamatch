@@ -944,8 +944,9 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
 ⛔ SCORE = 0 FORCÉ (pas de -35, mais ZÉRO) pour tout film dont le genre principal est à l'opposé direct d'un des deux moods.
   Exemple : film d'horreur pur (Saw, Scream, Hereditary) si l'un veut Légèreté → Score = 0.
   Exemple : comédie légère sans aucune tension si l'un veut Suspense → Score = 0.
+⛔ PLAFOND 60 : un film qui ne contient l'envie que d'UNE des deux personnes (même s'il n'est pas l'opposé de l'autre — ex. comédie-drame SANS aucun suspense quand l'autre veut du suspense) → match_score PLAFONNÉ à 60. Il ne peut JAMAIS être #1.
 ⛔ INTERDIT : Recommander 3 films qui plaisent tous uniquement à la même personne.
-✅ RÈGLE D'OR DU #1 : Le premier film DOIT être le compromis le plus évident — les deux moods présents dans le même film. Un film où les DEUX personnes peuvent dire "oui" immédiatement.`
+✅ RÈGLE D'OR DU #1 : Le premier film DOIT être le compromis le plus évident — les deux moods présents dans le même film (ex. comédie-thriller comme Knives Out, Game Night). Un film où les DEUX personnes peuvent dire "oui" immédiatement.`
             : '';
 
         // ── Profil d'âge de l'utilisateur ──
