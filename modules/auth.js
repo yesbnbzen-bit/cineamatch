@@ -225,6 +225,10 @@ export const authUI = {
             if (!isPremium) {
                 setTimeout(() => window.App?.startCheckout(pendingPlan), 400);
             }
+        } else if (!isPremium) {
+            // Compte gratuit = aucune fonctionnalité débloquée → on présente l'abonnement
+            // juste après la connexion (la modale prix s'ouvre une fois la fermeture faite).
+            setTimeout(() => window.App?.showPricingModal('signup'), 1000);
         }
 
         // Notifier l'app qu'un utilisateur vient de se connecter (utilisé par le Mode Duo)

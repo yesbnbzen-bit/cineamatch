@@ -3698,11 +3698,11 @@ const App = {
 
         document.getElementById('save-gate-signup').onclick = () => {
             overlay.remove();
-            import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signup'));
+            import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signup'));
         };
         document.getElementById('save-gate-signin').onclick = () => {
             overlay.remove();
-            import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signin'));
+            import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signin'));
         };
         document.getElementById('save-gate-close').onclick = () => overlay.remove();
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
@@ -3910,7 +3910,7 @@ const App = {
 
     // ── Profil cinéphile ──
     async showProfile() {
-        const { authUI } = await import('./modules/auth.js?v=28');
+        const { authUI } = await import('./modules/auth.js?v=29');
         authUI.showHistory();
     },
 
@@ -4176,7 +4176,7 @@ const App = {
         document.getElementById('reroll-gate-cta').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signup'));
+                import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signup'));
             } else {
                 this.showPricingModal();
             }
@@ -4186,7 +4186,7 @@ const App = {
         document.getElementById('reroll-gate-login').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signin'));
+                import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signin'));
             } else {
                 this.showPricingModal();
             }
@@ -4345,7 +4345,7 @@ const App = {
         };
         document.getElementById('sg-login').onclick = () => {
             close();
-            import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signin'));
+            import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signin'));
         };
     },
 
@@ -4406,7 +4406,7 @@ const App = {
         document.getElementById('duo-gate-cta').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signup'));
+                import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signup'));
             } else {
                 this.showPricingModal();
             }
@@ -4415,7 +4415,7 @@ const App = {
         document.getElementById('duo-gate-secondary').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signin'));
+                import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signin'));
             } else {
                 this.showPricingModal();
             }
@@ -4488,6 +4488,9 @@ const App = {
             } else if (context === 'duo') {
                 banner.innerHTML = '💑 Le Mode Duo est réservé aux abonnés Premium — trouve le film parfait à deux.';
                 banner.style.display = 'block';
+            } else if (context === 'signup') {
+                banner.innerHTML = '🎬 Bienvenue ! Passe Premium pour débloquer CineaMatch sans limite.';
+                banner.style.display = 'block';
             } else {
                 banner.style.display = 'none';
             }
@@ -4512,7 +4515,7 @@ const App = {
             // l'INSCRIPTION. Après connexion (onLogin), le checkout Stripe reprend tout seul.
             localStorage.setItem('cm_pending_plan', plan);
             this.hidePricingModal();
-            import('./modules/auth.js?v=28').then(m => m.authUI.showModal('signup'));
+            import('./modules/auth.js?v=29').then(m => m.authUI.showModal('signup'));
             return;
         }
 
@@ -4582,7 +4585,7 @@ const App = {
                     const freshUser = await authService.getUser();
                     if (freshUser?.user_metadata?.is_premium === true) {
                         store.currentUser = freshUser;
-                        const { authUI } = await import('./modules/auth.js?v=28');
+                        const { authUI } = await import('./modules/auth.js?v=29');
                         await authUI.onLogin(freshUser);
                         this._showToast(t('stripe.toast.activated'), 'success', 5000);
                     } else if (attempts < 5) {

@@ -5743,6 +5743,19 @@ html.duo-link #duo-welcome {
     cursor: pointer;
 }
 
+/* Fix iOS : le champ date débordait / hauteur incohérente sur mobile */
+.auth-modal input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    min-height: 50px;
+    text-align: left;
+}
+.auth-modal input[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+    margin: 0;
+}
+
 .platform-logo-wrap {
     width: 44px;
     height: 44px;
