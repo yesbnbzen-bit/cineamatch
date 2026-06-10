@@ -3174,12 +3174,17 @@ const App = {
             const results = document.getElementById('results');
             if (results) results.scrollTop = 0;
         };
-        requestAnimationFrame(() => requestAnimationFrame(_forceTop));
-        setTimeout(_forceTop, 80);
-        setTimeout(_forceTop, 250);
-        // Duo / mobile : le contenu peut se réorganiser plus tard (en-tête Duo, images,
-        // rendu asynchrone côté Personne A) → on re-force en haut sur des délais plus longs.
-        setTimeout(_forceTop, 600);
+        // VERROU SCROLL : sur iOS, le navigateur redescend le scroll au reflow (images,
+        // en-tête Duo) malgré tout. On force le haut à CHAQUE frame pendant ~0,8s après
+        // l'affichage → impossible pour iOS de laisser la page descendue. Après le délai,
+        // l'utilisateur retrouve le scroll normal.
+        const _lockStart = Date.now();
+        const _scrollLock = () => {
+            _forceTop();
+            if (Date.now() - _lockStart < 800) requestAnimationFrame(_scrollLock);
+        };
+        requestAnimationFrame(_scrollLock);
+        // Filets supplémentaires au cas où le rendu arrive plus tard (Personne A en différé)
         setTimeout(_forceTop, 1100);
         setTimeout(_forceTop, 2000);
     },
