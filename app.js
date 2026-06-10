@@ -2358,6 +2358,10 @@ const App = {
 
             // Réserves : no-synopsis et films rejetés par plateforme (dernier recours anti-crash)
             const platformRejected = [];
+            // Réserve « souple » : films hors-époque ou peu disponibles. On ne les rejette PAS
+            // (sinon le pool collapse → re-recherche complète à rallonge ~2min). Ils servent
+            // uniquement à combler s'il manque des films, et ne remontent jamais en tête.
+            const softRejected = [];
 
             // ── Perf 5 : précharger les détails des 8 premiers films classés en parallèle ──
             // → évite les appels séquentiels (8 × 300ms = 2.4s → ~300ms total)
@@ -2413,14 +2417,12 @@ const App = {
                     console.warn(`📅 Film futur non regardable rejeté : ${details.title} (${details.release_date})`);
                     continue;
                 }
-                // ✅ Garde-fou époque (passe principale only) : respecte la plage demandée
-                if (_isOutsideEra(details)) {
-                    console.warn(`🕰️ Hors époque rejeté : ${details.title} (${details.release_date}) — plage ${_activeEraRange.min}-${_activeEraRange.max}`);
-                    continue;
-                }
-                // ✅ Garde-fou disponibilité (passe principale only) : film regardable nulle part
-                if (_isWatchableNowhere(details)) {
-                    console.warn(`🚫 Regardable nulle part rejeté : ${details.title} (${details.release_date})`);
+                // ✅ Époque / disponibilité — SOUPLE : on ne rejette pas (sinon pool collapse →
+                // re-recherche lente). On met de côté en réserve, utilisé seulement en dernier
+                // recours s'il manque des films. Score abaissé → ne remonte jamais en tête.
+                if (_isOutsideEra(details) || _isWatchableNowhere(details)) {
+                    softRejected.push({ ...details, id: details.id, tmdb_id: details.id,
+                        match_score: Math.max(40, (r.match_score || 60) - 25) });
                     continue;
                 }
                 // ✅ Double-vérification via spoken_languages pour TOUTES les langues explicites
@@ -2546,6 +2548,21 @@ const App = {
                 console.warn('⚠️ Pool vide après filtre dispo — repli sur la réserve plateforme');
                 finalMovies.push(...platformRejected.slice(0, 3));
             }
+            // ── Combler depuis la réserve souple (hors-époque / peu dispo) AVANT toute
+            // re-recherche : on remplit les places manquantes avec ces films de dernier
+            // recours → évite la re-recherche complète lente (~2min). ──
+            if (finalMovies.length < 3 && softRejected.length) {
+                const _have = new Set(finalMovies.map(f => Number(f.id)));
+                softRejected.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+                for (const f of softRejected) {
+                    if (finalMovies.length >= 3) break;
+                    if (_have.has(Number(f.id))) continue;
+                    finalMovies.push(f);
+                    _have.add(Number(f.id));
+                }
+                console.log(`🪶 Réserve souple : pool complété à ${finalMovies.length}/3 sans re-recherche`);
+            }
+
             if (!finalMovies.length) throw new Error("Impossible de récupérer les détails des films");
 
             // Si toujours < 3 malgré tout (pool IA trop restreint), relancer une fois max
