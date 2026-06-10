@@ -372,7 +372,7 @@ main {
 }
 
 #results h2 {
-    margin-bottom: 3rem;
+    margin-bottom: 1.6rem;
     font-size: 3rem;
     font-weight: 900;
     text-align: center;
@@ -5152,7 +5152,7 @@ html.duo-link #duo-welcome {
 
 /* ══ Header recap duo — avant les films ══ */
 #duo-summary-block {
-    margin-bottom: 3rem;
+    margin-bottom: 1.2rem;
 }
 
 .duo-recap-header {

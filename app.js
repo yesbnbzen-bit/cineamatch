@@ -2634,38 +2634,21 @@ const App = {
             }
         }
 
-        // ── Badge "Mode Personnalisé" si connecté ──
+        // Badge "Recommandations personnalisées" retiré (peu utile). On conserve juste
+        // la note discrète "filtré selon les plateformes" quand c'est pertinent.
         document.getElementById('personalized-badge')?.remove();
-        if (store.currentUser) {
-            const hasFavGenres = store.answers._userFavGenres?.length > 0;
-            const badge = document.createElement('div');
-            badge.id = 'personalized-badge';
-            badge.style.cssText = `
-                display:flex;align-items:center;justify-content:center;gap:6px;
-                width:fit-content;margin:1.8rem auto 1.5rem;
-                background:linear-gradient(135deg,rgba(229,9,20,0.15),rgba(139,92,246,0.12));
-                border:1px solid rgba(229,9,20,0.3);border-radius:100px;
-                padding:5px 14px;font-size:0.75rem;font-weight:700;
-                color:rgba(255,255,255,0.8);letter-spacing:0.5px;
-                animation:fadeIn 0.5s ease;text-align:center;`;
+        document.getElementById('platform-note')?.remove();
+        if (store.currentUser && resultsTitle) {
             const platformCount = store.preferredPlatforms?.length || 0;
-            badge.innerHTML = hasFavGenres
-                ? t('results.perso').replace('${n}', store.answers._userFavGenres.length) + (platformCount > 0 ? ` · ${platformCount} ${t('results.platform')}${getLang() === 'fr' && platformCount > 1 ? 's' : ''}` : '')
-                : t('results.perso2');
-            if (resultsTitle) resultsTitle.after(badge);
-
-            // Note discrète : signaler que la sélection est filtrée sur les plateformes renseignées.
-            // En Duo, c'est l'hôte (la personne connectée) qui fournit les plateformes.
             if (platformCount > 0) {
-                document.getElementById('platform-note')?.remove();
                 const _pNote = document.createElement('div');
                 _pNote.id = 'platform-note';
-                _pNote.style.cssText = 'width:fit-content;max-width:90%;margin:-0.8rem auto 1.4rem;font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:center;line-height:1.4;';
+                _pNote.style.cssText = 'width:fit-content;max-width:90%;margin:0.9rem auto 0;font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:center;line-height:1.4;';
                 const _who = (store.duoMode && store.duoMerged) ? ` de ${store.duoNameA || 'l\'hôte'}` : '';
                 _pNote.textContent = getLang() === 'en'
                     ? '🎬 Filtered to the streaming platforms on file'
                     : `🎬 Sélection filtrée selon les plateformes${_who}`;
-                badge.after(_pNote);
+                resultsTitle.after(_pNote);
             }
         }
 
