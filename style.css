@@ -9113,6 +9113,15 @@ html.duo-link #duo-welcome {
     #pricing-context-banner { font-size: 0.78rem !important; padding: 0.6rem 0.7rem !important; }
 }
 
+/* ── Anti zoom auto iOS au focus : police ≥16px sur les champs (mobile) ──
+   Remplace user-scalable=no (qui déréglait les coordonnées tactiles). ── */
+@media (pointer: coarse) {
+    input[type="text"], input[type="email"], input[type="password"],
+    input[type="date"], input[type="search"], input[type="number"], textarea {
+        font-size: 16px !important;
+    }
+}
+
 /* ── Dropdown user-menu : ouverture au clic en plus du hover ── */
 .user-menu.open .user-dropdown {
     opacity: 1;
