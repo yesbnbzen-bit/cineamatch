@@ -2224,6 +2224,45 @@ const App = {
                 return true;
             });
 
+            // ── Mode Duo : plafond AUTO des compromis à sens unique (≤60) ──
+            // Un vrai compromis doit contenir un genre de CHAQUE envie. Un film qui ne
+            // couvre qu'UNE des deux personnes (ex. comédie-romance pure quand l'autre
+            // veut du suspense) est plafonné à 60 et redescend → ne peut pas être #1.
+            // Déterministe (basé sur les genres), pas de dépendance au jugement de l'IA.
+            if (store.duoMode && store.duoMerged
+                && store.answers._duoMoodA && store.answers._duoMoodA !== store.answers.mood) {
+                const MOOD_COVERAGE = {
+                    "35,10751": [35, 10751],
+                    "28,12":    [28, 12],
+                    "53":       [53, 80, 9648],   // suspense = thriller + crime + mystère
+                    "27":       [27, 53],          // horreur (+ thriller)
+                    "18,10749": [18, 10749],
+                    "878,9648": [878, 9648]
+                };
+                const sideA = MOOD_COVERAGE[store.answers._duoMoodA] || [];
+                const sideB = MOOD_COVERAGE[store.answers.mood] || [];
+                if (sideA.length && sideB.length) {
+                    const candGenreMap = new Map(safeCandidates.map(c => [
+                        Number(c.id),
+                        new Set([
+                            ...(c.genre_ids || []).map(Number),
+                            ...((c.genres || []).map(g => Number(g.id)))
+                        ])
+                    ]));
+                    rankedDeduped.forEach(r => {
+                        const g = candGenreMap.get(Number(r.tmdb_id));
+                        if (!g) return;
+                        const coversA = sideA.some(id => g.has(id));
+                        const coversB = sideB.some(id => g.has(id));
+                        r._duoOneSided = !(coversA && coversB);
+                        if (r._duoOneSided) r.match_score = Math.min(r.match_score || 0, 60);
+                    });
+                    // Les vrais compromis (non plafonnés) remontent en tête
+                    rankedDeduped.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+                    console.log(`👫 Plafond compromis Duo appliqué : ${rankedDeduped.filter(r => r._duoOneSided).length} film(s) à sens unique plafonnés à 60`);
+                }
+            }
+
             // ── Normalisation des scores avec spread contenu ──
             // Objectif : #1 affiché dans une fourchette crédible (pas un 95% figé),
             // écart max entre #1 et #3 = 15 pts. Ex : [88,74,61] → [96,90,84].
@@ -2246,6 +2285,9 @@ const App = {
                 // Mapping linéaire compressé : topRaw → topScore, botRaw → (topScore - SPREAD_MAX)
                 const normalized = topScore - ((topRaw - raw) / rawRange) * SPREAD_MAX;
                 r.match_score = Math.round(Math.max(topScore - SPREAD_MAX, Math.min(topScore, normalized)));
+                // Duo : un film à sens unique reste plafonné à 60 à l'affichage (la
+                // normalisation ne doit pas le ré-inflater).
+                if (r._duoOneSided) r.match_score = Math.min(r.match_score, 60);
             });
 
             // ── Récupérer les détails complets des 3 meilleurs ──
