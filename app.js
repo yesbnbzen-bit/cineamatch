@@ -754,19 +754,25 @@ const App = {
 
     // ── Démarrage du questionnaire ──
     startFlow(keepDuoState = false) {
-        // ── Gate anonyme : 1 recherche par jour ──
+        // ── Gate anonyme : 1 essai gratuit À VIE → 1 recherche bonus si partage → abonnement ──
         if (!keepDuoState && !store.currentUser) {
-            const today     = new Date().toISOString().slice(0, 10); // "2026-05-18"
-            const lastDate  = localStorage.getItem('anon_search_date');
-            const lastCount = parseInt(localStorage.getItem('anon_search_count') || '0', 10);
+            const trialUsed   = localStorage.getItem('anon_trial_used') === '1';
+            const shareUnlock = localStorage.getItem('anon_share_unlocked') === '1';
+            const bonusUsed   = localStorage.getItem('anon_bonus_used') === '1';
 
-            if (lastDate === today && lastCount >= 1) {
-                // Déjà utilisé aujourd'hui → popup
+            if (!trialUsed) {
+                // 1er essai gratuit → on laisse passer (marqué à l'affichage des résultats)
+            } else if (shareUnlock && !bonusUsed) {
+                // Recherche bonus débloquée par le partage → on laisse passer
+            } else if (!shareUnlock) {
+                // Essai consommé, pas encore partagé → propose le partage pour 1 reco de plus
+                this._showShareGate();
+                return;
+            } else {
+                // Essai + bonus partage consommés → paywall abonnement
                 this._showSearchGate();
                 return;
             }
-
-            // NE PAS incrémenter ici — on incrémente seulement quand les résultats sont affichés
         }
 
         // Fermer l'onboarding s'il est encore affiché
@@ -2490,14 +2496,17 @@ const App = {
 
     // ── Rendu des cartes résultats ──
     renderResults(movies) {
-        // ── Incrémenter le compteur anonyme ici (résultats réellement affichés) ──
+        // ── Marquer la recherche anonyme consommée (résultats réellement affichés) ──
         if (!store.currentUser && !store._anonSearchCounted) {
             store._anonSearchCounted = true;
-            const today    = new Date().toISOString().slice(0, 10);
-            const lastDate = localStorage.getItem('anon_search_date');
-            const lastCount = parseInt(localStorage.getItem('anon_search_count') || '0', 10);
-            localStorage.setItem('anon_search_date',  today);
-            localStorage.setItem('anon_search_count', lastDate === today ? lastCount + 1 : 1);
+            if (localStorage.getItem('anon_trial_used') !== '1') {
+                // 1er essai gratuit consommé
+                localStorage.setItem('anon_trial_used', '1');
+            } else if (localStorage.getItem('anon_share_unlocked') === '1'
+                       && localStorage.getItem('anon_bonus_used') !== '1') {
+                // Recherche bonus (débloquée par partage) consommée
+                localStorage.setItem('anon_bonus_used', '1');
+            }
         }
         ui.switchView('results');
         ui._scrollTop();
@@ -4119,7 +4128,7 @@ const App = {
                     width:100%;padding:0.9rem;background:#E50914;color:#fff;
                     border:none;border-radius:12px;font-size:1rem;font-weight:800;
                     cursor:pointer;margin-bottom:0.75rem;">
-                    Passer Premium — 4,99€/mois
+                    Passer Premium — 2,99€/mois
                 </button>
                 <button id="reroll-gate-login" style="
                     width:100%;padding:0.75rem;background:transparent;
@@ -4158,6 +4167,87 @@ const App = {
     },
 
     // ── Popup gate nouvelle recherche (anonyme) ──
+    // ── Popup PARTAGE : débloque 1 recherche bonus après l'essai gratuit ──
+    _showShareGate() {
+        document.getElementById('share-unlock-overlay')?.remove();
+
+        const SHARE_URL = 'https://cineamatch.com';
+        const SHARE_MSG = "🎬 J'ai trouvé un truc génial : CineaMatch, une IA qui te trouve LE film parfait à regarder en 30 secondes. Teste, c'est bluffant 👉 ";
+
+        const overlay = document.createElement('div');
+        overlay.id    = 'share-unlock-overlay';
+        overlay.style.cssText = `
+            position:fixed;inset:0;z-index:9999;
+            background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);
+            display:flex;align-items:center;justify-content:center;
+            padding:1rem;animation:fadeIn 0.2s ease;`;
+
+        overlay.innerHTML = `
+            <div style="
+                background:#111;border:1px solid rgba(255,255,255,0.1);
+                border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;
+                text-align:center;position:relative;
+                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+                <button id="shg-close" style="
+                    position:absolute;top:1rem;right:1rem;background:none;
+                    border:none;color:rgba(255,255,255,0.4);font-size:1.3rem;
+                    cursor:pointer;line-height:1;">✕</button>
+
+                <div style="font-size:2.8rem;margin-bottom:1rem;">🎁</div>
+
+                <h3 style="font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 0.6rem;">
+                    Encore une reco offerte !
+                </h3>
+
+                <p style="color:rgba(255,255,255,0.55);font-size:0.9rem;line-height:1.6;margin:0 0 2rem;">
+                    Partage CineaMatch à un proche et débloque
+                    <strong style="color:#fff">une recherche de plus</strong>, gratuitement.
+                </p>
+
+                <button id="shg-share" style="
+                    width:100%;padding:0.9rem;background:#E50914;color:#fff;
+                    border:none;border-radius:12px;font-size:1rem;font-weight:800;
+                    cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
+                    📲 Partager pour débloquer
+                </button>
+                <button id="shg-premium" style="
+                    width:100%;padding:0.75rem;background:transparent;
+                    color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
+                    border-radius:12px;font-size:0.9rem;cursor:pointer;">
+                    Ou passe Premium — 2,99€/mois
+                </button>
+            </div>`;
+
+        document.body.appendChild(overlay);
+
+        const close = () => overlay.remove();
+        document.getElementById('shg-close').onclick = close;
+        overlay.onclick = (e) => { if (e.target === overlay) close(); };
+
+        // Débloque la recherche bonus puis relance le questionnaire
+        const unlock = () => {
+            localStorage.setItem('anon_share_unlocked', '1');
+            close();
+            this.startFlow();
+        };
+
+        document.getElementById('shg-share').onclick = () => {
+            if (navigator.share) {
+                navigator.share({ title: 'CineaMatch', text: SHARE_MSG, url: SHARE_URL })
+                    .then(unlock)
+                    .catch(() => { /* partage annulé → on laisse le popup ouvert */ });
+            } else {
+                // Pas de partage natif (desktop) → WhatsApp pré-rempli, puis déblocage
+                window.open('https://wa.me/?text=' + encodeURIComponent(SHARE_MSG + SHARE_URL), '_blank');
+                unlock();
+            }
+        };
+        document.getElementById('shg-premium').onclick = () => {
+            close();
+            this.showPricingModal();
+        };
+    },
+
     _showSearchGate() {
         document.getElementById('search-gate-overlay')?.remove();
 
@@ -4183,22 +4273,21 @@ const App = {
                 <div style="font-size:2.8rem;margin-bottom:1rem;">🎬</div>
 
                 <h3 style="font-size:1.35rem;font-weight:800;color:#fff;margin:0 0 0.6rem;">
-                    Tu as utilisé ta recherche du jour
+                    Ton essai gratuit est terminé
                 </h3>
 
                 <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;line-height:1.6;margin:0 0 2rem;">
-                    Crée un compte gratuit pour accéder à
-                    <strong style="color:#fff">plus de recherches</strong>
-                    et retrouver tes films sauvegardés.
-                    <br><br>
-                    <span style="font-size:0.8rem;opacity:0.6">Ou reviens demain — la limite se remet à zéro chaque jour.</span>
+                    Tu as vu ce que l'IA sait faire. Pour continuer à trouver
+                    <strong style="color:#fff">ton film en 30 secondes</strong> —
+                    recherches illimitées, historique &amp; watchlist —
+                    passe Premium dès <strong style="color:#fff">2,99€/mois</strong>.
                 </p>
 
                 <button id="sg-signup" style="
                     width:100%;padding:0.9rem;background:#E50914;color:#fff;
                     border:none;border-radius:12px;font-size:1rem;font-weight:800;
                     cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
-                    Créer un compte gratuit
+                    Débloquer Premium — 2,99€/mois
                 </button>
                 <button id="sg-login" style="
                     width:100%;padding:0.75rem;background:transparent;
@@ -4216,7 +4305,9 @@ const App = {
 
         document.getElementById('sg-signup').onclick = () => {
             close();
-            import('./modules/auth.js?v=27').then(m => m.authUI.showModal('signup'));
+            // Montre directement l'offre Premium (les plans 2,99€/19,99€).
+            // « Choisir » lance le checkout Stripe et demande l'inscription si besoin.
+            this.showPricingModal();
         };
         document.getElementById('sg-login').onclick = () => {
             close();

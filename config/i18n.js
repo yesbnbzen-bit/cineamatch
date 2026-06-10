@@ -74,7 +74,7 @@ export const TRANSLATIONS = {
         'paywall.sub':       'Crée un compte gratuit pour débloquer des suggestions illimitées et garder ton historique.',
         'paywall.cta':       'Créer un compte gratuit',
         'paywall.footnote':  '100% gratuit · Sans carte bancaire',
-        'paywall.premium':   'Passer Premium — 4,99€/mois',
+        'paywall.premium':   'Passer Premium — 2,99€/mois',
 
         // Session resume
         'resume.text':       '🎬 Tu avais une session en cours — reprendre là où tu t\'es arrêté ?',
@@ -383,7 +383,7 @@ export const TRANSLATIONS = {
         'paywall.sub':       'Create a free account to unlock unlimited suggestions and keep your history.',
         'paywall.cta':       'Create a free account',
         'paywall.footnote':  '100% free · No credit card required',
-        'paywall.premium':   'Go Premium — €4.99/month',
+        'paywall.premium':   'Go Premium — €2.99/month',
 
         // Session resume
         'resume.text':       '🎬 You had a session in progress — pick up where you left off?',
