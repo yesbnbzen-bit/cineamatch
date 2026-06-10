@@ -394,6 +394,21 @@ const App = {
 
         // Charger les films tendances sur la homepage
         this._loadTrending();
+
+        // Rendu différé des tendances : si la requête s'est résolue pendant que l'utilisateur
+        // était ailleurs (questionnaire/duo), on les affiche à son retour sur l'accueil —
+        // jamais pendant le quiz (évite le freeze de transition entre 2 questions).
+        document.addEventListener('cinematch:view-change', (e) => {
+            if (e.detail === 'hero' && store.trendingMovies?.length && !store._trendingRendered) {
+                const section = document.getElementById('trending-section');
+                this._renderTrendingCards(store.trendingMovies);
+                store._trendingRendered = true;
+                if (section) {
+                    section.style.display = 'block';
+                    requestAnimationFrame(() => requestAnimationFrame(() => section.classList.add('visible')));
+                }
+            }
+        });
     },
 
     // ── Modale config API ──
@@ -497,10 +512,20 @@ const App = {
             // Stocker pour pouvoir re-rendre au changement de langue
             store.trendingMovies = movies;
 
-            this._renderTrendingCards(movies);
-            section.style.display = 'block';
-            // Petit délai pour laisser le navigateur peindre, puis fade-in smooth
-            requestAnimationFrame(() => requestAnimationFrame(() => section.classList.add('visible')));
+            // ── Anti-freeze mobile ──
+            // Le rendu de ~40 cartes-affiches est lourd. Si la requête se résout pendant
+            // que l'utilisateur est DÉJÀ dans le questionnaire (cas du Partenaire B en duo
+            // sur réseau lent), ce rendu synchrone bloque le thread → la transition entre
+            // 2 questions se fige quelques secondes. On ne rend donc les tendances QUE si
+            // l'accueil est visible ; sinon on diffère au retour sur l'accueil.
+            const heroActive = document.getElementById('hero')?.classList.contains('active');
+            if (heroActive) {
+                this._renderTrendingCards(movies);
+                section.style.display = 'block';
+                store._trendingRendered = true;
+                // Petit délai pour laisser le navigateur peindre, puis fade-in smooth
+                requestAnimationFrame(() => requestAnimationFrame(() => section.classList.add('visible')));
+            }
         } catch (e) {
             console.warn('Trending load failed', e);
         }
