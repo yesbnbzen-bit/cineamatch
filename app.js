@@ -3124,15 +3124,11 @@ const App = {
             const isPremium = store.currentUser?.user_metadata?.is_premium === true;
             const isLoggedIn = !!store.currentUser;
 
-            // ── Gate : non connecté → popup inscription ──
-            if (!isLoggedIn) {
-                this._showDuoGate('signup');
-                return;
-            }
-
-            // ── Gate : Mode Duo réservé au Premium (compte gratuit → grille de prix) ──
+            // ── Gate : Mode Duo réservé au Premium → directement la grille de prix ──
+            // (couvre anonyme + compte gratuit : dans les deux cas isPremium = false ;
+            //  "Choisir" lance le checkout et demande l'inscription si besoin.)
             if (!isPremium) {
-                this._showDuoGate('premium');
+                this.showPricingModal('duo');
                 return;
             }
 
@@ -4483,9 +4479,19 @@ const App = {
     showPricingModal(context) {
         const modal = document.getElementById('pricing-modal-overlay');
         if (!modal) return;
-        // Phrase de contexte affichée seulement si déclenché par la fin des essais
+        // Phrase de contexte selon l'origine (fin des essais OU Mode Duo)
         const banner = document.getElementById('pricing-context-banner');
-        if (banner) banner.style.display = (context === 'trial_ended') ? 'block' : 'none';
+        if (banner) {
+            if (context === 'trial_ended') {
+                banner.innerHTML = '🎬 Tu as utilisé tes recherches gratuites — passe Premium pour continuer sans limite.';
+                banner.style.display = 'block';
+            } else if (context === 'duo') {
+                banner.innerHTML = '💑 Le Mode Duo est réservé aux abonnés Premium — trouve le film parfait à deux.';
+                banner.style.display = 'block';
+            } else {
+                banner.style.display = 'none';
+            }
+        }
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('visible'), 10);
     },
