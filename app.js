@@ -770,7 +770,7 @@ const App = {
                 return;
             } else {
                 // Essai + bonus partage consommés → directement la modale des prix
-                this.showPricingModal();
+                this.showPricingModal('trial_ended');
                 return;
             }
         }
@@ -4443,9 +4443,12 @@ const App = {
     // ══════════════════════════════════════════
     //  PRICING — Modale plans Premium
     // ══════════════════════════════════════════
-    showPricingModal() {
+    showPricingModal(context) {
         const modal = document.getElementById('pricing-modal-overlay');
         if (!modal) return;
+        // Phrase de contexte affichée seulement si déclenché par la fin des essais
+        const banner = document.getElementById('pricing-context-banner');
+        if (banner) banner.style.display = (context === 'trial_ended') ? 'block' : 'none';
         modal.style.display = 'flex';
         setTimeout(() => modal.classList.add('visible'), 10);
     },

@@ -926,6 +926,9 @@
          onclick="if(event.target===this) App.hidePricingModal()">
         <div class="pricing-modal" onclick="event.stopPropagation()">
             <button class="auth-close" onclick="App.hidePricingModal()">✕</button>
+            <div id="pricing-context-banner" style="display:none;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.35);color:#fff;border-radius:12px;padding:0.7rem 1rem;margin-bottom:1.3rem;font-size:0.9rem;font-weight:600;text-align:center;line-height:1.4;">
+                🎬 Tu as utilisé tes recherches gratuites — passe Premium pour continuer sans limite.
+            </div>
             <div class="pricing-header">
                 <div class="pricing-icon">⚡</div>
                 <h2 class="pricing-title">CineaMatch Premium</h2>
@@ -1021,7 +1024,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=478"></script>
+    <script type="module" src="app.js?v=479"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=27';
         authUI.init();
