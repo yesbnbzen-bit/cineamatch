@@ -775,6 +775,17 @@ const App = {
             }
         }
 
+        // ── Gate compte gratuit : connecté mais NON-Premium → abonnement requis ──
+        // (ferme la faille : sans ça, créer un compte gratuit redonnait des recherches
+        //  illimitées. Ex. quelqu'un qui s'inscrit pour payer puis abandonne Stripe.)
+        if (!keepDuoState && store.currentUser) {
+            const isPremium = store.currentUser?.user_metadata?.is_premium === true;
+            if (!isPremium) {
+                this.showPricingModal('trial_ended');
+                return;
+            }
+        }
+
         // Fermer l'onboarding s'il est encore affiché
         const onbOverlay   = document.getElementById('onboarding-overlay');
         const onbHighlight = document.getElementById('onboarding-highlight');
