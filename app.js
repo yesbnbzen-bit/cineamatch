@@ -488,6 +488,15 @@ const App = {
 
     // ── Films populaires sur streaming (homepage) ──
     async _loadTrending() {
+        // ── Partenaire B (arrivé par le lien duo) : on NE charge PAS les tendances. ──
+        // B va directement au questionnaire sans passer par l'accueil. Lancer 2 requêtes
+        // TMDB + parser le JSON sur son téléphone monopolise le réseau/CPU et provoque un
+        // micro-freeze pile pendant le quiz (le délai ressenti après une question). Inutile
+        // pour lui → on coupe net.
+        if (store.duoMode && store.duoRole === 'B') return;
+        // Idem si l'URL contient un lien duo (sécurité, au cas où l'état n'est pas encore posé)
+        if (new URLSearchParams(location.search).get('duo_id') || new URLSearchParams(location.search).get('duo')) return;
+
         // En prod, le proxy gère la clé — on vérifie quand même en dev
         const key = store.apiKeys.tmdb;
         const IS_PROD = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
