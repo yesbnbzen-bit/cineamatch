@@ -537,23 +537,20 @@ const App = {
         // Triple les cartes (A + B + C) pour scroll infini sans blocage
         row.innerHTML = makeCards() + makeCards() + makeCards();
 
-        // Positionner au début du set B (milieu) dès le rendu
+        // Démarrer au TOUT PREMIER film (à gauche), pas au milieu.
         requestAnimationFrame(() => {
-            const setWidth = row.scrollWidth / 3;
-            row.scrollLeft = setWidth;
+            row.scrollLeft = 0;
 
-            // Après chaque fin de scroll : si on est hors du set B, on saute silencieusement
+            // Défilement infini vers la droite : quand on entre dans le 3e set,
+            // on revient discrètement au 2e (contenu identique → invisible).
+            // Le scroll vers la gauche s'arrête au premier film (comportement attendu).
             let scrollTimer = null;
             row.addEventListener('scroll', () => {
                 if (scrollTimer) clearTimeout(scrollTimer);
                 scrollTimer = setTimeout(() => {
                     const sl = row.scrollLeft;
                     const sw = row.scrollWidth / 3;
-                    if (sl < sw * 0.5) {
-                        row.style.scrollBehavior = 'auto';
-                        row.scrollLeft = sl + sw;
-                        row.style.scrollBehavior = '';
-                    } else if (sl > sw * 1.5) {
+                    if (sl >= sw * 2) {
                         row.style.scrollBehavior = 'auto';
                         row.scrollLeft = sl - sw;
                         row.style.scrollBehavior = '';
