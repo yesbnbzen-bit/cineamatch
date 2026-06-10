@@ -3413,6 +3413,15 @@ const App = {
         const nameBDisplay = document.getElementById('duo-wait-name-b');
         if (nameADisplay) nameADisplay.textContent = store.duoNameA || t('duo.fallback.you');
 
+        // ── RESET de l'état "en attente" (la vue #duo-share est réutilisée : si A relance
+        //    un Duo, l'ancien état "partenaire terminé / ✓" restait affiché). On remet à zéro. ──
+        if (waitingEl) waitingEl.classList.remove('b-done', 'b-responding');
+        if (nameBDisplay) nameBDisplay.textContent = '⏳';
+        if (waitingText) waitingText.textContent = getLang() === 'en'
+            ? 'Waiting for your partner…' : 'En attente de ton partenaire…';
+        const _oldReadyBanner = document.getElementById('duo-partner-ready');
+        if (_oldReadyBanner) _oldReadyBanner.style.display = 'none';
+
         let _duoPollDone = false;
 
         // ── Callback commun : résultats reçus (Supabase OU localStorage) ──
