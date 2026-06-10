@@ -1841,8 +1841,18 @@ const App = {
             if (conflictingExclusions.length > 0) {
                 console.warn(`⚠️ Conflit mood/exclusions détecté : genres [${conflictingExclusions.join(',')}] en conflit → mood prioritaire, exclusion ignorée pour ces genres`);
                 store._moodExclusionConflict = true;
+                // Retrouver le(s) label(s) d'exclusion concerné(s) pour les nommer dans la bannière
+                const EXCLUDE_LABELS = {
+                    horror: 'Trop violent', sad: 'Trop triste', scary: 'Films qui font peur',
+                    adult: 'Contenu adulte', slow: 'Trop lent', complex: 'Trop complexe',
+                    animation: 'Animation', teen: "Films d'ados"
+                };
+                store._moodExclusionConflictLabels = (store.answers.exclude || [])
+                    .filter(ex => (EXCLUDE_GENRE_MAP[ex] || []).some(g => conflictingExclusions.includes(g)))
+                    .map(ex => EXCLUDE_LABELS[ex] || ex);
             } else {
                 store._moodExclusionConflict = false;
+                store._moodExclusionConflictLabels = [];
             }
             // ── Garde-fou exclusions : rejette TOUT film d'un genre exclu, dans toutes les
             // passes (y compris les passes de secours qui n'appliquent pas les filtres). ──
@@ -2562,9 +2572,15 @@ const App = {
         document.getElementById('conflict-banner')?.remove();
         if (store._moodExclusionConflict) {
             const isEn = getLang() === 'en';
-            const conflictMsg = isEn
-                ? '💡 We noticed a small overlap between your mood and your exclusions. Your mood took priority — your exclusions are still applied as much as possible.'
-                : '💡 Ton humeur et une de tes exclusions se chevauchaient légèrement. L\'humeur a été prioritaire — tes exclusions restent appliquées au maximum.';
+            const _labels = store._moodExclusionConflictLabels || [];
+            const _quoted = _labels.map(l => `« ${l} »`).join(isEn ? ' & ' : ' et ');
+            const conflictMsg = _labels.length > 0
+                ? (isEn
+                    ? `💡 Your exclusion ${_quoted} overlaps with the mood you picked. To stay true to your mood, we set it aside — your other exclusions are still applied.`
+                    : `💡 Ton exclusion ${_quoted} recoupe l'humeur que tu as choisie. Pour rester fidèle à ton humeur, on l'a mise de côté — tes autres exclusions restent bien appliquées.`)
+                : (isEn
+                    ? '💡 We noticed a small overlap between your mood and your exclusions. Your mood took priority — your exclusions are still applied as much as possible.'
+                    : '💡 Ton humeur et une de tes exclusions se chevauchaient légèrement. L\'humeur a été prioritaire — tes exclusions restent appliquées au maximum.');
             const cb = document.createElement('div');
             cb.id = 'conflict-banner';
             cb.style.cssText = `
@@ -2987,6 +3003,18 @@ const App = {
         }
 
         ui.dom.moviesGrid.appendChild(rerollContainer);
+
+        // ── Bouton "Modifier ma recherche" toujours visible (évite de repasser par l'accueil) ──
+        const modLink = document.createElement('button');
+        modLink.id = 'modify-search-link';
+        modLink.textContent = getLang() === 'en' ? '🔄 Edit my search' : '🔄 Modifier ma recherche';
+        modLink.style.cssText = `margin:0 auto;background:none;border:1px solid rgba(255,255,255,0.15);
+            color:rgba(255,255,255,0.7);font-size:0.85rem;font-weight:600;border-radius:11px;
+            padding:9px 20px;cursor:pointer;display:block;transition:all 0.15s;`;
+        modLink.onmouseenter = () => { modLink.style.background = 'rgba(255,255,255,0.08)'; modLink.style.color = '#fff'; };
+        modLink.onmouseleave = () => { modLink.style.background = 'none'; modLink.style.color = 'rgba(255,255,255,0.7)'; };
+        modLink.onclick = () => this.startFlow();
+        rerollContainer.appendChild(modLink);
 
         const rerollBtn = document.getElementById('reroll-btn');
         if (rerollBtn) {
