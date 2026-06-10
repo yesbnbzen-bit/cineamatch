@@ -89,7 +89,14 @@ export const authUI = {
 
         // Tabs inscription / connexion
         document.getElementById('tab-signin')?.addEventListener('click', () => this.showTab('signin'));
-        document.getElementById('tab-signup')?.addEventListener('click', () => this.showTab('signup'));
+        document.getElementById('tab-signup')?.addEventListener('click', () => {
+            // « Inscription » à froid → on montre d'abord la grille de prix (pas de
+            // surprise paywall après coup). Si un plan est déjà choisi (checkout en
+            // cours), on garde le formulaire pour finaliser la création de compte.
+            if (localStorage.getItem('cm_pending_plan')) { this.showTab('signup'); return; }
+            this.hideModal();
+            window.App?.showPricingModal('signup');
+        });
 
         // Formulaires
         document.getElementById('form-signin')?.addEventListener('submit', (e) => this.handleSignIn(e));
