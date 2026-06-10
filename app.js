@@ -769,8 +769,8 @@ const App = {
                 this._showShareGate();
                 return;
             } else {
-                // Essai + bonus partage consommés → paywall abonnement
-                this._showSearchGate();
+                // Essai + bonus partage consommés → directement la modale des prix
+                this.showPricingModal();
                 return;
             }
         }
@@ -4182,28 +4182,12 @@ const App = {
             display:flex;align-items:center;justify-content:center;
             padding:1rem;animation:fadeIn 0.2s ease;`;
 
-        const _full = SHARE_MSG + SHARE_URL;
-        const channelUrls = {
-            whatsapp: 'https://wa.me/?text=' + encodeURIComponent(_full),
-            telegram: 'https://t.me/share/url?url=' + encodeURIComponent(SHARE_URL) + '&text=' + encodeURIComponent(SHARE_MSG),
-            sms:      'sms:?&body=' + encodeURIComponent(_full),
-            email:    'mailto:?subject=' + encodeURIComponent('CineaMatch — trouve ton film en 30s') + '&body=' + encodeURIComponent(_full),
-        };
-
-        const _chipStyle = `
-            display:flex;flex-direction:column;align-items:center;gap:7px;flex:1;
-            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
-            border-radius:14px;padding:13px 4px;cursor:pointer;
-            color:rgba(255,255,255,0.85);font-size:0.7rem;font-weight:600;
-            transition:background 0.15s,border-color 0.15s;`;
-
         overlay.innerHTML = `
             <div style="
-                background:linear-gradient(180deg,#16131c 0%,#0e0c12 100%);
-                border:1px solid rgba(255,255,255,0.08);
-                border-radius:22px;padding:2.4rem 1.9rem 1.9rem;max-width:430px;width:100%;
+                background:#111;border:1px solid rgba(255,255,255,0.1);
+                border-radius:20px;padding:2.5rem 2rem;max-width:420px;width:100%;
                 text-align:center;position:relative;
-                box-shadow:0 30px 70px rgba(0,0,0,0.65);">
+                box-shadow:0 25px 60px rgba(0,0,0,0.6);">
                 <button id="shg-close" style="
                     position:absolute;top:1rem;right:1rem;background:none;
                     border:none;color:rgba(255,255,255,0.35);font-size:1.25rem;
@@ -4220,25 +4204,16 @@ const App = {
                     <strong style="color:#fff">une recherche de plus</strong>, gratuitement.
                 </p>
 
-                <div style="display:flex;gap:8px;margin-bottom:1.4rem;">
-                    <button class="shg-chip" data-ch="whatsapp" style="${_chipStyle}">
-                        <span style="font-size:1.45rem;">🟢</span>WhatsApp
-                    </button>
-                    <button class="shg-chip" data-ch="telegram" style="${_chipStyle}">
-                        <span style="font-size:1.45rem;">✈️</span>Telegram
-                    </button>
-                    <button class="shg-chip" data-ch="sms" style="${_chipStyle}">
-                        <span style="font-size:1.45rem;">💬</span>SMS
-                    </button>
-                    <button class="shg-chip" data-ch="copy" style="${_chipStyle}">
-                        <span style="font-size:1.45rem;">🔗</span>Copier
-                    </button>
-                </div>
-
+                <button id="shg-share" style="
+                    width:100%;padding:0.9rem;background:#E50914;color:#fff;
+                    border:none;border-radius:12px;font-size:1rem;font-weight:800;
+                    cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
+                    📲 Partager pour débloquer
+                </button>
                 <button id="shg-premium" style="
-                    width:100%;padding:0.8rem;background:transparent;
-                    color:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.12);
-                    border-radius:12px;font-size:0.88rem;font-weight:600;cursor:pointer;">
+                    width:100%;padding:0.75rem;background:transparent;
+                    color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);
+                    border-radius:12px;font-size:0.9rem;cursor:pointer;">
                     Ou passe Premium — 2,99€/mois
                 </button>
             </div>`;
@@ -4256,22 +4231,18 @@ const App = {
             this.startFlow();
         };
 
-        overlay.querySelectorAll('.shg-chip').forEach(btn => {
-            btn.onmouseenter = () => { btn.style.background = 'rgba(255,255,255,0.1)'; btn.style.borderColor = 'rgba(255,255,255,0.18)'; };
-            btn.onmouseleave = () => { btn.style.background = 'rgba(255,255,255,0.05)'; btn.style.borderColor = 'rgba(255,255,255,0.08)'; };
-            btn.onclick = () => {
-                const ch = btn.dataset.ch;
-                if (ch === 'copy') {
-                    (navigator.clipboard?.writeText(_full) || Promise.resolve()).catch(() => {});
-                    btn.innerHTML = '<span style="font-size:1.45rem;">✓</span>Copié';
-                    setTimeout(unlock, 650);
-                } else {
-                    window.open(channelUrls[ch], '_blank');
-                    unlock();
-                }
-            };
-        });
-
+        document.getElementById('shg-share').onclick = () => {
+            if (navigator.share) {
+                // Mobile : ne débloque QUE si le partage natif aboutit (plus sûr)
+                navigator.share({ title: 'CineaMatch', text: SHARE_MSG, url: SHARE_URL })
+                    .then(unlock)
+                    .catch(() => { /* partage annulé → popup laissé ouvert */ });
+            } else {
+                // Pas de partage natif (desktop) → WhatsApp pré-rempli, puis déblocage
+                window.open('https://wa.me/?text=' + encodeURIComponent(SHARE_MSG + SHARE_URL), '_blank');
+                unlock();
+            }
+        };
         document.getElementById('shg-premium').onclick = () => {
             close();
             this.showPricingModal();

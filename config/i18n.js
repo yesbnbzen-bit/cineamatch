@@ -219,7 +219,7 @@ export const TRANSLATIONS = {
 
         // Paywall features
         'paywall.feature.1':     'Recommandations illimitées',
-        'paywall.feature.2':     'Une IA qui affine tes goûts à chaque film',
+        'paywall.feature.2':     'Plus tu l\'utilises, mieux l\'IA te connaît',
         'paywall.feature.3':     'Filtre par plateformes (Netflix, Prime…)',
         'paywall.signin.btn':    'J\'ai déjà un compte',
 
@@ -528,7 +528,7 @@ export const TRANSLATIONS = {
 
         // Paywall features
         'paywall.feature.1':     'Unlimited recommendations',
-        'paywall.feature.2':     'An AI that learns your taste with every film',
+        'paywall.feature.2':     'The more you use it, the better the AI knows you',
         'paywall.feature.3':     'Filter by platform (Netflix, Prime…)',
         'paywall.signin.btn':    'I already have an account',
 
