@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=67';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=68';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -2653,6 +2653,20 @@ const App = {
                 ? t('results.perso').replace('${n}', store.answers._userFavGenres.length) + (platformCount > 0 ? ` · ${platformCount} ${t('results.platform')}${getLang() === 'fr' && platformCount > 1 ? 's' : ''}` : '')
                 : t('results.perso2');
             if (resultsTitle) resultsTitle.after(badge);
+
+            // Note discrète : signaler que la sélection est filtrée sur les plateformes renseignées.
+            // En Duo, c'est l'hôte (la personne connectée) qui fournit les plateformes.
+            if (platformCount > 0) {
+                document.getElementById('platform-note')?.remove();
+                const _pNote = document.createElement('div');
+                _pNote.id = 'platform-note';
+                _pNote.style.cssText = 'width:fit-content;max-width:90%;margin:-0.8rem auto 1.4rem;font-size:0.72rem;color:rgba(255,255,255,0.4);text-align:center;line-height:1.4;';
+                const _who = (store.duoMode && store.duoMerged) ? ` de ${store.duoNameA || 'l\'hôte'}` : '';
+                _pNote.textContent = getLang() === 'en'
+                    ? '🎬 Filtered to the streaming platforms on file'
+                    : `🎬 Sélection filtrée selon les plateformes${_who}`;
+                badge.after(_pNote);
+            }
         }
 
         ui.dom.moviesGrid.innerHTML = '';
@@ -2950,7 +2964,9 @@ const App = {
                         <div class="ai-box">
                             <p style="font-size:0.6rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;
                                 color:var(--primary-color);margin-bottom:5px;opacity:0.9;">
-                                ${t('results.why')}
+                                ${(store.duoMode && store.duoMerged)
+                                    ? (getLang() === 'en' ? '✦ Why this film for you both' : '✦ Pourquoi ce film pour vous')
+                                    : t('results.why')}
                             </p>
                             <p class="ai-reason">${m.match_reason ? `"${escapeHtml(m.match_reason)}"` : `"${escapeHtml(App._autoReason(m))}"`}</p>
                         </div>
@@ -3108,7 +3124,9 @@ const App = {
         const rerollBtn = document.getElementById('reroll-btn');
         if (rerollBtn) {
             if (hitLimit) {
-                rerollBtn.onclick = () => this._showRerollGate(!isLoggedIn ? 'signup' : 'premium');
+                // « Autre suggestion » est une fonctionnalité Premium → grille de prix
+                // (anonyme comme compte gratuit), avec un message dédié.
+                rerollBtn.onclick = () => this.showPricingModal('reroll');
             } else if (!isLastRoll) {
                 rerollBtn.onclick = () => this.processResults(true);
             }
@@ -4582,6 +4600,9 @@ const App = {
                 banner.style.display = 'block';
             } else if (context === 'signup') {
                 banner.innerHTML = '🎬 Bienvenue ! Passe Premium pour débloquer CineaMatch sans limite.';
+                banner.style.display = 'block';
+            } else if (context === 'reroll') {
+                banner.innerHTML = '🔄 « Autre suggestion » est réservé aux abonnés Premium — relance autant que tu veux.';
                 banner.style.display = 'block';
             } else {
                 banner.style.display = 'none';

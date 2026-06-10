@@ -946,7 +946,9 @@ EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
   Exemple : comédie légère sans aucune tension si l'un veut Suspense → Score = 0.
 ⛔ PLAFOND 60 : un film qui ne contient l'envie que d'UNE des deux personnes (même s'il n'est pas l'opposé de l'autre — ex. comédie-drame SANS aucun suspense quand l'autre veut du suspense) → match_score PLAFONNÉ à 60. Il ne peut JAMAIS être #1.
 ⛔ INTERDIT : Recommander 3 films qui plaisent tous uniquement à la même personne.
-✅ RÈGLE D'OR DU #1 : Le premier film DOIT être le compromis le plus évident — les deux moods présents dans le même film (ex. comédie-thriller comme Knives Out, Game Night). Un film où les DEUX personnes peuvent dire "oui" immédiatement.`
+✅ RÈGLE D'OR DU #1 : Le premier film DOIT être le compromis le plus évident — les deux moods présents dans le même film (ex. comédie-thriller comme Knives Out, Game Night). Un film où les DEUX personnes peuvent dire "oui" immédiatement.
+
+✍️ STYLE DES match_reason EN DUO : tu t'adresses à DEUX personnes → utilise le VOUVOIEMENT PLURIEL (« vous », « ça va vous plaire », « vous allez adorer », « pour vous deux »). JAMAIS « toi / te / tu ». Explique en quoi le film parle aux DEUX (ex. « assez de tension pour l'un, assez d'humour pour l'autre »).`
             : '';
 
         // ── Profil d'âge de l'utilisateur ──
