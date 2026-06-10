@@ -257,6 +257,7 @@ export const TRANSLATIONS = {
         'duo.gate.signup.title':    'Le Mode Duo t\'attend',
         'duo.gate.premium.title':   'Mode Duo — Fonctionnalité Premium',
         'duo.gate.signup.sub':      'Le Mode Duo est une fonctionnalité <strong style="color:#fff">Premium</strong>. Crée ton compte, puis passe Premium pour trouver le film parfait à deux.',
+        'duo.gate.signup.cta':      'Créer mon compte',
         'duo.gate.premium.sub':     'Le Mode Duo est réservé aux abonnés Premium. Passe Premium pour trouver, à deux, le film parfait <strong style="color:#fff">en quelques secondes</strong>.',
         'duo.gate.premium.sec':     'Voir toutes les offres',
 
@@ -567,6 +568,7 @@ export const TRANSLATIONS = {
         'duo.gate.signup.title':    'Duo Mode is waiting for you',
         'duo.gate.premium.title':   'Duo Mode — Premium Feature',
         'duo.gate.signup.sub':      'Duo Mode is a <strong style="color:#fff">Premium</strong> feature. Create your account, then go Premium to find the perfect film for two.',
+        'duo.gate.signup.cta':      'Create my account',
         'duo.gate.premium.sub':     'Duo Mode is for Premium members. Go Premium to find the perfect film for two <strong style="color:#fff">in seconds</strong>.',
         'duo.gate.premium.sec':     'See all plans',
 

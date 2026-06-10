@@ -3,7 +3,7 @@ import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
 import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=12';
-import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=350';
+import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=351';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
 function _updateMultiCounter(grid, q, count) {
@@ -4391,7 +4391,7 @@ const App = {
                     width:100%;padding:0.9rem;background:#E50914;color:#fff;
                     border:none;border-radius:12px;font-size:1rem;font-weight:800;
                     cursor:pointer;margin-bottom:0.75rem;letter-spacing:0.02em;">
-                    ${isSignup ? t('paywall.cta') : t('paywall.premium')}
+                    ${isSignup ? t('duo.gate.signup.cta') : t('paywall.premium')}
                 </button>
                 <button id="duo-gate-secondary" style="
                     width:100%;padding:0.75rem;background:transparent;
