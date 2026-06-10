@@ -983,16 +983,18 @@ const App = {
             return;
         }
 
-        // Sinon : fade-out → rebuild → fade-in
-        c.classList.remove('q-enter');
-        c.classList.add('q-exit');
-        setTimeout(() => {
-            c.classList.remove('q-exit');
-            this._buildStep(q);
-            void c.offsetWidth; // force reflow
-            c.classList.add('q-enter');
-            c.addEventListener('animationend', () => c.classList.remove('q-enter'), { once: true });
-        }, 190);
+        // Sinon : RECONSTRUCTION IMMÉDIATE puis fade-in.
+        // (Avant : fade-out → setTimeout(190ms) → rebuild. Cette fenêtre de 190ms laissait
+        //  le conteneur VIDE ; si le thread était occupé une seconde, le minuteur était
+        //  retardé et l'utilisateur voyait le fond noir pendant plusieurs secondes.)
+        // En reconstruisant tout de suite, il n'existe plus aucune fenêtre vide dépendante
+        // d'un minuteur : l'ancienne question est remplacée instantanément par la nouvelle,
+        // qui apparaît en fondu. Plus d'écran noir possible entre 2 questions.
+        c.classList.remove('q-exit', 'q-enter');
+        this._buildStep(q);
+        void c.offsetWidth; // force reflow
+        c.classList.add('q-enter');
+        c.addEventListener('animationend', () => c.classList.remove('q-enter'), { once: true });
     },
 
     prevStep() {
