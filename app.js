@@ -3134,9 +3134,11 @@ const App = {
             }
         }
 
-        // Force scroll top après rendu complet — triple approche pour Safari mobile
+        // Force scroll top après rendu complet — robuste iOS (scrollingElement = la racine
+        // réelle de scroll sur Safari mobile, sans elle window.scrollTo est parfois ignoré).
         const _forceTop = () => {
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            try { window.scrollTo(0, 0); } catch (e) {}
+            if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
             document.documentElement.scrollTop = 0;
             document.body.scrollTop = 0;
             const main = document.getElementById('main-container');

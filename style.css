@@ -4415,6 +4415,9 @@ h1 {
 /* ── Fond premium quand le mode duo est actif ── */
 body.duo-active {
     background-color: #060104;
+    /* Fond figé sur l'écran → reste rouge/noir de façon homogène quand on scrolle
+       (sinon le bas d'une page longue paraît plus clair/plat). */
+    background-attachment: fixed;
     background-image:
         /* Halo bordeaux profond en haut à droite */
         radial-gradient(ellipse 65% 55% at 100% 0%, rgba(150, 20, 40, 0.42) 0%, transparent 65%),
