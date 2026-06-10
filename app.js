@@ -3105,15 +3105,10 @@ const App = {
                 return;
             }
 
-            // ── Gate : compte gratuit → 1 essai à vie ──
+            // ── Gate : Mode Duo réservé au Premium (compte gratuit → grille de prix) ──
             if (!isPremium) {
-                const duoUsed = localStorage.getItem('duo_free_used');
-                if (duoUsed) {
-                    this._showDuoGate('premium');
-                    return;
-                }
-                // Marquer l'essai gratuit comme utilisé
-                localStorage.setItem('duo_free_used', '1');
+                this._showDuoGate('premium');
+                return;
             }
 
             // Validation : max 25 chars, pas de HTML/scripts
