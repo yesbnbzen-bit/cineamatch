@@ -4415,9 +4415,6 @@ h1 {
 /* ── Fond premium quand le mode duo est actif ── */
 body.duo-active {
     background-color: #060104;
-    /* Fond figé sur l'écran → reste rouge/noir de façon homogène quand on scrolle
-       (sinon le bas d'une page longue paraît plus clair/plat). */
-    background-attachment: fixed;
     background-image:
         /* Halo bordeaux profond en haut à droite */
         radial-gradient(ellipse 65% 55% at 100% 0%, rgba(150, 20, 40, 0.42) 0%, transparent 65%),
@@ -4430,13 +4427,20 @@ body.duo-active {
     transition: background-color 0.8s ease, background-image 0.8s ease;
 }
 
-/* Background blobs */
+/* Background blobs + dégradé rouge UNIFORME, figé au viewport (position:fixed) →
+   le fond reste identiquement rouge/noir sur tous les écrans Duo et à tout niveau
+   de scroll, sans recourir à background-attachment:fixed (cassé sur iOS Safari). */
 .duo-bg {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
+    background-color: #060104;
+    background-image:
+        radial-gradient(ellipse 70% 55% at 100% 0%, rgba(150, 20, 40, 0.40) 0%, transparent 62%),
+        radial-gradient(ellipse 65% 50% at 0% 0%, rgba(120, 15, 35, 0.26) 0%, transparent 62%),
+        radial-gradient(ellipse 85% 45% at 50% 100%, rgba(140, 20, 45, 0.20) 0%, transparent 62%);
 }
 
 .duo-blob-a,
