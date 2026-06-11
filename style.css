@@ -5656,6 +5656,22 @@ html.duo-link #duo-welcome {
     font-weight: 300;
 }
 
+/* Badge « IA » encadré (comme le logo principal) dans la modale d'auth */
+.auth-logo .logo-ia {
+    font-size: 0.5rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #E50914;
+    border: 1px solid rgba(229,9,20,0.5);
+    border-radius: 4px;
+    padding: 1px 5px;
+    vertical-align: middle;
+    margin-left: 5px;
+    position: relative;
+    top: -4px;
+    opacity: 0.9;
+}
+
 .btn-google {
     display: flex;
     align-items: center;
