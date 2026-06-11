@@ -19,15 +19,16 @@
   <link rel="icon" type="image/png" sizes="32x32" href="https://cineamatch.com/favicon-32.png">
   <link rel="apple-touch-icon" href="https://cineamatch.com/favicon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&display=swap" rel="stylesheet">
 
   <script type="application/ld+json">
   {
-    "@context": "https://schema.org",
-    "@type": "Article",
+    "@context": "https://schema.org", "@type": "Article",
     "headline": "Comment choisir un film en 30 secondes",
-    "description": "Méthode simple pour décider quel film regarder en moins d'une minute, et arrêter de scroller pendant une heure.",
-    "author": { "@type": "Organization", "name": "CineaMatch" },
+    "description": "Méthode simple pour décider quel film regarder en moins d'une minute.",
+    "datePublished": "2026-06-11", "dateModified": "2026-06-11",
+    "author": { "@type": "Person", "name": "Marie L." },
     "publisher": { "@type": "Organization", "name": "CineaMatch", "logo": { "@type": "ImageObject", "url": "https://cineamatch.com/favicon-192.png" } },
     "mainEntityOfPage": "https://cineamatch.com/blog/choisir-un-film-en-30-secondes",
     "image": "https://cineamatch.com/og-image.png"
@@ -37,115 +38,258 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --red: #E50914; --bg: #0b0b0c; --surface: #161616; --surface2: #1d1d1f;
-      --border: rgba(255,255,255,0.08); --text: rgba(255,255,255,0.84);
-      --muted: rgba(255,255,255,0.45); --radius: 14px;
+      --red: #E50914; --bg: #0a0a0b; --surface: #141416; --surface2: #1c1c1f;
+      --border: rgba(255,255,255,0.09); --text: rgba(255,255,255,0.80);
+      --muted: rgba(255,255,255,0.45); --radius: 16px;
+      --serif: 'Fraunces', Georgia, serif; --sans: 'Inter', system-ui, -apple-system, sans-serif;
     }
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg);
-      color: var(--text); line-height: 1.75; min-height: 100vh;
-      background-image: radial-gradient(ellipse 60% 50% at 100% 0%, rgba(229,9,20,0.10) 0%, transparent 60%); }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); line-height: 1.75; -webkit-font-smoothing: antialiased; }
+    #progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--red); z-index: 300; transition: width .1s linear; }
+    a { color: inherit; }
 
-    header { display: flex; align-items: center; justify-content: space-between;
-      padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border); position: sticky; top: 0;
-      background: rgba(11,11,12,0.92); backdrop-filter: blur(12px); z-index: 100; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.6rem;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: rgba(10,10,11,0.55);
+      backdrop-filter: blur(14px); border-bottom: 1px solid transparent; transition: background .3s, border-color .3s; }
+    header.scrolled { background: rgba(10,10,11,0.96); border-bottom-color: var(--border); }
     .logo { font-size: 1.2rem; font-weight: 900; color: #fff; text-decoration: none; letter-spacing: -0.5px; }
     .logo span { color: var(--red); }
-    .cta-top { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700;
-      color: #fff; text-decoration: none; background: var(--red); padding: 0.55rem 1.1rem; border-radius: 100px;
-      transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(229,9,20,0.35); }
-    .cta-top:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(229,9,20,0.5); }
+    .cta-top { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 800;
+      color: #fff; text-decoration: none; background: var(--red); padding: 0.55rem 1.15rem; border-radius: 100px; box-shadow: 0 4px 16px rgba(229,9,20,0.4); }
 
-    main { max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
-    .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; }
-    .breadcrumb a { color: var(--muted); text-decoration: none; }
-    .breadcrumb a:hover { color: #fff; }
+    .hero { position: relative; overflow: hidden; padding-top: 70px; }
+    .hero-img { position: absolute; top: 0; right: 0; width: 58%; height: 100%; object-fit: cover; }
+    .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg) 34%, rgba(10,10,11,0.55) 58%, rgba(10,10,11,0.15) 100%); }
+    .hero::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, var(--bg), transparent 30%); }
+    .hero-inner { position: relative; z-index: 2; max-width: 1180px; margin: 0 auto; padding: 3rem 1.6rem 3.2rem; }
+    .hero-text { max-width: 600px; }
+    .breadcrumb { font-size: 0.82rem; color: rgba(255,255,255,0.55); margin-bottom: 1.4rem; }
+    .breadcrumb a { text-decoration: none; } .breadcrumb a:hover { color: #fff; }
+    .kicker { display: inline-block; font-size: 0.72rem; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #ff5a62; margin-bottom: 0.9rem; }
+    h1 { font-family: var(--serif); font-size: clamp(2.1rem, 4.8vw, 3.5rem); font-weight: 800; color: #fff; line-height: 1.06; letter-spacing: -1.5px; margin-bottom: 1.2rem; }
+    .hero .lead { font-size: 1.12rem; color: rgba(255,255,255,0.74); margin-bottom: 1.8rem; }
+    .hero .lead strong { color: #fff; }
+    .author { display: flex; align-items: center; gap: 0.8rem; }
+    .avatar { position: relative; width: 46px; height: 46px; border-radius: 50%; flex: none; overflow: hidden;
+      background: linear-gradient(135deg, var(--red), #7a0f23); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 0.9rem; }
+    .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .author .nm { font-weight: 700; color: #fff; font-size: 0.95rem; }
+    .author .role { color: var(--muted); font-size: 0.85rem; }
 
-    h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 900; color: #fff; line-height: 1.15;
-      letter-spacing: -1px; margin-bottom: 1rem; }
-    .lead { font-size: 1.12rem; color: rgba(255,255,255,0.7); margin-bottom: 2rem; }
-    h2 { font-size: 1.5rem; font-weight: 800; color: #fff; margin: 2.6rem 0 0.9rem; letter-spacing: -0.4px; }
-    p { margin-bottom: 1.1rem; }
-    ol, ul { margin: 0 0 1.1rem 1.3rem; }
-    li { margin-bottom: 0.6rem; }
-    strong { color: #fff; }
-    a.inline { color: #ff6b73; text-decoration: underline; text-underline-offset: 2px; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 2.5rem 1.6rem 4rem; display: grid; grid-template-columns: minmax(0,1fr) 312px; gap: 3.2rem; align-items: start; }
+    article { min-width: 0; }
+    article p { margin-bottom: 1.25rem; font-size: 1.05rem; }
+    article > p > strong { color: #fff; }
+    h2 { font-family: var(--serif); font-size: 1.75rem; font-weight: 700; color: #fff; margin: 2.8rem 0 1rem; letter-spacing: -0.5px; line-height: 1.2; scroll-margin-top: 90px; display: flex; align-items: center; gap: 0.6rem; }
+    h2 .em { font-size: 1.5rem; }
+    a.inline { color: #ff6b73; text-decoration: underline; text-underline-offset: 3px; }
 
-    .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 1.2rem 1.4rem; margin-bottom: 0.9rem; }
-    .step b { color: #fff; display: block; margin-bottom: 0.2rem; }
-    .step span { color: var(--muted); font-size: 0.95rem; }
+    .cta-h { display: flex; align-items: center; gap: 1.4rem; margin: 1.8rem 0 2.4rem;
+      background: radial-gradient(140% 140% at 0% 0%, rgba(229,9,20,0.26), rgba(120,15,35,0.06)); border: 1px solid rgba(229,9,20,0.42); border-radius: 20px; padding: 1.7rem 1.8rem; }
+    .cta-h .ic { flex: none; width: 64px; height: 64px; border-radius: 50%; background: rgba(229,9,20,0.18); border: 1px solid rgba(229,9,20,0.45); display: flex; align-items: center; justify-content: center; font-size: 1.7rem; }
+    .cta-h .tx { flex: 1; min-width: 0; }
+    .cta-h .tx h3 { font-family: var(--serif); font-size: 1.4rem; color: #fff; margin: 0 0 0.25rem; font-weight: 700; }
+    .cta-h .tx p { color: rgba(255,255,255,0.7); margin: 0; font-size: 0.98rem; }
+    .cta-h .act { flex: none; text-align: center; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--red); color: #fff; font-weight: 800; font-size: 1rem; padding: 0.9rem 1.9rem; border-radius: 100px; text-decoration: none; box-shadow: 0 8px 26px rgba(229,9,20,0.45); transition: transform .15s, box-shadow .15s; white-space: nowrap; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(229,9,20,0.6); }
+    .btn-mini { display: block; font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 0.55rem; }
 
-    .cta-box { background: linear-gradient(135deg, rgba(229,9,20,0.16), rgba(120,15,35,0.10));
-      border: 1px solid rgba(229,9,20,0.35); border-radius: 18px; padding: 1.8rem; margin: 2.4rem 0;
-      text-align: center; }
-    .cta-box h3 { margin-top: 0; font-size: 1.3rem; color: #fff; font-weight: 800; margin-bottom: 0.5rem; }
-    .cta-box p { color: rgba(255,255,255,0.7); margin-bottom: 1.3rem; }
-    .btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--red); color: #fff;
-      font-weight: 800; font-size: 1rem; padding: 0.9rem 2rem; border-radius: 100px; text-decoration: none;
-      box-shadow: 0 6px 22px rgba(229,9,20,0.4); transition: transform 0.15s, box-shadow 0.15s; }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(229,9,20,0.55); }
-    .btn-mini { font-size: 0.85rem; color: rgba(255,255,255,0.55); display: block; margin-top: 0.7rem; }
+    .method { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.9rem; margin: 1.2rem 0 1rem; }
+    .mcard { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.3rem; }
+    .mcard .n { width: 30px; height: 30px; border-radius: 50%; background: var(--red); color: #fff; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; }
+    .mcard b { color: #fff; display: block; margin-bottom: 0.25rem; font-size: 1rem; }
+    .mcard span { color: rgba(255,255,255,0.55); font-size: 0.9rem; line-height: 1.55; }
+
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; align-items: center; margin: 0.5rem 0 1rem; }
+    .split .img { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: linear-gradient(135deg, #2a0a12, #14141a); aspect-ratio: 4/3; }
+    .split .img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    blockquote { font-family: var(--serif); font-size: 1.45rem; line-height: 1.4; font-weight: 600; color: #fff; border-left: 3px solid var(--red); padding: 0.3rem 0 0.3rem 1.4rem; margin: 2.2rem 0; letter-spacing: -0.3px; }
+
+    .faq details { border: 1px solid var(--border); border-radius: 12px; padding: 0.2rem 1.1rem; margin-bottom: 0.7rem; background: var(--surface); }
+    .faq summary { cursor: pointer; font-weight: 700; color: #fff; padding: 0.9rem 0; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: '+'; color: var(--red); font-size: 1.4rem; font-weight: 400; }
+    .faq details[open] summary::after { content: '−'; }
+    .faq p { padding: 0 0 1rem; color: rgba(255,255,255,0.62); font-size: 0.96rem; margin: 0; }
+
+    .sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 1.4rem; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.3rem 1.4rem; }
+    .panel .ptitle { font-size: 1.02rem; font-weight: 800; color: #fff; margin-bottom: 1rem; }
+    .toc a { display: block; color: var(--muted); text-decoration: none; font-size: 0.92rem; padding: 0.4rem 0 0.4rem 0.9rem; border-left: 2px solid var(--border); transition: color .15s, border-color .15s; }
+    .toc a:hover { color: #fff; }
+    .toc a.active { color: #ff5a62; border-left-color: var(--red); font-weight: 600; }
+    .pop a { display: flex; gap: 0.8rem; align-items: center; text-decoration: none; margin-bottom: 0.9rem; }
+    .pop a:last-child { margin-bottom: 0; }
+    .pop .th { flex: none; width: 56px; height: 56px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg,#2a0a12,#14141a); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .pop .pt { color: rgba(255,255,255,0.85); font-size: 0.88rem; font-weight: 600; line-height: 1.3; }
+    .pop a:hover .pt { color: #fff; }
+    .side-cta { background: radial-gradient(120% 120% at 0% 0%, rgba(229,9,20,0.24), rgba(120,15,35,0.05)); border-color: rgba(229,9,20,0.4); text-align: center; }
+    .side-cta p { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin: 0.3rem 0 1rem; }
 
     .related { border-top: 1px solid var(--border); margin-top: 3rem; padding-top: 1.5rem; }
-    .related a { color: #ff6b73; text-decoration: none; font-weight: 600; }
-    .related a:hover { text-decoration: underline; }
+    .related .lbl { font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.6rem; }
+    .related a { color: #fff; text-decoration: none; font-weight: 700; font-size: 1.05rem; }
+    .related a:hover { color: #ff6b73; }
 
-    footer { border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center;
-      color: var(--muted); font-size: 0.85rem; }
-    footer a { color: var(--muted); text-decoration: none; }
-    footer a:hover { color: #fff; }
+    footer { border-top: 1px solid var(--border); padding: 2.2rem 1.5rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--muted); text-decoration: none; } footer a:hover { color: #fff; }
+
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; gap: 2.2rem; }
+      .sidebar { position: static; }
+      .hero-img { width: 100%; opacity: 0.4; }
+      .hero::after { background: linear-gradient(to right, var(--bg) 10%, rgba(10,10,11,0.55) 100%); }
+    }
+    @media (max-width: 620px) {
+      .cta-h { flex-direction: column; text-align: center; }
+      .split { grid-template-columns: 1fr; }
+      .method { grid-template-columns: 1fr; }
+      blockquote { font-size: 1.25rem; }
+    }
   </style>
 </head>
 <body>
-  <header>
+  <div id="progress"></div>
+  <header id="hdr">
     <a class="logo" href="/">CINEA<span>MATCH</span></a>
     <a class="cta-top" href="/">🎬 Trouver mon film →</a>
   </header>
 
-  <main>
-    <nav class="breadcrumb"><a href="/">Accueil</a> › <a href="/blog/">Guides</a> › Choisir un film en 30 secondes</nav>
-
-    <h1>Comment choisir un film en 30 secondes</h1>
-    <p class="lead">Tu connais la scène : une heure à faire défiler Netflix, et au final tu relances une série déjà vue. Le problème n'est pas le manque de films — c'est le <strong>trop-plein de choix</strong>. Voici une méthode simple pour décider en moins d'une minute, et un outil qui le fait pour toi.</p>
-
-    <div class="cta-box">
-      <h3>Tu veux juste un bon film, là, maintenant ?</h3>
-      <p>CineaMatch te pose quelques questions et te sort 3 films parfaits en 30 secondes.</p>
-      <a class="btn" href="/">Trouver mon film →</a>
-      <span class="btn-mini">Gratuit · sans inscription</span>
+  <section class="hero">
+    <img class="hero-img" alt="Choisir un film sans scroller pendant une heure" loading="eager"
+      src="https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?auto=format&fit=crop&w=1400&q=80"
+      onerror="this.style.display='none'">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <nav class="breadcrumb"><a href="/">Accueil</a> › <a href="/blog/">Guides</a> › Choisir un film en 30 secondes</nav>
+        <span class="kicker">Méthode</span>
+        <h1>Comment choisir un film en 30&nbsp;secondes</h1>
+        <p class="lead">Une heure à faire défiler Netflix, et au final tu relances une série déjà vue ? Le problème n'est pas le manque de films — c'est le <strong>trop-plein de choix</strong>. Voici la méthode pour décider vite.</p>
+        <div class="author">
+          <span class="avatar">ML<img alt="Marie L." loading="lazy"
+            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80"
+            onerror="this.style.display='none'"></span>
+          <div>
+            <div class="nm">Par Marie L. · <span style="color:var(--muted);font-weight:500">Rédactrice ciné</span></div>
+            <div class="role">Mis à jour le 11 juin 2026 · 3 min de lecture</div>
+          </div>
+        </div>
+      </div>
     </div>
+  </section>
 
-    <h2>Pourquoi on n'arrive pas à choisir</h2>
-    <p>C'est un phénomène connu : le <strong>paradoxe du choix</strong>. Plus on a d'options, plus décider devient difficile et moins on est satisfait de son choix. Les catalogues de streaming nous mettent des milliers de titres sous les yeux… et notre cerveau sature. Résultat : on procrastine, on scrolle, on abandonne.</p>
-    <p>La parade est contre-intuitive : <strong>réduire les options volontairement</strong> au lieu d'en explorer toujours plus.</p>
+  <div class="wrap">
+    <article>
+      <div class="cta-h">
+        <div class="ic">🎬</div>
+        <div class="tx">
+          <h3>Tu veux juste un bon film, maintenant ?</h3>
+          <p>CineaMatch te pose quelques questions et te sort 3 films parfaits en 30 secondes.</p>
+        </div>
+        <div class="act">
+          <a class="btn" href="/">Trouver mon film →</a>
+          <span class="btn-mini">Gratuit · sans inscription</span>
+        </div>
+      </div>
 
-    <h2>La méthode en 4 étapes</h2>
-    <div class="step"><b>1. Choisis une envie, pas un film</b><span>Avant d'ouvrir une appli, demande-toi ce que tu veux ressentir ce soir : rire, frisson, émotion, action, évasion. Une seule envie suffit à éliminer 90 % du catalogue.</span></div>
-    <div class="step"><b>2. Fixe une contrainte de durée</b><span>Tu te couches tôt ? Vise moins de 1h45. Tu as la soirée ? Autorise les grands formats. La durée tranche énormément de candidats.</span></div>
-    <div class="step"><b>3. Limite-toi à 3 options maximum</b><span>Trois films, pas trente. Avec 3 choix, ton cerveau décide en quelques secondes au lieu de se paralyser.</span></div>
-    <div class="step"><b>4. Décide en moins d'une minute (et assume)</b><span>Le meilleur film est celui que tu lances vraiment. Choisis, mets en pause les hésitations, et profite.</span></div>
+      <h2 id="pourquoi"><span class="em">🧠</span> Pourquoi on n'arrive pas à choisir</h2>
+      <div class="split">
+        <div>
+          <p>C'est un phénomène connu : le <strong>paradoxe du choix</strong>. Plus on a d'options, plus décider devient difficile et moins on est satisfait.</p>
+          <p>Les catalogues de streaming nous mettent des milliers de titres sous les yeux… et notre cerveau sature. Résultat : on procrastine, on scrolle, on abandonne.</p>
+        </div>
+        <div class="img"><img alt="Trop de choix sur les plateformes de streaming" loading="lazy"
+          src="https://images.unsplash.com/photo-1611162616475-46b635cb6868?auto=format&fit=crop&w=900&q=80"
+          onerror="this.parentElement.style.background='linear-gradient(135deg,#2a0a12,#14141a)';this.remove()"></div>
+      </div>
 
-    <h2>Le raccourci : laisser une IA trier pour toi</h2>
-    <p>Appliquer cette méthode à la main, c'est déjà mieux. Mais tu peux aussi <strong>déléguer le tri</strong>. C'est l'idée de CineaMatch : tu réponds à quelques questions sur ton envie, ta durée et tes plateformes, et l'IA te propose <strong>3 films faits pour toi</strong> — disponibles là où tu as un abonnement. Trente secondes, et tu regardes au lieu de chercher.</p>
-    <p>Tu cherches plutôt des idées toutes faites ? Va voir notre sélection <a class="inline" href="/blog/quel-film-regarder-ce-soir">Quel film regarder ce soir</a>, classée par envie.</p>
+      <blockquote>« La parade est contre-intuitive : réduire les options volontairement, au lieu d'en explorer toujours plus. »</blockquote>
 
-    <h2>Et pour choisir à deux ?</h2>
-    <p>Choisir seul est déjà dur ; à deux, c'est souvent pire. Le <strong>Mode Duo</strong> de CineaMatch règle ça : chacun répond de son côté, et l'IA trouve le film qui contente <strong>les deux</strong>. Plus de négociation sans fin sur le canapé.</p>
+      <h2 id="methode"><span class="em">🎯</span> La méthode en 4 étapes</h2>
+      <div class="method">
+        <div class="mcard"><div class="n">1</div><b>Choisis une envie, pas un film</b><span>Rire, frisson, émotion, action ? Une seule envie élimine 90 % du catalogue.</span></div>
+        <div class="mcard"><div class="n">2</div><b>Fixe une durée</b><span>Tu te couches tôt ? Moins de 1h45. La durée tranche énormément de candidats.</span></div>
+        <div class="mcard"><div class="n">3</div><b>Limite-toi à 3 options</b><span>Trois films, pas trente. Ton cerveau décide en quelques secondes.</span></div>
+        <div class="mcard"><div class="n">4</div><b>Décide et assume</b><span>Le meilleur film est celui que tu lances vraiment. Choisis et profite.</span></div>
+      </div>
 
-    <div class="cta-box">
-      <h3>Arrête de scroller. Regarde un bon film ce soir 🍿</h3>
-      <p>30 secondes de questions, 3 films parfaits. C'est tout.</p>
-      <a class="btn" href="/">Lancer ma recherche →</a>
-      <span class="btn-mini">Gratuit · 30 secondes · recommandé par l'IA</span>
-    </div>
+      <h2 id="ia"><span class="em">⚡</span> Le raccourci : laisser une IA trier pour toi</h2>
+      <p>Appliquer cette méthode à la main, c'est déjà mieux. Mais tu peux aussi <strong>déléguer le tri</strong>. C'est l'idée de CineaMatch : tu réponds à quelques questions sur ton envie, ta durée et tes plateformes, et l'IA te propose <strong>3 films faits pour toi</strong> — disponibles là où tu as un abonnement. Trente secondes, et tu regardes au lieu de chercher.</p>
+      <p>Tu cherches plutôt des idées toutes faites ? Va voir notre sélection <a class="inline" href="/blog/quel-film-regarder-ce-soir">Quel film regarder ce soir</a>, classée par envie.</p>
 
-    <div class="related">
-      <p>À lire aussi : <a href="/blog/quel-film-regarder-ce-soir">Quel film regarder ce soir ? Nos idées par envie</a></p>
-    </div>
-  </main>
+      <div class="cta-h">
+        <div class="ic">🍿</div>
+        <div class="tx">
+          <h3>Arrête de scroller. Regarde un bon film ce soir.</h3>
+          <p>30 secondes de questions, 3 films parfaits. C'est tout.</p>
+        </div>
+        <div class="act"><a class="btn" href="/">Lancer ma recherche →</a></div>
+      </div>
+
+      <h2 id="duo"><span class="em">💑</span> Et pour choisir à deux ?</h2>
+      <p>Choisir seul est déjà dur ; à deux, c'est souvent pire. Le <strong>Mode Duo</strong> de CineaMatch règle ça : chacun répond de son côté, et l'IA trouve le film qui contente <strong>les deux</strong>. Plus de négociation sans fin sur le canapé.</p>
+
+      <h2 id="faq"><span class="em">❓</span> Questions fréquentes</h2>
+      <div class="faq">
+        <details open><summary>Comment choisir un film rapidement ?</summary><p>Fixe une envie et une durée, limite-toi à 3 options, et décide en moins d'une minute. Un outil comme CineaMatch fait ce tri pour toi automatiquement.</p></details>
+        <details><summary>Pourquoi je n'arrive jamais à me décider ?</summary><p>C'est le paradoxe du choix : trop d'options paralyse. La solution est de réduire volontairement les possibilités au lieu d'explorer tout le catalogue.</p></details>
+        <details><summary>Existe-t-il un outil pour choisir un film à ma place ?</summary><p>Oui : CineaMatch analyse ton envie du moment et tes plateformes, puis te propose 3 films parfaits en 30 secondes, gratuitement.</p></details>
+      </div>
+
+      <div class="related">
+        <div class="lbl">À lire aussi</div>
+        <a href="/blog/quel-film-regarder-ce-soir">Quel film regarder ce soir ? Nos idées par envie →</a>
+      </div>
+    </article>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="ptitle">Dans cet article</div>
+        <nav class="toc" id="toc">
+          <a href="#pourquoi">Pourquoi on n'arrive pas à choisir</a>
+          <a href="#methode">La méthode en 4 étapes</a>
+          <a href="#ia">Le raccourci : l'IA trie pour toi</a>
+          <a href="#duo">Et pour choisir à deux ?</a>
+          <a href="#faq">Questions fréquentes</a>
+        </nav>
+      </div>
+
+      <div class="panel">
+        <div class="ptitle">Articles populaires</div>
+        <div class="pop">
+          <a href="/blog/quel-film-regarder-ce-soir"><span class="th">🍿</span><span class="pt">Quel film regarder ce soir ?</span></a>
+          <a href="/blog/choisir-un-film-en-30-secondes"><span class="th">⏱️</span><span class="pt">Choisir un film en 30 secondes</span></a>
+          <a href="/blog/"><span class="th">🎬</span><span class="pt">Tous nos guides ciné</span></a>
+        </div>
+      </div>
+
+      <div class="panel side-cta">
+        <div class="ptitle">Ton film en 30 secondes 🎬</div>
+        <p>Réponds à quelques questions, l'IA fait le reste.</p>
+        <a class="btn" href="/">Essayer gratuitement →</a>
+      </div>
+    </aside>
+  </div>
 
   <footer>
     © 2026 CineaMatch IA · <a href="/">Accueil</a> · <a href="/blog/">Guides</a> · <a href="/legal">Mentions légales</a>
   </footer>
+
+  <script>
+    const hdr = document.getElementById('hdr'), prog = document.getElementById('progress');
+    const links = [...document.querySelectorAll('#toc a')];
+    const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+    const onScroll = () => {
+      hdr.classList.toggle('scrolled', window.scrollY > 20);
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      prog.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+      let idx = 0;
+      sections.forEach((s, i) => { if (s && s.getBoundingClientRect().top <= 140) idx = i; });
+      links.forEach((a, i) => a.classList.toggle('active', i === idx));
+    };
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  </script>
 </body>
 </html>
