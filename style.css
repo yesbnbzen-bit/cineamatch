@@ -7909,7 +7909,12 @@ html.duo-link #duo-welcome {
         inset: 0;
         z-index: 50;                          /* sous la navbar (z-index plus élevé) */
         overflow-y: auto;
+        overflow-x: hidden;                   /* verrouille l'axe horizontal : empêche la
+                                                 page de "glisser" de gauche à droite en
+                                                 diagonale si un élément dépasse la largeur */
         -webkit-overflow-scrolling: touch;
+        width: 100%;
+        max-width: 100vw;
         padding-top: calc(120px + env(safe-area-inset-top, 0px));
         padding-bottom: max(env(safe-area-inset-bottom, 0px), 40px);
         padding-left: 16px;
