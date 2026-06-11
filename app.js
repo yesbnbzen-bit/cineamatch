@@ -2918,11 +2918,7 @@ const App = {
                     <p class="synopsis-text" id="${synopsisId}"
                        data-full="${synopsis.replace(/"/g,'&quot;')}"
                        data-short="${shortSynopsis.replace(/"/g,'&quot;')}">${shortSynopsis}</p>
-                    <button class="synopsis-toggle" onclick="(function(btn){
-                        const p=document.getElementById('${synopsisId}');
-                        if(btn.textContent===t('q.readmore')){p.textContent=p.dataset.full;btn.textContent=t('q.readless');}
-                        else{p.textContent=p.dataset.short+'…';btn.textContent=t('q.readmore');}
-                    })(this)">${t('q.readmore')}</button>
+                    <button class="synopsis-toggle" type="button" data-synopsis-id="${synopsisId}">${t('q.readmore')}</button>
                   </div>`
                 : `<div class="synopsis-box"><p class="synopsis-text${isPlaceholder ? ' synopsis-placeholder' : ''}">${synopsis}</p></div>`;
 
@@ -2963,7 +2959,7 @@ const App = {
             // Badge top-left supprimé (#2/#3 MATCH retirés)
             const _topBadge = '';
             card.innerHTML = `
-                <div class="poster-container" onclick="window.open('https://www.themoviedb.org/movie/${m.id}', '_blank')">
+                <div class="poster-container" data-tmdb-id="${m.id}">
                     <div class="poster-bg" style="background-image:url('https://image.tmdb.org/t/p/w500${m.poster_path}')"></div>
                     <div class="poster-glow"></div>
                     <img src="https://image.tmdb.org/t/p/w500${m.poster_path}" alt="${escapeHtml(m.title)}"
@@ -2997,11 +2993,7 @@ const App = {
                     </div>
                     ${actors ? `<p class="actors-row">🎬 ${actors}</p>` : ''}
                     <!-- Bouton Voir plus (mobile uniquement) -->
-                    <button class="card-expand-btn" onclick="(function(btn){
-                        const card=btn.closest('.movie-card');
-                        const isExp=card.classList.toggle('expanded');
-                        btn.innerHTML=isExp?t('btn.collapse'):t('btn.expand');
-                    })(this)">${t('btn.expand')}</button>
+                    <button class="card-expand-btn" type="button">${t('btn.expand')}</button>
                     <!-- Détails dépliables -->
                     <div class="card-details">
                         ${synopsisHtml}
@@ -3041,6 +3033,43 @@ const App = {
                     e.stopPropagation();
                     e.preventDefault();
                     App.openTrailer(_trBtn.dataset.trailerSrc, _trBtn.dataset.trailerYt);
+                });
+            }
+
+            // ── Poster → fiche TMDB (écouteur JS + garde) ──
+            // L'onclick en ligne est retiré : sur iOS, un tap sur un contrôle interne
+            // pouvait "remonter" et ouvrir TMDB. On n'ouvre TMDB que si le tap vise
+            // vraiment le poster, jamais un bouton/lien/icône.
+            const _poster = card.querySelector('.poster-container[data-tmdb-id]');
+            if (_poster) {
+                _poster.addEventListener('click', (e) => {
+                    if (e.target.closest('button, a, .watchlist-btn, .btn-trailer, svg')) return;
+                    window.open('https://www.themoviedb.org/movie/' + _poster.dataset.tmdbId, '_blank');
+                });
+            }
+
+            // ── Bouton « Voir plus » → déplier/replier la fiche (mobile) ──
+            const _expandBtn = card.querySelector('.card-expand-btn');
+            if (_expandBtn) {
+                _expandBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const isExp = card.classList.toggle('expanded');
+                    _expandBtn.innerHTML = isExp ? t('btn.collapse') : t('btn.expand');
+                });
+            }
+
+            // ── Bouton synopsis « lire plus / moins » ──
+            const _synBtn = card.querySelector('.synopsis-toggle[data-synopsis-id]');
+            if (_synBtn) {
+                _synBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const p = document.getElementById(_synBtn.dataset.synopsisId);
+                    if (!p) return;
+                    const showingFull = _synBtn.textContent === t('q.readless');
+                    if (showingFull) { p.textContent = p.dataset.short + '…'; _synBtn.textContent = t('q.readmore'); }
+                    else { p.textContent = p.dataset.full; _synBtn.textContent = t('q.readless'); }
                 });
             }
 

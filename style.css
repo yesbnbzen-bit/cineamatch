@@ -7925,6 +7925,13 @@ html.duo-link #duo-welcome {
         box-sizing: border-box;
     }
 
+    /* Le footer légal est en dehors de #results ; comme #results est fixe plein écran
+       sur mobile, le footer restait visible DERRIÈRE les fiches (effet "fantôme").
+       On le masque tant que la page résultats est affichée. */
+    body:has(#results.active) #site-footer {
+        display: none !important;
+    }
+
     #results > h2 {
         font-size: 1.4rem !important;
         font-weight: 800;
