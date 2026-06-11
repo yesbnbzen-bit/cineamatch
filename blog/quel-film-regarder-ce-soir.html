@@ -138,10 +138,11 @@
     .poster-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin: 0.6rem 0 1rem; }
     .poster { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: transform .15s, border-color .15s; }
     .poster:hover { transform: translateY(-3px); border-color: rgba(229,9,20,0.5); }
-    .poster .tile { aspect-ratio: 2/3; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0.7rem; }
-    .poster .tile .ic { font-size: 1.5rem; opacity: 0.85; margin-bottom: 0.35rem; }
-    .poster .tile .pt { font-weight: 800; color: #fff; font-size: 0.88rem; line-height: 1.25; }
-    .poster .info { padding: 0.55rem 0.6rem 0.7rem; border-top: 1px solid var(--border); }
+    .poster .tile { aspect-ratio: 2/3; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0.7rem; background-size: cover; background-position: center; transition: background-image .3s; }
+    .poster .tile .ic { font-size: 1.6rem; opacity: 0.7; }
+    .poster .tile.has-poster .ic { display: none; }
+    .poster .info { padding: 0.6rem 0.65rem 0.75rem; border-top: 1px solid var(--border); }
+    .poster .info .pt { font-weight: 800; color: #fff; font-size: 0.85rem; line-height: 1.25; margin-bottom: 0.2rem; }
     .poster .rate { color: #ffc83d; font-size: 0.76rem; font-weight: 700; }
     .poster .desc { color: var(--muted); font-size: 0.72rem; margin-top: 0.1rem; line-height: 1.3; }
     .t-com { background: linear-gradient(150deg,#3a2a07,#1a1407); } .t-thr { background: linear-gradient(150deg,#0a1f2e,#0a0f17); }
@@ -266,30 +267,30 @@
 
       <h3><span class="em">😂</span> Envie de rire (comédie)</h3>
       <div class="poster-grid">
-        <div class="poster"><div class="tile t-com"><div class="ic">🎬</div><div class="pt">The Grand Budapest Hotel</div></div><div class="info"><div class="rate">★ 8.1</div><div class="desc">Comédie élégante et loufoque.</div></div></div>
-        <div class="poster"><div class="tile t-com"><div class="ic">🎬</div><div class="pt">Intouchables</div></div><div class="info"><div class="rate">★ 8.5</div><div class="desc">Le feel-good français imparable.</div></div></div>
-        <div class="poster"><div class="tile t-com"><div class="ic">🎬</div><div class="pt">Game Night</div></div><div class="info"><div class="rate">★ 7.0</div><div class="desc">Comédie + suspense, idéale à plusieurs.</div></div></div>
+        <div class="poster" data-q="The Grand Budapest Hotel" data-year="2014"><div class="tile t-com"><span class="ic">🎬</span></div><div class="info"><div class="pt">The Grand Budapest Hotel</div><div class="rate">★ 8.1</div><div class="desc">Comédie élégante et loufoque.</div></div></div>
+        <div class="poster" data-q="Intouchables" data-year="2011"><div class="tile t-com"><span class="ic">🎬</span></div><div class="info"><div class="pt">Intouchables</div><div class="rate">★ 8.5</div><div class="desc">Le feel-good français imparable.</div></div></div>
+        <div class="poster" data-q="Game Night" data-year="2018"><div class="tile t-com"><span class="ic">🎬</span></div><div class="info"><div class="pt">Game Night</div><div class="rate">★ 7.0</div><div class="desc">Comédie + suspense, à plusieurs.</div></div></div>
       </div>
 
       <h3><span class="em">🕵️</span> Envie de frisson (thriller / suspense)</h3>
       <div class="poster-grid">
-        <div class="poster"><div class="tile t-thr"><div class="ic">🎬</div><div class="pt">Parasite</div></div><div class="info"><div class="rate">★ 8.5</div><div class="desc">Tension sociale magistrale.</div></div></div>
-        <div class="poster"><div class="tile t-thr"><div class="ic">🎬</div><div class="pt">Gone Girl</div></div><div class="info"><div class="rate">★ 8.1</div><div class="desc">Thriller manipulateur et prenant.</div></div></div>
-        <div class="poster"><div class="tile t-thr"><div class="ic">🎬</div><div class="pt">À couteaux tirés</div></div><div class="info"><div class="rate">★ 7.9</div><div class="desc">Enquête maligne et fun, pour tous.</div></div></div>
+        <div class="poster" data-q="Parasite" data-year="2019"><div class="tile t-thr"><span class="ic">🎬</span></div><div class="info"><div class="pt">Parasite</div><div class="rate">★ 8.5</div><div class="desc">Tension sociale magistrale.</div></div></div>
+        <div class="poster" data-q="Gone Girl" data-year="2014"><div class="tile t-thr"><span class="ic">🎬</span></div><div class="info"><div class="pt">Gone Girl</div><div class="rate">★ 8.1</div><div class="desc">Thriller manipulateur et prenant.</div></div></div>
+        <div class="poster" data-q="Knives Out" data-year="2019"><div class="tile t-thr"><span class="ic">🎬</span></div><div class="info"><div class="pt">À couteaux tirés</div><div class="rate">★ 7.9</div><div class="desc">Enquête maligne et fun, pour tous.</div></div></div>
       </div>
 
       <h3><span class="em">💕</span> Envie d'émotion (drame / inspirant)</h3>
       <div class="poster-grid">
-        <div class="poster"><div class="tile t-emo"><div class="ic">🎬</div><div class="pt">Forrest Gump</div></div><div class="info"><div class="rate">★ 8.8</div><div class="desc">Une valeur sûre qui émeut.</div></div></div>
-        <div class="poster"><div class="tile t-emo"><div class="ic">🎬</div><div class="pt">La La Land</div></div><div class="info"><div class="rate">★ 8.0</div><div class="desc">Romantique, parfait en couple.</div></div></div>
-        <div class="poster"><div class="tile t-emo"><div class="ic">🎬</div><div class="pt">Green Book</div></div><div class="info"><div class="rate">★ 8.2</div><div class="desc">Histoire vraie touchante.</div></div></div>
+        <div class="poster" data-q="Forrest Gump" data-year="1994"><div class="tile t-emo"><span class="ic">🎬</span></div><div class="info"><div class="pt">Forrest Gump</div><div class="rate">★ 8.8</div><div class="desc">Une valeur sûre qui émeut.</div></div></div>
+        <div class="poster" data-q="La La Land" data-year="2016"><div class="tile t-emo"><span class="ic">🎬</span></div><div class="info"><div class="pt">La La Land</div><div class="rate">★ 8.0</div><div class="desc">Romantique, parfait en couple.</div></div></div>
+        <div class="poster" data-q="Green Book" data-year="2018"><div class="tile t-emo"><span class="ic">🎬</span></div><div class="info"><div class="pt">Green Book</div><div class="rate">★ 8.2</div><div class="desc">Histoire vraie touchante.</div></div></div>
       </div>
 
       <h3><span class="em">⚡</span> Envie d'action / aventure</h3>
       <div class="poster-grid">
-        <div class="poster"><div class="tile t-act"><div class="ic">🎬</div><div class="pt">Mad Max: Fury Road</div></div><div class="info"><div class="rate">★ 8.1</div><div class="desc">Spectacle non-stop.</div></div></div>
-        <div class="poster"><div class="tile t-act"><div class="ic">🎬</div><div class="pt">Top Gun: Maverick</div></div><div class="info"><div class="rate">★ 8.2</div><div class="desc">Grand divertissement.</div></div></div>
-        <div class="poster"><div class="tile t-act"><div class="ic">🎬</div><div class="pt">Dune</div></div><div class="info"><div class="rate">★ 8.0</div><div class="desc">SF épique et immersive.</div></div></div>
+        <div class="poster" data-q="Mad Max Fury Road" data-year="2015"><div class="tile t-act"><span class="ic">🎬</span></div><div class="info"><div class="pt">Mad Max: Fury Road</div><div class="rate">★ 8.1</div><div class="desc">Spectacle non-stop.</div></div></div>
+        <div class="poster" data-q="Top Gun Maverick" data-year="2022"><div class="tile t-act"><span class="ic">🎬</span></div><div class="info"><div class="pt">Top Gun: Maverick</div><div class="rate">★ 8.2</div><div class="desc">Grand divertissement.</div></div></div>
+        <div class="poster" data-q="Dune" data-year="2021"><div class="tile t-act"><span class="ic">🎬</span></div><div class="info"><div class="pt">Dune</div><div class="rate">★ 8.0</div><div class="desc">SF épique et immersive.</div></div></div>
       </div>
 
       <div class="cta-h">
@@ -373,6 +374,27 @@
       links.forEach((a, i) => a.classList.toggle('active', i === idx));
     };
     window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+    // ── Vraies affiches de films via le proxy TMDB (même origine, comme l'appli) ──
+    // Si la page est servie depuis cineamatch.com, /api/tmdb répond et on injecte les
+    // vraies affiches. En local/échec, la tuile en dégradé reste (repli propre).
+    (async () => {
+      const cards = document.querySelectorAll('.poster[data-q]');
+      await Promise.all([...cards].map(async card => {
+        try {
+          const q = encodeURIComponent(card.dataset.q);
+          const yr = card.dataset.year ? '&year=' + card.dataset.year : '';
+          const r = await fetch(`/api/tmdb?path=/search/movie&query=${q}${yr}&language=fr-FR`);
+          if (!r.ok) return;
+          const d = await r.json();
+          const m = (d.results || []).find(x => x.poster_path);
+          if (!m) return;
+          const tile = card.querySelector('.tile');
+          tile.style.backgroundImage = `url(https://image.tmdb.org/t/p/w342${m.poster_path})`;
+          tile.classList.add('has-poster');
+        } catch (e) { /* repli dégradé */ }
+      }));
+    })();
   </script>
 </body>
 </html>
