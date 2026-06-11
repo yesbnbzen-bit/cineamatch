@@ -7903,33 +7903,15 @@ html.duo-link #duo-welcome {
        8. RÉSULTATS
     ───────────────────────────────────────────── */
     #results.active {
-        /* Conteneur fixe + scroll interne (comme le questionnaire) → démarre TOUJOURS
-           en haut sur iOS, sans dépendre du scroll de la fenêtre (qui restait bloqué). */
-        position: fixed;
-        inset: 0;
-        z-index: 50;                          /* sous la navbar (z-index plus élevé) */
-        overflow-y: auto;
-        overflow-x: hidden;                   /* verrouille l'axe horizontal : empêche la
-                                                 page de "glisser" de gauche à droite en
-                                                 diagonale si un élément dépasse la largeur */
-        -webkit-overflow-scrolling: touch;
-        width: 100%;
-        max-width: 100vw;
+        /* FLUX NORMAL : la page résultats scrolle avec la FENÊTRE, comme toutes les autres
+           vues. (Avant : position:fixed + scroll interne → la barre ne détectait plus le
+           scroll, les boutons/logo devenaient capricieux et le footer passait derrière.
+           Le retour en haut est géré par _forceTop côté JS, fiable depuis que le gel du
+           fond duo est corrigé.) */
         padding-top: calc(120px + env(safe-area-inset-top, 0px));
-        padding-bottom: max(env(safe-area-inset-bottom, 0px), 40px);
-        padding-left: 16px;
-        padding-right: 16px;
-        justify-content: flex-start;
+        padding-bottom: 40px;
         align-items: stretch;
-        min-height: unset;
-        box-sizing: border-box;
-    }
-
-    /* Le footer légal est en dehors de #results ; comme #results est fixe plein écran
-       sur mobile, le footer restait visible DERRIÈRE les fiches (effet "fantôme").
-       On le masque tant que la page résultats est affichée. */
-    body:has(#results.active) #site-footer {
-        display: none !important;
+        overflow-x: hidden;   /* sécurité : pas de débordement/glissement horizontal */
     }
 
     #results > h2 {

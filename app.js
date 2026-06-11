@@ -3384,7 +3384,8 @@ const App = {
         const _prefillName = (user) => {
             if (!nameInput || nameInput.value.trim()) return; // déjà rempli
             const n = _getDisplayName(user);
-            if (n) { nameInput.value = n; nameInput.focus(); }
+            // Pas de .focus() ici : focaliser un champ au chargement déclenche le zoom iOS.
+            if (n) { nameInput.value = n; }
         };
 
         // Tentative immédiate (user déjà connecté)
