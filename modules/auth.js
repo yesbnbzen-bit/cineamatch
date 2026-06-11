@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=13';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=14';
 import { store } from '../state/store.js?v=44';
 import { t, applyTranslations } from '../config/i18n.js?v=351';
 
@@ -63,7 +63,15 @@ export const authUI = {
         }
 
         // Écouter les changements d'état auth
-        authService.onAuthChange(async (user) => {
+        authService.onAuthChange(async (user, event) => {
+            // Lien de réinitialisation cliqué → Supabase établit une session de récupération
+            // et émet PASSWORD_RECOVERY. On affiche alors le formulaire « nouveau mot de passe »
+            // (à ce moment la session existe → updateUser fonctionne).
+            if (event === 'PASSWORD_RECOVERY') {
+                this.showModal();
+                setTimeout(() => this.showResetPassword(), 200);
+                return;
+            }
             if (user) {
                 // ANTI-FLICKER : Supabase rafraîchit la session à chaque retour sur l'onglet
                 // (TOKEN_REFRESHED) et rappelle ce callback. Si c'est le MÊME utilisateur déjà
@@ -893,12 +901,24 @@ export const authUI = {
             <div style="padding:1.5rem 0">
                 <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem" data-i18n="auth.reset.title">Nouveau mot de passe</h3>
                 <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem" data-i18n="auth.reset.sub">Choisis un nouveau mot de passe pour ton compte.</p>
-                <input type="password" id="reset-password" placeholder="Nouveau mot de passe (6 car. min)" style="width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:0.75rem">
+                <div style="position:relative;margin-bottom:0.75rem;">
+                    <input type="password" id="reset-password" placeholder="Nouveau mot de passe (6 car. min)" style="width:100%;padding:0.8rem 2.7rem 0.8rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:16px;font-family:inherit;outline:none;box-sizing:border-box;">
+                    <button type="button" id="reset-eye" aria-label="Afficher le mot de passe" style="position:absolute;right:0.55rem;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.15rem;padding:0.3rem;line-height:1;">👁</button>
+                </div>
                 <p id="reset-msg" style="font-size:0.82rem;display:none;margin-bottom:0.75rem"></p>
                 <button id="btn-reset-send" class="btn-primary" style="width:100%" data-i18n="auth.reset.btn">Mettre à jour</button>
             </div>
         `;
         container?.appendChild(wrap);
+
+        // Œil afficher / masquer
+        document.getElementById('reset-eye')?.addEventListener('click', () => {
+            const inp = document.getElementById('reset-password');
+            const eye = document.getElementById('reset-eye');
+            if (!inp) return;
+            if (inp.type === 'password') { inp.type = 'text'; eye.textContent = '🙈'; }
+            else { inp.type = 'password'; eye.textContent = '👁'; }
+        });
 
         document.getElementById('btn-reset-send')?.addEventListener('click', async () => {
             const pwd = document.getElementById('reset-password')?.value;

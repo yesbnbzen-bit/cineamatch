@@ -107,8 +107,17 @@ export const authService = {
         if (error) throw error;
     },
 
-    // Changer le mot de passe (utilisateur déjà connecté)
+    // Changer le mot de passe (utilisateur connecté OU en récupération via lien email)
     async updatePassword(newPassword) {
+        // Si aucune session active (cas reset depuis le lien email), on tente d'établir
+        // la session de récupération à partir de l'URL (flux PKCE : ?code=...).
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            try {
+                const code = new URL(window.location.href).searchParams.get('code');
+                if (code) await supabase.auth.exchangeCodeForSession(code);
+            } catch (e) { /* on laisse updateUser remonter l'erreur si besoin */ }
+        }
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) throw error;
     },
@@ -123,8 +132,8 @@ export const authService = {
 
     // Écouter les changements d'état (connecté / déconnecté)
     onAuthChange(callback) {
-        return supabase.auth.onAuthStateChange((_event, session) => {
-            callback(session?.user || null);
+        return supabase.auth.onAuthStateChange((event, session) => {
+            callback(session?.user || null, event);
         });
     }
 };
