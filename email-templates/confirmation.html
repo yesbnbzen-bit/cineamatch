@@ -12,7 +12,7 @@
       </td></tr>
       <!-- Body -->
       <tr><td style="padding:36px 32px 8px;text-align:center;">
-        <h1 style="margin:0 0 14px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;">Bienvenue 🎬</h1>
+        <h1 style="margin:0 0 14px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;">Bienvenue {{ if .Data.name }}{{ .Data.name }} {{ end }}🎬</h1>
         <p style="margin:0 0 26px;font-size:16px;line-height:1.65;color:#444444;">
           Voici ton code de confirmation. Saisis-le sur CineaMatch pour activer ton compte et découvrir ton film parfait.
         </p>
@@ -20,7 +20,7 @@
         <div style="display:inline-block;background:#fbeaec;border:1px solid #f3c2c7;border-radius:14px;padding:18px 32px;margin:0 0 14px;">
           <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:#E50914;">{{ .Token }}</span>
         </div>
-        <p style="margin:0 0 22px;font-size:13px;color:#999999;">Ce code expire dans 1 heure.</p>
+        <p style="margin:0 0 22px;font-size:13px;color:#999999;">Ce code expire dans 10 minutes.</p>
         <p style="margin:0 0 6px;font-size:13px;line-height:1.6;color:#aaaaaa;">
           Tu peux aussi <a href="{{ .ConfirmationURL }}" style="color:#E50914;text-decoration:underline;">cliquer ici pour confirmer directement</a>.
         </p>

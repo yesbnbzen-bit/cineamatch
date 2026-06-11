@@ -724,11 +724,11 @@ export const authUI = {
                 <div style="font-size:2.2rem;margin-bottom:0.6rem;">📩</div>
                 <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:0.35rem;">Entre ton code</h3>
                 <p style="font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:1.3rem;line-height:1.5;">
-                    On a envoyé un code à 6 chiffres à<br><strong style="color:#fff;">${email}</strong>
+                    On a envoyé ton code de confirmation à<br><strong style="color:#fff;">${email}</strong>
                 </p>
-                <input type="text" id="otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
-                    placeholder="● ● ● ● ● ●"
-                    style="width:100%;padding:0.9rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.18);border-radius:12px;color:#fff;font-size:1.5rem;font-weight:700;letter-spacing:0.5rem;text-align:center;font-family:inherit;outline:none;margin-bottom:0.9rem;">
+                <input type="text" id="otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"
+                    placeholder="Ton code"
+                    style="width:100%;padding:0.9rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.18);border-radius:12px;color:#fff;font-size:1.35rem;font-weight:700;letter-spacing:0.35rem;text-align:center;font-family:inherit;outline:none;margin-bottom:0.9rem;">
                 <p id="otp-msg" style="font-size:0.82rem;display:none;margin-bottom:0.8rem;"></p>
                 <button id="btn-otp-verify" class="btn-primary" style="width:100%;">Valider mon compte</button>
                 <button id="btn-otp-resend" style="background:none;border:none;color:rgba(255,255,255,0.55);font-size:0.82rem;cursor:pointer;font-family:inherit;margin-top:1rem;padding:0;">Je n'ai rien reçu — renvoyer le code</button>
