@@ -125,19 +125,30 @@ export const authService = {
 
     // Changer le mot de passe (utilisateur connecté OU en récupération via lien email)
     async updatePassword(newPassword) {
-        // Si aucune session active (cas reset depuis le lien email), on tente d'établir
-        // la session de récupération à partir de l'URL (flux PKCE : ?code=...).
-        const { data: { session } } = await supabase.auth.getSession();
+        // Anti-scanner : on échange le token_hash du lien email ICI (au clic utilisateur),
+        // pas au chargement de la page. C'est ce clic qui consomme le jeton à usage unique,
+        // donc les scanners email (Outlook/Defender) ne peuvent pas le griller avant.
+        let { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-            // Filet de sécurité : si la session de récupération n'a pas été établie au
-            // chargement, on la (re)tente ici à partir des paramètres du lien email.
             const params = new URL(window.location.href).searchParams;
             const tokenHash = params.get('token_hash');
             const code = params.get('code');
             try {
-                if (tokenHash) await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash });
-                else if (code) await supabase.auth.exchangeCodeForSession(code);
-            } catch (e) { /* on laisse updateUser remonter l'erreur si besoin */ }
+                if (tokenHash) {
+                    const { error: vErr } = await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash });
+                    if (vErr) throw vErr;
+                } else if (code) {
+                    const { error: cErr } = await supabase.auth.exchangeCodeForSession(code);
+                    if (cErr) throw cErr;
+                }
+            } catch (e) {
+                // Jeton expiré / déjà utilisé → message clair pour redemander un lien.
+                const err = new Error('LINK_EXPIRED');
+                err.code = 'LINK_EXPIRED';
+                throw err;
+            }
+            session = (await supabase.auth.getSession()).data.session;
+            if (!session) { const err = new Error('LINK_EXPIRED'); err.code = 'LINK_EXPIRED'; throw err; }
         }
         const { error } = await supabase.auth.updateUser({ password: newPassword });
         if (error) throw error;

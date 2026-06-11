@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=16';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=17';
 import { store } from '../state/store.js?v=44';
 import { t, applyTranslations } from '../config/i18n.js?v=352';
 
@@ -121,29 +121,15 @@ export const authUI = {
         document.getElementById('btn-google')?.addEventListener('click', () => this.handleGoogle());
 
         // Reset mot de passe depuis le lien email (?reset=1&token_hash=...&type=recovery)
+        // IMPORTANT (anti-scanner) : on NE vérifie PAS le token_hash au chargement.
+        // Les scanners de sécurité email (Outlook / Microsoft Defender Safe Links) ouvrent
+        // automatiquement les liens et exécutent parfois le JS → ils "grilleraient" un token
+        // vérifié dès l'ouverture (jeton à usage unique). On se contente d'afficher le
+        // formulaire ; le token n'est échangé QUE lorsque l'utilisateur clique sur
+        // « Mettre à jour » (action humaine que les scanners ne déclenchent pas).
+        // → voir authService.updatePassword (échange du token_hash au moment de la soumission).
         const _params = new URLSearchParams(window.location.search);
         if (_params.get('reset') === '1' || _params.get('type') === 'recovery') {
-            const tokenHash = _params.get('token_hash');
-            if (tokenHash) {
-                // Flux LIEN robuste : on échange le token_hash contre une session de
-                // récupération AVANT que l'utilisateur saisisse son nouveau mot de passe.
-                try {
-                    await authService.verifyRecoveryToken(tokenHash);
-                    // On retire le token sensible de la barre d'adresse (mais on garde ?reset=1).
-                    history.replaceState({}, '', '/?reset=1');
-                    // La session de récupération est active → updateUser fonctionnera.
-                    // (PASSWORD_RECOVERY est aussi émis et affiche le formulaire.)
-                } catch (e) {
-                    // Lien expiré ou déjà utilisé → on renvoie vers « mot de passe oublié ».
-                    this.showModal();
-                    setTimeout(() => {
-                        this.showForgotPassword();
-                        const m = document.getElementById('forgot-msg');
-                        if (m) { m.textContent = '⏳ Ce lien a expiré ou a déjà été utilisé. Redemande un lien ci-dessous.'; m.style.color = '#ffb44d'; m.style.display = 'block'; }
-                    }, 250);
-                    return;
-                }
-            }
             this.showModal();
             setTimeout(() => this.showResetPassword(), 300);
         }
@@ -951,14 +937,28 @@ export const authUI = {
             btn.textContent = '⏳';
             try {
                 await authService.updatePassword(pwd);
-                if (msg) { msg.textContent = t('auth.reset.ok'); msg.style.color = '#46d369'; msg.style.display = 'block'; }
+                if (msg) { msg.textContent = '✅ Mot de passe mis à jour ! Connexion en cours…'; msg.style.color = '#46d369'; msg.style.display = 'block'; }
                 btn.textContent = '✓';
-                // Nettoyer l'URL
+                // Nettoyer l'URL puis recharger : la session de récupération devient une
+                // session connectée normale → l'utilisateur arrive directement connecté.
                 window.history.replaceState({}, '', '/');
+                setTimeout(() => window.location.replace('/'), 1200);
             } catch(err) {
-                if (msg) { msg.textContent = err.message; msg.style.color = '#E50914'; msg.style.display = 'block'; }
                 btn.disabled = false;
                 btn.textContent = t('auth.reset.btn');
+                if (err && err.code === 'LINK_EXPIRED') {
+                    // Lien grillé (jeton expiré/déjà utilisé) → on bascule sur « mot de passe
+                    // oublié » pour redemander un lien neuf en un clic.
+                    if (msg) { msg.textContent = '⏳ Ce lien a expiré ou a déjà été utilisé.'; msg.style.color = '#ffb44d'; msg.style.display = 'block'; }
+                    setTimeout(() => {
+                        document.getElementById('reset-form-wrap')?.remove();
+                        this.showForgotPassword();
+                        const fm = document.getElementById('forgot-msg');
+                        if (fm) { fm.textContent = 'Ton lien a expiré. Redemande-en un neuf ci-dessous (ouvre-le sans passer par Outlook si possible).'; fm.style.color = '#ffb44d'; fm.style.display = 'block'; }
+                    }, 1400);
+                } else {
+                    if (msg) { msg.textContent = err?.message || 'Une erreur est survenue.'; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+                }
             }
         });
     },
