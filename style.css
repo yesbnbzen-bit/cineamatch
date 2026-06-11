@@ -4448,9 +4448,12 @@ body.duo-active {
 .duo-blob-c {
     position: absolute;
     border-radius: 50%;
-    filter: blur(110px);
+    /* blur réduit (110px → 60px) : le flou est l'opération la plus coûteuse à peindre.
+       Le dégradé radial est déjà doux, 60px suffit largement. */
+    filter: blur(60px);
     opacity: 0;
     animation: fadeIn 1.2s ease forwards;
+    will-change: transform;
 }
 
 /* Blob bordeaux velours — haut gauche */
@@ -4481,6 +4484,24 @@ body.duo-active {
     bottom: 20%;
     left: -60px;
     animation: fadeIn 1.4s ease 0.3s forwards, duo-blob-b 16s ease-in-out 2s infinite reverse;
+}
+
+/* ── MOBILE (écrans tactiles) : on FIGE les blobs ──
+   Le gel de plusieurs secondes (mesuré : 1,7s à 5,4s sur iPhone) venait de
+   l'animation `scale()` en boucle sur des surfaces floutées : iOS doit re-rasteriser
+   le flou à CHAQUE image, ce qui bloque le thread et fige le questionnaire entre 2
+   questions. On supprime donc l'animation infinie sur mobile (seul le fade-in d'entrée
+   reste) et on allège le flou → le fond reste joli mais ne coûte plus rien par image. */
+@media (pointer: coarse) {
+    .duo-blob-a,
+    .duo-blob-b,
+    .duo-blob-c {
+        filter: blur(30px);
+        will-change: auto;
+    }
+    .duo-blob-a { animation: fadeIn 1.2s ease forwards !important; }
+    .duo-blob-b { animation: fadeIn 1.2s ease forwards !important; }
+    .duo-blob-c { animation: fadeIn 1.4s ease 0.3s forwards !important; }
 }
 
 /* ══════════════════════════════════════════════════
