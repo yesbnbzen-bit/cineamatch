@@ -36,15 +36,46 @@ export const authService = {
             options: { data: { name, birth_date: birthDate } }
         });
         if (error) throw error;
-        // Créer le profil
+        // Créer le profil — NON BLOQUANT : si la confirmation email est requise,
+        // l'utilisateur n'a pas encore de session et l'insert est refusé par la RLS.
+        // Le trigger handle_new_user crée déjà le profil ; on complétera nom/date après
+        // la vérification du code (upsertProfile). On ignore donc une erreur ici.
         if (data.user) {
-            await supabase.from('profiles').upsert({
-                id:         data.user.id,
-                name:       name || email.split('@')[0],
-                birth_date: birthDate || null
-            });
+            try {
+                await supabase.from('profiles').upsert({
+                    id:         data.user.id,
+                    name:       name || email.split('@')[0],
+                    birth_date: birthDate || null
+                });
+            } catch (e) { /* RLS : sera complété après vérification du code */ }
         }
         return data;
+    },
+
+    // Vérifier le code à 6 chiffres reçu par email (inscription) → connecte l'utilisateur
+    async verifySignupOtp(email, token) {
+        const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
+        if (error) throw error;
+        return data;
+    },
+
+    // Renvoyer un nouveau code de confirmation d'inscription
+    async resendSignupOtp(email) {
+        const { error } = await supabase.auth.resend({ type: 'signup', email });
+        if (error) throw error;
+    },
+
+    // Compléter le profil (nom / date de naissance) une fois l'utilisateur authentifié
+    async upsertProfile(name, birthDate) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        try {
+            await supabase.from('profiles').upsert({
+                id:         user.id,
+                name:       name || user.email.split('@')[0],
+                birth_date: birthDate || null
+            });
+        } catch (e) { /* non bloquant */ }
     },
 
     // Connexion email + mot de passe

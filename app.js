@@ -2,7 +2,7 @@ import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=69';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=12';
+import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=13';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=351';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
@@ -333,7 +333,7 @@ const App = {
                     </p>`;
             }
             try {
-                const { duoSessionService } = await import('./services/supabase.js?v=12');
+                const { duoSessionService } = await import('./services/supabase.js?v=13');
                 const session = await duoSessionService.get(duoSessionId);
                 if (session && session.status !== 'done') {
                     store.duoMode           = true;
@@ -2683,7 +2683,7 @@ const App = {
                     localStorage.setItem('duo_final_answers', JSON.stringify(store.answers));
                     // Cross-device sync : sauvegarder dans Supabase si session existe
                     if (store._duoSessionId) {
-                        import('./services/supabase.js?v=12').then(({ duoSessionService }) => {
+                        import('./services/supabase.js?v=13').then(({ duoSessionService }) => {
                             duoSessionService.complete(
                                 store._duoSessionId,
                                 store.duoNameB,
@@ -3476,7 +3476,7 @@ const App = {
             let duoUrl;
             if (!store._duoSessionId) {
                 try {
-                    const { duoSessionService } = await import('./services/supabase.js?v=12');
+                    const { duoSessionService } = await import('./services/supabase.js?v=13');
                     const sessionId = await duoSessionService.create(nameA, minimalAnswers);
                     store._duoSessionId = sessionId;
                     duoUrl = `${location.origin}${location.pathname}?duo_id=${sessionId}`;
@@ -3613,7 +3613,7 @@ const App = {
 
         // ── Polling Supabase (cross-device — appareils différents) ──
         if (store._duoSessionId) {
-            import('./services/supabase.js?v=12').then(({ duoSessionService }) => {
+            import('./services/supabase.js?v=13').then(({ duoSessionService }) => {
                 const _supabasePoll = setInterval(async () => {
                     if (_duoPollDone) { clearInterval(_supabasePoll); return; }
                     try {
@@ -4012,11 +4012,11 @@ const App = {
 
         document.getElementById('save-gate-signup').onclick = () => {
             overlay.remove();
-            import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signup'));
+            import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signup'));
         };
         document.getElementById('save-gate-signin').onclick = () => {
             overlay.remove();
-            import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signin'));
+            import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signin'));
         };
         document.getElementById('save-gate-close').onclick = () => overlay.remove();
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
@@ -4224,7 +4224,7 @@ const App = {
 
     // ── Profil cinéphile ──
     async showProfile() {
-        const { authUI } = await import('./modules/auth.js?v=30');
+        const { authUI } = await import('./modules/auth.js?v=31');
         authUI.showHistory();
     },
 
@@ -4342,7 +4342,7 @@ const App = {
         btn.textContent = t('profile.pwd.updating');
 
         try {
-            const { authService } = await import('./services/supabase.js?v=12');
+            const { authService } = await import('./services/supabase.js?v=13');
             await authService.updatePassword(newPwd);
             showMsg(t('profile.pwd.success'), '#46d369');
             document.getElementById('profil-pwd-new').value     = '';
@@ -4500,7 +4500,7 @@ const App = {
         document.getElementById('reroll-gate-cta').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signup'));
+                import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signup'));
             } else {
                 this.showPricingModal();
             }
@@ -4510,7 +4510,7 @@ const App = {
         document.getElementById('reroll-gate-login').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signin'));
+                import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signin'));
             } else {
                 this.showPricingModal();
             }
@@ -4669,7 +4669,7 @@ const App = {
         };
         document.getElementById('sg-login').onclick = () => {
             close();
-            import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signin'));
+            import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signin'));
         };
     },
 
@@ -4730,7 +4730,7 @@ const App = {
         document.getElementById('duo-gate-cta').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signup'));
+                import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signup'));
             } else {
                 this.showPricingModal();
             }
@@ -4739,7 +4739,7 @@ const App = {
         document.getElementById('duo-gate-secondary').onclick = () => {
             close();
             if (isSignup) {
-                import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signin'));
+                import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signin'));
             } else {
                 this.showPricingModal();
             }
@@ -4842,7 +4842,7 @@ const App = {
             // l'INSCRIPTION. Après connexion (onLogin), le checkout Stripe reprend tout seul.
             localStorage.setItem('cm_pending_plan', plan);
             this.hidePricingModal();
-            import('./modules/auth.js?v=30').then(m => m.authUI.showModal('signup'));
+            import('./modules/auth.js?v=31').then(m => m.authUI.showModal('signup'));
             return;
         }
 
@@ -4907,12 +4907,12 @@ const App = {
             const pollPremium = async () => {
                 attempts++;
                 try {
-                    const { authService } = await import('./services/supabase.js?v=12');
+                    const { authService } = await import('./services/supabase.js?v=13');
                     // getUser() force une lecture fraîche depuis le serveur
                     const freshUser = await authService.getUser();
                     if (freshUser?.user_metadata?.is_premium === true) {
                         store.currentUser = freshUser;
-                        const { authUI } = await import('./modules/auth.js?v=30');
+                        const { authUI } = await import('./modules/auth.js?v=31');
                         await authUI.onLogin(freshUser);
                         this._showToast(t('stripe.toast.activated'), 'success', 5000);
                     } else if (attempts < 5) {

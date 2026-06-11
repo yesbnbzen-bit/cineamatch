@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=10';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=13';
 import { store } from '../state/store.js?v=44';
 import { t, applyTranslations } from '../config/i18n.js?v=351';
 
@@ -688,12 +688,86 @@ export const authUI = {
 
         try {
             await authService.signUp(email, password, name, dobInput);
-            this.showSuccess('signup-error', '✅ Vérifie tes emails pour confirmer ton compte !');
+            // Au lieu d'un lien, on affiche un écran « entre ton code à 6 chiffres ».
+            this.showOtpVerification(email, name, dobInput);
         } catch (err) {
             this.showError('signup-error', this.friendlyError(err.message));
         } finally {
             this.setLoading(btn, false);
         }
+    },
+
+    // ── Vérification par code à 6 chiffres (après inscription) ──
+    showOtpVerification(email, name, dobInput) {
+        const modal = document.getElementById('auth-modal-overlay');
+        if (!modal) return;
+        // Masquer les formulaires d'inscription/connexion
+        document.getElementById('form-signin')?.style.setProperty('display', 'none');
+        document.getElementById('form-signup')?.style.setProperty('display', 'none');
+        document.querySelector('.auth-tabs')?.style.setProperty('display', 'none');
+        document.querySelector('.auth-divider')?.style.setProperty('display', 'none');
+        document.getElementById('btn-google')?.style.setProperty('display', 'none');
+        document.getElementById('otp-form-wrap')?.remove();
+
+        const wrap = document.createElement('div');
+        wrap.id = 'otp-form-wrap';
+        wrap.innerHTML = `
+            <div style="padding:0.5rem 0;text-align:center;">
+                <div style="font-size:2.2rem;margin-bottom:0.6rem;">📩</div>
+                <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:0.35rem;">Entre ton code</h3>
+                <p style="font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:1.3rem;line-height:1.5;">
+                    On a envoyé un code à 6 chiffres à<br><strong style="color:#fff;">${email}</strong>
+                </p>
+                <input type="text" id="otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"
+                    placeholder="● ● ● ● ● ●"
+                    style="width:100%;padding:0.9rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.18);border-radius:12px;color:#fff;font-size:1.5rem;font-weight:700;letter-spacing:0.5rem;text-align:center;font-family:inherit;outline:none;margin-bottom:0.9rem;">
+                <p id="otp-msg" style="font-size:0.82rem;display:none;margin-bottom:0.8rem;"></p>
+                <button id="btn-otp-verify" class="btn-primary" style="width:100%;">Valider mon compte</button>
+                <button id="btn-otp-resend" style="background:none;border:none;color:rgba(255,255,255,0.55);font-size:0.82rem;cursor:pointer;font-family:inherit;margin-top:1rem;padding:0;">Je n'ai rien reçu — renvoyer le code</button>
+            </div>`;
+        const container = modal.querySelector('.auth-modal') || modal;
+        container.appendChild(wrap);
+
+        const codeInput = document.getElementById('otp-code');
+        codeInput?.focus();
+        // N'autoriser que des chiffres
+        codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.replace(/\D/g, ''); });
+
+        const _verify = async () => {
+            const code = codeInput?.value?.trim();
+            const msg  = document.getElementById('otp-msg');
+            const btn  = document.getElementById('btn-otp-verify');
+            if (!code || code.length < 6) {
+                if (msg) { msg.textContent = 'Entre les 6 chiffres du code.'; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+                return;
+            }
+            btn.disabled = true; btn.innerHTML = '<span class="btn-spinner"></span>';
+            try {
+                await authService.verifySignupOtp(email, code);
+                await authService.upsertProfile(name, dobInput);
+                if (msg) { msg.textContent = '✅ Compte vérifié !'; msg.style.color = '#46d369'; msg.style.display = 'block'; }
+                // La session est créée → onAuthChange prend le relais. On ferme la modale.
+                setTimeout(() => { wrap.remove(); this.hideModal?.(); }, 700);
+            } catch (err) {
+                if (msg) { msg.textContent = 'Code incorrect ou expiré. Réessaie.'; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+                btn.disabled = false; btn.textContent = 'Valider mon compte';
+            }
+        };
+        document.getElementById('btn-otp-verify')?.addEventListener('click', _verify);
+        codeInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') _verify(); });
+
+        document.getElementById('btn-otp-resend')?.addEventListener('click', async () => {
+            const msg = document.getElementById('otp-msg');
+            const rbtn = document.getElementById('btn-otp-resend');
+            rbtn.disabled = true; rbtn.textContent = 'Envoi…';
+            try {
+                await authService.resendSignupOtp(email);
+                if (msg) { msg.textContent = '📩 Nouveau code envoyé.'; msg.style.color = '#46d369'; msg.style.display = 'block'; }
+            } catch (e) {
+                if (msg) { msg.textContent = 'Patiente un instant avant de redemander un code.'; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+            }
+            setTimeout(() => { rbtn.disabled = false; rbtn.textContent = "Je n'ai rien reçu — renvoyer le code"; }, 4000);
+        });
     },
 
     // ── Connexion Google ──
