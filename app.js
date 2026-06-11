@@ -1360,10 +1360,29 @@ const App = {
         };
         // Sous-texte rotatif pendant le chargement (donne l'illusion de progression)
         let _tipTimer = null;
+        let _triviaTimer = null;
         const isEn = getLang() === 'en';
         const loadingTips = isEn
-            ? ['We analyse style, not just genre.','Cultural resonance matters — we factor it in.','Your past ratings improve every result.','Our database covers over 900,000 films worldwide.']
-            : ['On analyse le style narratif, pas juste le genre.','La résonance culturelle entre en compte dans le calcul.','Tes notes passées affinent chaque résultat.','Notre base couvre plus de 900 000 films dans le monde.'];
+            ? [
+                'Searching across more than a million films…',
+                'We analyse style and tone, not just genre.',
+                'Cross-referencing thousands of taste combinations.',
+                'Cultural resonance matters — we factor it in.',
+                'Filtering out films you\'ve already seen.',
+                'Checking availability on your streaming platforms.',
+                'Your past ratings sharpen every result.',
+                'Keeping only the gems that truly fit you.'
+              ]
+            : [
+                'Recherche parmi plus d\'un million de films…',
+                'On analyse le style et le ton, pas juste le genre.',
+                'On croise des milliers de combinaisons de goûts.',
+                'La résonance culturelle entre dans le calcul.',
+                'On écarte les films que tu as déjà vus.',
+                'On vérifie la disponibilité sur tes plateformes.',
+                'Tes notes passées affinent chaque résultat.',
+                'On ne garde que les pépites qui te ressemblent.'
+              ];
         let _tipIdx = 0;
         const startTips = () => {
             const subEl = document.getElementById('loading-sub');
@@ -1371,7 +1390,7 @@ const App = {
                 if (subEl) { subEl.style.opacity = 0; setTimeout(() => { subEl.textContent = loadingTips[_tipIdx++ % loadingTips.length]; subEl.style.opacity = 1; }, 300); }
             }, 4000);
         };
-        const stopTips = () => clearInterval(_tipTimer);
+        const stopTips = () => { clearInterval(_tipTimer); clearInterval(_triviaTimer); };
 
         // Anecdote cinéma pendant le chargement
         document.querySelectorAll('.trivia-box').forEach(el => el.remove());
@@ -1382,9 +1401,47 @@ const App = {
             <p id="trivia-content">${t('loading.profil')}</p>`;
         loadingText.after(triviaBox);
 
-        openaiService.getCinemaTrivia(getLang()).then(trivia => {
+        // Plusieurs « Savais-tu ? » qui défilent : l'attente peut durer ~1 min, donc on évite
+        // de rester bloqué sur une seule anecdote. Liste locale fiable, enrichie par l'anecdote
+        // IA dès qu'elle arrive (placée en tête de la rotation).
+        const triviaFacts = isEn
+            ? [
+                'The longest film ever made runs over 35 days non-stop.',
+                'Toy Story was the first fully computer-animated feature.',
+                '“Star Wars” was nearly titled “The Adventures of Luke Starkiller”.',
+                'The Wilhelm scream has been reused in 400+ films.',
+                'Bollywood releases more films each year than Hollywood.',
+                'Anthony Hopkins is on screen for just 16 minutes in “The Silence of the Lambs”.',
+                'The “Matrix” code is made of sushi recipes.',
+                'Pixar movies all hide a reference to the next Pixar movie.'
+              ]
+            : [
+                'Le plus long film jamais réalisé dure plus de 35 jours non-stop.',
+                'Toy Story fut le premier long-métrage 100% en images de synthèse.',
+                '« Star Wars » a failli s\'appeler « Les Aventures de Luke Starkiller ».',
+                'Le cri Wilhelm a été réutilisé dans plus de 400 films.',
+                'Bollywood sort plus de films par an qu\'Hollywood.',
+                'Anthony Hopkins n\'apparaît que 16 min dans « Le Silence des agneaux ».',
+                'Le code vert de « Matrix » est composé… de recettes de sushis.',
+                'Chaque film Pixar cache une référence au prochain film Pixar.'
+              ];
+        let _triviaIdx = 0;
+        const _setTrivia = (txt) => {
             const el = document.getElementById('trivia-content');
-            if (el) el.textContent = `"${trivia}"`;
+            if (!el) return;
+            el.style.transition = 'opacity 0.3s ease';
+            el.style.opacity = '0';
+            setTimeout(() => { el.textContent = txt; el.style.opacity = '1'; }, 300);
+        };
+        _setTrivia(triviaFacts[0]);
+        _triviaIdx = 1;
+        _triviaTimer = setInterval(() => {
+            _setTrivia(triviaFacts[_triviaIdx++ % triviaFacts.length]);
+        }, 6500);
+
+        openaiService.getCinemaTrivia(getLang()).then(trivia => {
+            // L'anecdote IA rejoint la rotation en tête (sans casser le défilement local).
+            if (trivia) triviaFacts.unshift(`"${trivia}"`);
         }).catch(err => {
             console.warn('Trivia fetch failed (non-blocking):', err);
         });
