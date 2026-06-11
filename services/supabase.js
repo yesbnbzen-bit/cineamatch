@@ -72,6 +72,15 @@ export const authService = {
         return data;
     },
 
+    // Flux LIEN robuste : échange le token_hash du lien email contre une session de
+    // récupération (pas de flux implicite #hash fragile, pas de PKCE). Appelé au chargement
+    // quand l'URL contient ?token_hash=...&type=recovery.
+    async verifyRecoveryToken(tokenHash) {
+        const { data, error } = await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash });
+        if (error) throw error;
+        return data;
+    },
+
     // Compléter le profil (nom / date de naissance) une fois l'utilisateur authentifié
     async upsertProfile(name, birthDate) {
         const { data: { user } } = await supabase.auth.getUser();
@@ -120,9 +129,14 @@ export const authService = {
         // la session de récupération à partir de l'URL (flux PKCE : ?code=...).
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
+            // Filet de sécurité : si la session de récupération n'a pas été établie au
+            // chargement, on la (re)tente ici à partir des paramètres du lien email.
+            const params = new URL(window.location.href).searchParams;
+            const tokenHash = params.get('token_hash');
+            const code = params.get('code');
             try {
-                const code = new URL(window.location.href).searchParams.get('code');
-                if (code) await supabase.auth.exchangeCodeForSession(code);
+                if (tokenHash) await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash });
+                else if (code) await supabase.auth.exchangeCodeForSession(code);
             } catch (e) { /* on laisse updateUser remonter l'erreur si besoin */ }
         }
         const { error } = await supabase.auth.updateUser({ password: newPassword });

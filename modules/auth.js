@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=15';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=16';
 import { store } from '../state/store.js?v=44';
 import { t, applyTranslations } from '../config/i18n.js?v=352';
 
@@ -120,8 +120,30 @@ export const authUI = {
         // Google
         document.getElementById('btn-google')?.addEventListener('click', () => this.handleGoogle());
 
-        // Reset mot de passe depuis le lien email (?reset=1)
-        if (window.location.search.includes('reset=1')) {
+        // Reset mot de passe depuis le lien email (?reset=1&token_hash=...&type=recovery)
+        const _params = new URLSearchParams(window.location.search);
+        if (_params.get('reset') === '1' || _params.get('type') === 'recovery') {
+            const tokenHash = _params.get('token_hash');
+            if (tokenHash) {
+                // Flux LIEN robuste : on échange le token_hash contre une session de
+                // récupération AVANT que l'utilisateur saisisse son nouveau mot de passe.
+                try {
+                    await authService.verifyRecoveryToken(tokenHash);
+                    // On retire le token sensible de la barre d'adresse (mais on garde ?reset=1).
+                    history.replaceState({}, '', '/?reset=1');
+                    // La session de récupération est active → updateUser fonctionnera.
+                    // (PASSWORD_RECOVERY est aussi émis et affiche le formulaire.)
+                } catch (e) {
+                    // Lien expiré ou déjà utilisé → on renvoie vers « mot de passe oublié ».
+                    this.showModal();
+                    setTimeout(() => {
+                        this.showForgotPassword();
+                        const m = document.getElementById('forgot-msg');
+                        if (m) { m.textContent = '⏳ Ce lien a expiré ou a déjà été utilisé. Redemande un lien ci-dessous.'; m.style.color = '#ffb44d'; m.style.display = 'block'; }
+                    }, 250);
+                    return;
+                }
+            }
             this.showModal();
             setTimeout(() => this.showResetPassword(), 300);
         }

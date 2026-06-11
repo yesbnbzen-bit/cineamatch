@@ -2,7 +2,7 @@ import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=69';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=15';
+import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=16';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=352';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
