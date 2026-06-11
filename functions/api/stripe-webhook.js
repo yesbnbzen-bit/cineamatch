@@ -290,34 +290,64 @@ async function sendPremiumWelcome(env, userId, email, plan) {
 }
 
 function premiumWelcomeHtml(prenom) {
+    const feature = (icon, bg, title, sub) => `
+        <tr><td style="padding:0 0 14px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td width="44" valign="top" style="width:44px;">
+              <div style="width:38px;height:38px;border-radius:10px;background:${bg};text-align:center;line-height:38px;font-size:18px;">${icon}</div>
+            </td>
+            <td valign="middle" style="padding-left:12px;">
+              <div style="font-size:14.5px;font-weight:700;color:#1a1a1a;line-height:1.3;">${title}</div>
+              <div style="font-size:13px;color:#777;line-height:1.4;">${sub}</div>
+            </td>
+          </tr></table>
+        </td></tr>`;
     return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;margin:0;padding:32px 12px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eceef0;margin:0;padding:32px 12px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
   <tr><td align="center">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
-      <tr><td style="background:#0a0a0b;padding:24px 32px;text-align:center;">
-        <span style="font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#ffffff;">CINEA<span style="color:#E50914;">MATCH</span></span>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.10);">
+
+      <!-- HERO -->
+      <tr><td style="background:#0a0a0b;background-image:linear-gradient(135deg,#2a0410 0%,#0a0a0b 60%);padding:40px 32px 36px;text-align:center;">
+        <span style="font-size:21px;font-weight:800;letter-spacing:-0.5px;color:#ffffff;">CINEA<span style="color:#E50914;">MATCH</span></span>
+        <div style="margin:22px 0 0;display:inline-block;background:linear-gradient(135deg,#E50914,#ff525b);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:7px 16px;border-radius:100px;box-shadow:0 4px 14px rgba(229,9,20,0.45);">⚡ Membre Premium</div>
+        <h1 style="margin:16px 0 6px;font-size:27px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">Bienvenue${prenom} 🎬</h1>
+        <p style="margin:0;font-size:14.5px;color:rgba(255,255,255,0.62);line-height:1.5;">Ton abonnement est <strong style="color:#fff;">actif</strong> — bienvenue dans le club.</p>
       </td></tr>
-      <tr><td style="padding:36px 32px 8px;text-align:center;">
-        <div style="display:inline-block;background:linear-gradient(135deg,#E50914,#7a0f23);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;margin-bottom:16px;">⚡ Membre Premium</div>
-        <h1 style="margin:0 0 14px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;">Bienvenue${prenom} 🎬</h1>
-        <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#444444;">
-          Merci, ton abonnement est <strong style="color:#111;">actif</strong> ! Tu as désormais accès à tout CineaMatch sans limite.
+
+      <!-- INTRO + CTA -->
+      <tr><td style="padding:32px 34px 6px;text-align:center;">
+        <p style="margin:0 0 24px;font-size:16px;line-height:1.65;color:#444444;">
+          Fini de scroller pendant une heure : l'IA te trouve <strong style="color:#111;">le film parfait en 30 secondes</strong>, selon ton envie du moment et tes plateformes.
         </p>
-        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px auto 24px;">
-          <tr><td style="border-radius:100px;background:#E50914;">
-            <a href="https://cineamatch.com" target="_blank" style="display:inline-block;padding:15px 40px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:100px;">Trouver mon film →</a>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 6px;">
+          <tr><td style="border-radius:100px;background:#E50914;box-shadow:0 6px 20px rgba(229,9,20,0.4);">
+            <a href="https://cineamatch.com" target="_blank" style="display:inline-block;padding:15px 44px;font-size:16px;font-weight:800;color:#ffffff;text-decoration:none;border-radius:100px;">Trouver mon film →</a>
           </td></tr>
         </table>
-        <div style="text-align:left;border-top:1px solid #eee;padding-top:18px;">
-          <p style="margin:0 0 10px;font-size:14px;color:#444;">✨ <strong>Inclus dans ton Premium :</strong></p>
-          <p style="margin:0 0 8px;font-size:14px;color:#555;line-height:1.5;">🍿 Recommandations <strong>illimitées</strong></p>
-          <p style="margin:0 0 8px;font-size:14px;color:#555;line-height:1.5;">💑 Le <strong>Mode Duo</strong> : le film parfait à deux</p>
-          <p style="margin:0 0 8px;font-size:14px;color:#555;line-height:1.5;">📺 Filtre par plateformes (Netflix, Prime…)</p>
-          <p style="margin:0;font-size:14px;color:#555;line-height:1.5;">❤️ Favoris &amp; historique sauvegardés</p>
+      </td></tr>
+
+      <!-- FEATURES -->
+      <tr><td style="padding:24px 34px 6px;">
+        <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#999;margin-bottom:16px;">Tout est débloqué</div>
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+          ${feature('🍿', '#fdeaec', 'Recommandations illimitées', 'Autant de recherches que tu veux, chaque jour')}
+          ${feature('💑', '#fdeaec', 'Mode Duo', 'Le film parfait à deux, sans négocier')}
+          ${feature('📺', '#eaf2fd', 'Filtre par plateformes', 'Netflix, Prime, Disney+, Canal+…')}
+          ${feature('❤️', '#fdeaf4', 'Favoris &amp; historique', 'Retrouve tout ce que tu as aimé')}
+        </table>
+      </td></tr>
+
+      <!-- TIP -->
+      <tr><td style="padding:8px 34px 26px;">
+        <div style="background:#faf7f2;border:1px solid #f0e9df;border-radius:14px;padding:16px 18px;">
+          <p style="margin:0;font-size:13.5px;color:#6b5b46;line-height:1.55;">💡 <strong style="color:#4a3d2e;">Astuce :</strong> commence par noter 2-3 films que tu as adorés — plus tu utilises CineaMatch, mieux l'IA cerne tes goûts.</p>
         </div>
       </td></tr>
+
+      <!-- FOOTER -->
       <tr><td style="padding:22px 32px 28px;border-top:1px solid #eeeeee;">
-        <p style="margin:0;font-size:12px;line-height:1.6;color:#aaaaaa;text-align:center;">
+        <p style="margin:0;font-size:12px;line-height:1.7;color:#aaaaaa;text-align:center;">
           © 2026 CineaMatch · <a href="https://cineamatch.com" style="color:#999999;text-decoration:none;">cineamatch.com</a> · <a href="https://cineamatch.com/legal" style="color:#999999;text-decoration:none;">Gérer mon abonnement</a><br>
           Trouve ton film parfait avec l'IA en 30 secondes.
         </p>
