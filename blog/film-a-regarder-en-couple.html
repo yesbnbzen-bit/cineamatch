@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-FR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,9 @@
   <meta name="description" content="Quel film regarder en couple ce soir ? Nos idées romantiques, drôles et à frissons — et le Mode Duo de CineaMatch qui trouve LE film parfait pour vous deux en 30 secondes.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://cineamatch.com/blog/film-a-regarder-en-couple">
+  <link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/film-a-regarder-en-couple">
+  <link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/movies-to-watch-as-a-couple">
+  <link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/film-a-regarder-en-couple">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://cineamatch.com/blog/film-a-regarder-en-couple">
   <meta property="og:title" content="Quel film regarder en couple ce soir ? Le Mode Duo choisit pour vous deux">
@@ -37,6 +40,9 @@
     header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.6rem;position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(10,10,11,.55);backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:background .3s,border-color .3s}
     header.scrolled{background:rgba(10,10,11,.96);border-bottom-color:var(--border)}
     .logo{font-size:1.2rem;font-weight:900;color:#fff;text-decoration:none;letter-spacing:-.5px}.logo span{color:var(--red)}
+    .hdr-right { display: flex; align-items: center; gap: 0.7rem; }
+    .lang-switch { font-size: 0.8rem; font-weight: 800; color: rgba(255,255,255,0.72); text-decoration: none; border: 1px solid var(--border); padding: 0.45rem 0.7rem; border-radius: 100px; transition: color .15s, border-color .15s; white-space: nowrap; }
+    .lang-switch:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
     .cta-top{display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:800;color:#fff;text-decoration:none;background:var(--red);padding:.55rem 1.15rem;border-radius:100px;box-shadow:0 4px 16px rgba(229,9,20,.4)}
     .hero{position:relative;overflow:hidden;padding-top:70px}
     .hero-img{position:absolute;top:0;right:0;width:58%;height:100%;object-fit:cover}
@@ -109,7 +115,10 @@
 </head>
 <body>
   <div id="progress"></div>
-  <header id="hdr"><a class="logo" href="/">CINEA<span>MATCH</span></a><a class="cta-top" href="/">🎬 Trouver mon film →</a></header>
+  <header id="hdr"><a class="logo" href="/">CINEA<span>MATCH</span></a><div class="hdr-right">
+      <a class="lang-switch" href="https://cineamatch.com/en/blog/movies-to-watch-as-a-couple" hreflang="en">EN</a>
+      <a class="cta-top" href="/">🎬 Trouver mon film →</a>
+    </div></header>
 
   <section class="hero">
     <img class="hero-img" alt="Soirée film romantique en couple" loading="eager" data-bq="La La Land" data-by="2016">

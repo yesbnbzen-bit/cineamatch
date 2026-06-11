@@ -1,47 +1,133 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://cineamatch.com/</loc>
     <lastmod>2026-06-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <!-- Blog index (FR / EN) -->
   <url>
     <loc>https://cineamatch.com/blog/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/"/>
     <lastmod>2026-06-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cineamatch.com/en/blog/</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/"/>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Article 1 -->
+  <url>
     <loc>https://cineamatch.com/blog/quel-film-regarder-ce-soir</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/quel-film-regarder-ce-soir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/what-movie-to-watch-tonight"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/quel-film-regarder-ce-soir"/>
     <lastmod>2026-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://cineamatch.com/en/blog/what-movie-to-watch-tonight</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/quel-film-regarder-ce-soir"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/what-movie-to-watch-tonight"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/quel-film-regarder-ce-soir"/>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Article 2 -->
   <url>
     <loc>https://cineamatch.com/blog/choisir-un-film-en-30-secondes</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/choisir-un-film-en-30-secondes"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/how-to-choose-a-movie-in-30-seconds"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/choisir-un-film-en-30-secondes"/>
     <lastmod>2026-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://cineamatch.com/en/blog/how-to-choose-a-movie-in-30-seconds</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/choisir-un-film-en-30-secondes"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/how-to-choose-a-movie-in-30-seconds"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/choisir-un-film-en-30-secondes"/>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Article 3 -->
   <url>
     <loc>https://cineamatch.com/blog/film-a-regarder-en-couple</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/film-a-regarder-en-couple"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/movies-to-watch-as-a-couple"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/film-a-regarder-en-couple"/>
     <lastmod>2026-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://cineamatch.com/en/blog/movies-to-watch-as-a-couple</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/film-a-regarder-en-couple"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/movies-to-watch-as-a-couple"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/film-a-regarder-en-couple"/>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Article 4 -->
   <url>
     <loc>https://cineamatch.com/blog/quel-film-regarder-quand-on-sennuie</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/quel-film-regarder-quand-on-sennuie"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/what-to-watch-when-bored"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/quel-film-regarder-quand-on-sennuie"/>
     <lastmod>2026-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cineamatch.com/blog/meilleurs-films-a-voir-au-moins-une-fois</loc>
+    <loc>https://cineamatch.com/en/blog/what-to-watch-when-bored</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/quel-film-regarder-quand-on-sennuie"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/what-to-watch-when-bored"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/quel-film-regarder-quand-on-sennuie"/>
     <lastmod>2026-06-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+
+  <!-- Article 5 -->
+  <url>
+    <loc>https://cineamatch.com/blog/meilleurs-films-a-voir-au-moins-une-fois</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/meilleurs-films-a-voir-au-moins-une-fois"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/best-movies-to-watch-at-least-once"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/meilleurs-films-a-voir-au-moins-une-fois"/>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cineamatch.com/en/blog/best-movies-to-watch-at-least-once</loc>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/meilleurs-films-a-voir-au-moins-une-fois"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/best-movies-to-watch-at-least-once"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/meilleurs-films-a-voir-au-moins-une-fois"/>
+    <lastmod>2026-06-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
   <url>
     <loc>https://cineamatch.com/legal</loc>
     <lastmod>2026-05-17</lastmod>

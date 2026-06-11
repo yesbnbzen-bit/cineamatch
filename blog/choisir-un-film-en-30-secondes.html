@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-FR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +7,9 @@
   <meta name="description" content="Tu passes une heure à chercher un film sans décider ? Voici une méthode simple pour choisir un film en moins d'une minute, plus un outil IA gratuit qui le fait pour toi.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://cineamatch.com/blog/choisir-un-film-en-30-secondes">
+  <link rel="alternate" hreflang="fr" href="https://cineamatch.com/blog/choisir-un-film-en-30-secondes">
+  <link rel="alternate" hreflang="en" href="https://cineamatch.com/en/blog/how-to-choose-a-movie-in-30-seconds">
+  <link rel="alternate" hreflang="x-default" href="https://cineamatch.com/blog/choisir-un-film-en-30-secondes">
 
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://cineamatch.com/blog/choisir-un-film-en-30-secondes">
@@ -54,6 +57,9 @@
     header.scrolled { background: rgba(10,10,11,0.96); border-bottom-color: var(--border); }
     .logo { font-size: 1.2rem; font-weight: 900; color: #fff; text-decoration: none; letter-spacing: -0.5px; }
     .logo span { color: var(--red); }
+    .hdr-right { display: flex; align-items: center; gap: 0.7rem; }
+    .lang-switch { font-size: 0.8rem; font-weight: 800; color: rgba(255,255,255,0.72); text-decoration: none; border: 1px solid var(--border); padding: 0.45rem 0.7rem; border-radius: 100px; transition: color .15s, border-color .15s; white-space: nowrap; }
+    .lang-switch:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
     .cta-top { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 800;
       color: #fff; text-decoration: none; background: var(--red); padding: 0.55rem 1.15rem; border-radius: 100px; box-shadow: 0 4px 16px rgba(229,9,20,0.4); }
 
@@ -166,7 +172,10 @@
   <div id="progress"></div>
   <header id="hdr">
     <a class="logo" href="/">CINEA<span>MATCH</span></a>
-    <a class="cta-top" href="/">🎬 Trouver mon film →</a>
+    <div class="hdr-right">
+      <a class="lang-switch" href="https://cineamatch.com/en/blog/how-to-choose-a-movie-in-30-seconds" hreflang="en">EN</a>
+      <a class="cta-top" href="/">🎬 Trouver mon film →</a>
+    </div>
   </header>
 
   <section class="hero">

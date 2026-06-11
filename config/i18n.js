@@ -627,7 +627,13 @@ export const TRANSLATIONS = {
 };
 
 // ── Langue active (FR par défaut) ──────────────────────────────
-let _lang = localStorage.getItem('cinematch_lang') || 'fr';
+// Priorité : ?lang= dans l'URL (ex: depuis un article EN) > localStorage > FR
+const _urlLang = (new URLSearchParams(location.search).get('lang') || '').toLowerCase();
+let _lang = (_urlLang === 'en' || _urlLang === 'fr')
+    ? _urlLang
+    : (localStorage.getItem('cinematch_lang') || 'fr');
+// Si la langue vient de l'URL, on la mémorise pour les pages suivantes
+if (_urlLang === 'en' || _urlLang === 'fr') localStorage.setItem('cinematch_lang', _lang);
 
 export function getLang() { return _lang; }
 
