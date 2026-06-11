@@ -7772,18 +7772,16 @@ html.duo-link #duo-welcome {
        6. QUESTIONNAIRE — position:fixed pour bloc STABLE (ne bouge plus entre questions)
     ───────────────────────────────────────────── */
     #questionnaire.active {
-        position: fixed;
-        inset: 0;
-        z-index: 50;                          /* sous la navbar (z-index:100) */
-        padding-top: calc(120px + env(safe-area-inset-top, 0px));
+        /* FLUX NORMAL (plus de position:fixed). Le questionnaire fixe causait sur iOS un
+           DÉCALAGE des zones de toucher quand la fenêtre était scrollée (on visait
+           « Américain », ça sélectionnait « Asiatique ») et cassait le retour en haut.
+           En flux normal, le toucher tombe juste et le scroll est cohérent partout. */
+        padding-top: calc(105px + env(safe-area-inset-top, 0px));
         padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
         padding-left: 16px;
         padding-right: 16px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         justify-content: flex-start;
         align-items: stretch;
-        min-height: unset;
         box-sizing: border-box;
         background: transparent;
     }

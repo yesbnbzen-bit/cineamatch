@@ -2845,9 +2845,13 @@ const App = {
             // donc toujours synchronisé avec ce que l'utilisateur a vu.
             const _moodQ    = getQuestions().find(q => q && q.key === 'mood');
             const _moodOpts = _moodQ ? _moodQ.options : [];
+            // Mot-genre court et net (reflète le choix sans l'intitulé complet "Thriller / Suspense").
+            const _moodShort = getLang() === 'en'
+                ? { "35,10751":"Comedy", "28,12":"Action", "53":"Thriller", "27":"Horror", "18,10749":"Emotion", "878,9648":"Sci-Fi" }
+                : { "35,10751":"Comédie", "28,12":"Action", "53":"Thriller", "27":"Horreur", "18,10749":"Émotion", "878,9648":"SF" };
             const _moodInfo = (id) => {
                 const o = _moodOpts.find(opt => String(opt.id) === String(id));
-                return o ? { label: o.label, icon: o.icon || '' } : { label: '—', icon: '' };
+                return { label: _moodShort[id] || (o ? o.label : '—'), icon: o ? (o.icon || '') : '' };
             };
 
             const answersA = store.duoPartnerAnswers || {};
