@@ -2839,28 +2839,27 @@ const App = {
 
         // ── Carte résumé des deux profils (mode Duo uniquement) ──
         if (store.duoMode && store.duoMerged) {
-            const moodLabels = getLang() === 'en' ? {
-                "35,10751": "Light mood", "28,12":    "Adrenaline",
-                "53":       "Suspense",  "27":        "Thrills",
-                "18,10749": "Strong emotions", "878,9648": "Mind-bending"
-            } : {
-                "35,10751": "Légèreté",  "28,12":    "Adrénaline",
-                "53":       "Suspense",  "27":        "Frissons",
-                "18,10749": "Émotions fortes", "878,9648": "Réflexion"
-            };
-            const moodIcons = {
-                "35,10751": "🎈", "28,12": "⚡", "53": "🕵️",
-                "27": "🧟", "18,10749": "🎭", "878,9648": "👽"
+            // On affiche le LIBELLÉ EXACT que chaque personne a choisi dans la question
+            // d'humeur (ex. « Thriller / Suspense », « Rire / Comédie ») au lieu d'une
+            // étiquette maison — récupéré directement depuis les options de la question,
+            // donc toujours synchronisé avec ce que l'utilisateur a vu.
+            const _moodQ    = getQuestions().find(q => q && q.key === 'mood');
+            const _moodOpts = _moodQ ? _moodQ.options : [];
+            const _moodInfo = (id) => {
+                const o = _moodOpts.find(opt => String(opt.id) === String(id));
+                return o ? { label: o.label, icon: o.icon || '' } : { label: '—', icon: '' };
             };
 
             const answersA = store.duoPartnerAnswers || {};
             const answersB = store.duoPersonBAnswers || {};
             const nameA    = store.duoNameA || t('duo.fallback.partner.a');
             const nameB    = store.duoNameB || t('duo.fallback.partner.b');
-            const moodLabelA = moodLabels[answersA.mood] || "—";
-            const moodIconA  = moodIcons[answersA.mood]  || "";
-            const moodLabelB = moodLabels[answersB.mood] || "—";
-            const moodIconB  = moodIcons[answersB.mood]  || "";
+            const _mA = _moodInfo(answersA.mood);
+            const _mB = _moodInfo(answersB.mood);
+            const moodLabelA = _mA.label;
+            const moodIconA  = _mA.icon;
+            const moodLabelB = _mB.label;
+            const moodIconB  = _mB.icon;
             const moviesA = (answersA.lastLovedMovies || []).map(m => m.title).slice(0, 2).join(' · ') || null;
             const moviesB = (answersB.lastLovedMovies || []).map(m => m.title).slice(0, 2).join(' · ') || null;
 
