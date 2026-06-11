@@ -62,9 +62,11 @@ export async function onRequest(context) {
                 console.log(`✅ Premium activé — userId: ${userId}, plan: ${plan}`);
 
                 // ── Email de bienvenue « membre Premium » (après paiement, en arrière-plan) ──
-                const buyerEmail = session.customer_details?.email || session.customer_email;
-                if (buyerEmail && env.BREVO_API_KEY) {
-                    context.waitUntil(sendPremiumWelcome(env, userId, buyerEmail, plan));
+                // On passe l'email de la session en indice, mais sendPremiumWelcome ira le
+                // chercher dans Supabase si besoin (plus fiable que customer_email en test).
+                if (env.BREVO_API_KEY) {
+                    const hintEmail = session.customer_details?.email || session.customer_email || null;
+                    context.waitUntil(sendPremiumWelcome(env, userId, hintEmail, plan));
                 }
                 break;
             }
@@ -248,7 +250,8 @@ async function verifyStripeSignature(rawBody, sigHeader, secret) {
 // ─────────────────────────────────────────────────────────────────
 async function sendPremiumWelcome(env, userId, email, plan) {
     try {
-        // Récupérer le prénom depuis les métadonnées Supabase (best effort)
+        // Récupérer email + prénom depuis Supabase (source fiable, contrairement à
+        // customer_email qui peut être vide en mode test Stripe).
         let name = '';
         try {
             const r = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
@@ -257,9 +260,14 @@ async function sendPremiumWelcome(env, userId, email, plan) {
                     'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
                 }
             });
-            if (r.ok) { const u = await r.json(); name = u?.user_metadata?.name || ''; }
+            if (r.ok) {
+                const u = await r.json();
+                name  = u?.user_metadata?.name || '';
+                email = u?.email || email;   // priorité à l'email Supabase
+            }
         } catch (e) { /* best effort */ }
 
+        if (!email) { console.error('sendPremiumWelcome: aucun email'); return; }
         const prenom = name ? ` ${name}` : '';
         const res = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
