@@ -91,9 +91,7 @@
   <header id="hdr"><a class="logo" href="/">CINEA<span>MATCH</span></a><a class="cta-top" href="/">🎬 Trouver mon film →</a></header>
 
   <section class="hero">
-    <img class="hero-img" alt="Les meilleurs films à voir au moins une fois" loading="eager"
-      src="https://images.unsplash.com/photo-1574267432553-4b4628081c31?auto=format&fit=crop&w=1500&q=80"
-      onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='https://images.unsplash.com/photo-1585647347384-2593bc35786b?auto=format&fit=crop&w=1500&q=80'}else{this.style.display='none'}">
+    <img class="hero-img" alt="Chef-d'œuvre du cinéma" loading="eager" data-bq="Interstellar" data-by="2014">
     <div class="hero-inner"><div class="hero-text">
       <nav class="breadcrumb"><a href="/">Accueil</a> › <a href="/blog/">Guides</a> › Meilleurs films à voir au moins une fois</nav>
       <span class="kicker">Sélection</span>
@@ -191,7 +189,11 @@
     const links=[...document.querySelectorAll('#toc a')],sections=links.map(a=>document.querySelector(a.getAttribute('href')));
     const onScroll=()=>{hdr.classList.toggle('scrolled',scrollY>20);const h=document.documentElement.scrollHeight-innerHeight;prog.style.width=(h>0?scrollY/h*100:0)+'%';let i=0;sections.forEach((s,j)=>{if(s&&s.getBoundingClientRect().top<=140)i=j});links.forEach((a,j)=>a.classList.toggle('active',j===i))};
     addEventListener('scroll',onScroll,{passive:true});onScroll();
-    (async()=>{await Promise.all([...document.querySelectorAll('.poster[data-q]')].map(async c=>{try{const q=encodeURIComponent(c.dataset.q),y=c.dataset.year?'&year='+c.dataset.year:'';const r=await fetch(`/api/tmdb?path=/search/movie&query=${q}${y}&language=fr-FR`);if(!r.ok)return;const d=await r.json();const m=(d.results||[]).find(x=>x.poster_path);if(!m)return;const t=c.querySelector('.tile');t.style.backgroundImage=`url(https://image.tmdb.org/t/p/w342${m.poster_path})`;t.classList.add('has-poster')}catch(e){}}))})();
+    (async()=>{
+      const hero=document.querySelector('.hero-img[data-bq]');
+      if(hero){try{const r=await fetch(`/api/tmdb?path=/search/movie&query=${encodeURIComponent(hero.dataset.bq)}&year=${hero.dataset.by}&language=fr-FR`);const d=await r.json();const m=(d.results||[]).find(x=>x.backdrop_path);if(m)hero.src='https://image.tmdb.org/t/p/w1280'+m.backdrop_path;}catch(e){}}
+      await Promise.all([...document.querySelectorAll('.poster[data-q]')].map(async c=>{try{const q=encodeURIComponent(c.dataset.q),y=c.dataset.year?'&year='+c.dataset.year:'';const r=await fetch(`/api/tmdb?path=/search/movie&query=${q}${y}&language=fr-FR`);if(!r.ok)return;const d=await r.json();const m=(d.results||[]).find(x=>x.poster_path);if(!m)return;const t=c.querySelector('.tile');t.style.backgroundImage=`url(https://image.tmdb.org/t/p/w342${m.poster_path})`;t.classList.add('has-poster')}catch(e){}}));
+    })();
   </script>
 </body>
 </html>
