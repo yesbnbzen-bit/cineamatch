@@ -608,6 +608,14 @@ export const authUI = {
 
     // ── Afficher la modale ──
     showModal(tab = 'signin') {
+        // ── Auto-réparation : retirer les écrans temporaires (code OTP, mot de passe oublié,
+        // reset) et effacer tout display:none EN LIGNE résiduel qui masquerait les formulaires.
+        // (showTab gère l'affichage via une classe ; un style inline aurait priorité dessus.)
+        ['otp-form-wrap', 'forgot-form-wrap', 'reset-form-wrap'].forEach(id => document.getElementById(id)?.remove());
+        ['form-signin', 'form-signup', 'btn-google'].forEach(id => document.getElementById(id)?.style.removeProperty('display'));
+        document.querySelector('.auth-tabs')?.style.removeProperty('display');
+        document.querySelector('.auth-divider')?.style.removeProperty('display');
+
         const overlay = document.getElementById('auth-modal-overlay');
         if (overlay) {
             overlay.style.display = 'flex';
