@@ -65,7 +65,11 @@ export const authUI = {
         // Écouter les changements d'état auth
         authService.onAuthChange(async (user) => {
             if (user) {
-                // Même chose : forcer getUser() pour avoir les métadonnées fraîches
+                // ANTI-FLICKER : Supabase rafraîchit la session à chaque retour sur l'onglet
+                // (TOKEN_REFRESHED) et rappelle ce callback. Si c'est le MÊME utilisateur déjà
+                // connecté, on ne relance PAS tout onLogin (sinon la page semble se rafraîchir).
+                // On ne (re)lance onLogin que pour une vraie nouvelle connexion / un autre user.
+                if (this.currentUser && this.currentUser.id === user.id) return;
                 try {
                     const freshUser = await authService.getUser();
                     await this.onLogin(freshUser || user);
