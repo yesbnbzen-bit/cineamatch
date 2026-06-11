@@ -731,7 +731,8 @@ export const authUI = {
                     style="width:100%;padding:0.9rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.18);border-radius:12px;color:#fff;font-size:1.35rem;font-weight:700;letter-spacing:0.35rem;text-align:center;font-family:inherit;outline:none;margin-bottom:0.9rem;">
                 <p id="otp-msg" style="font-size:0.82rem;display:none;margin-bottom:0.8rem;"></p>
                 <button id="btn-otp-verify" class="btn-primary" style="width:100%;">Valider mon compte</button>
-                <button id="btn-otp-resend" style="background:none;border:none;color:rgba(255,255,255,0.55);font-size:0.82rem;cursor:pointer;font-family:inherit;margin-top:1rem;padding:0;">Je n'ai rien reçu — renvoyer le code</button>
+                <button id="btn-otp-resend" style="background:none;border:none;color:rgba(255,255,255,0.55);font-size:0.82rem;cursor:pointer;font-family:inherit;margin-top:1rem;padding:0;display:block;width:100%;">Je n'ai rien reçu — renvoyer le code</button>
+                <button id="btn-otp-back" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:0.8rem;cursor:pointer;font-family:inherit;margin-top:0.7rem;padding:0;display:block;width:100%;">← Mauvaise adresse ? Modifier mon email</button>
             </div>`;
         const container = modal.querySelector('.auth-modal') || modal;
         container.appendChild(wrap);
@@ -775,6 +776,18 @@ export const authUI = {
                 if (msg) { msg.textContent = 'Patiente un instant avant de redemander un code.'; msg.style.color = '#E50914'; msg.style.display = 'block'; }
             }
             setTimeout(() => { rbtn.disabled = false; rbtn.textContent = "Je n'ai rien reçu — renvoyer le code"; }, 4000);
+        });
+
+        // Retour au formulaire d'inscription (ex : mauvaise adresse email).
+        // Les champs gardent leurs valeurs → la personne corrige juste l'email et re-valide.
+        document.getElementById('btn-otp-back')?.addEventListener('click', () => {
+            wrap.remove();
+            document.getElementById('form-signup')?.style.removeProperty('display');
+            document.getElementById('btn-google')?.style.removeProperty('display');
+            document.querySelector('.auth-tabs')?.style.removeProperty('display');
+            document.querySelector('.auth-divider')?.style.removeProperty('display');
+            this.showTab('signup');
+            document.getElementById('signup-email')?.focus();
         });
     },
 
