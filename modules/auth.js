@@ -764,6 +764,8 @@ export const authUI = {
             try {
                 await authService.verifySignupOtp(email, code);
                 await authService.upsertProfile(name, dobInput);
+                // (L'email de bienvenue « membre Premium » part après le paiement Stripe,
+                //  pas ici — voir functions/api/stripe-webhook.js.)
                 if (msg) { msg.textContent = '✅ Compte vérifié !'; msg.style.color = '#46d369'; msg.style.display = 'block'; }
                 // La session est créée → onAuthChange prend le relais. On ferme la modale.
                 setTimeout(() => { wrap.remove(); this.hideModal?.(); }, 700);

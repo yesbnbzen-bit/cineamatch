@@ -60,6 +60,12 @@ export async function onRequest(context) {
                     stripeSubscriptionId: session.subscription || null, // null pour lifetime
                 });
                 console.log(`✅ Premium activé — userId: ${userId}, plan: ${plan}`);
+
+                // ── Email de bienvenue « membre Premium » (après paiement, en arrière-plan) ──
+                const buyerEmail = session.customer_details?.email || session.customer_email;
+                if (buyerEmail && env.BREVO_API_KEY) {
+                    context.waitUntil(sendPremiumWelcome(env, userId, buyerEmail, plan));
+                }
                 break;
             }
 
@@ -234,4 +240,81 @@ async function verifyStripeSignature(rawBody, sigHeader, secret) {
         .join('');
 
     return computedSig === v1sig;
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Email de bienvenue « membre Premium » (via API Brevo) après paiement
+//  Nécessite l'env var BREVO_API_KEY (clé API v3 Brevo : xkeysib-...)
+// ─────────────────────────────────────────────────────────────────
+async function sendPremiumWelcome(env, userId, email, plan) {
+    try {
+        // Récupérer le prénom depuis les métadonnées Supabase (best effort)
+        let name = '';
+        try {
+            const r = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
+                headers: {
+                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+                }
+            });
+            if (r.ok) { const u = await r.json(); name = u?.user_metadata?.name || ''; }
+        } catch (e) { /* best effort */ }
+
+        const prenom = name ? ` ${name}` : '';
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'api-key': env.BREVO_API_KEY,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: { name: 'CineaMatch', email: 'noreply@cineamatch.com' },
+                to: [{ email, name: name || email }],
+                subject: 'Bienvenue dans CineaMatch Premium 🎬',
+                htmlContent: premiumWelcomeHtml(prenom)
+            })
+        });
+        if (!res.ok) console.error('Brevo premium welcome error:', await res.text());
+    } catch (err) {
+        console.error('sendPremiumWelcome error:', err);
+    }
+}
+
+function premiumWelcomeHtml(prenom) {
+    return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;margin:0;padding:32px 12px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <tr><td align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+      <tr><td style="background:#0a0a0b;padding:24px 32px;text-align:center;">
+        <span style="font-size:22px;font-weight:800;letter-spacing:-0.5px;color:#ffffff;">CINEA<span style="color:#E50914;">MATCH</span></span>
+      </td></tr>
+      <tr><td style="padding:36px 32px 8px;text-align:center;">
+        <div style="display:inline-block;background:linear-gradient(135deg,#E50914,#7a0f23);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:100px;margin-bottom:16px;">⚡ Membre Premium</div>
+        <h1 style="margin:0 0 14px;font-size:24px;font-weight:800;color:#111111;line-height:1.25;">Bienvenue${prenom} 🎬</h1>
+        <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#444444;">
+          Merci, ton abonnement est <strong style="color:#111;">actif</strong> ! Tu as désormais accès à tout CineaMatch sans limite.
+        </p>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:6px auto 24px;">
+          <tr><td style="border-radius:100px;background:#E50914;">
+            <a href="https://cineamatch.com" target="_blank" style="display:inline-block;padding:15px 40px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:100px;">Trouver mon film →</a>
+          </td></tr>
+        </table>
+        <div style="text-align:left;border-top:1px solid #eee;padding-top:18px;">
+          <p style="margin:0 0 10px;font-size:14px;color:#444;">✨ <strong>Inclus dans ton Premium :</strong></p>
+          <p style="margin:0 0 8px;font-size:14px;color:#555;line-height:1.5;">🍿 Recommandations <strong>illimitées</strong></p>
+          <p style="margin:0 0 8px;font-size:14px;color:#555;line-height:1.5;">💑 Le <strong>Mode Duo</strong> : le film parfait à deux</p>
+          <p style="margin:0 0 8px;font-size:14px;color:#555;line-height:1.5;">📺 Filtre par plateformes (Netflix, Prime…)</p>
+          <p style="margin:0;font-size:14px;color:#555;line-height:1.5;">❤️ Favoris &amp; historique sauvegardés</p>
+        </div>
+      </td></tr>
+      <tr><td style="padding:22px 32px 28px;border-top:1px solid #eeeeee;">
+        <p style="margin:0;font-size:12px;line-height:1.6;color:#aaaaaa;text-align:center;">
+          © 2026 CineaMatch · <a href="https://cineamatch.com" style="color:#999999;text-decoration:none;">cineamatch.com</a> · <a href="https://cineamatch.com/legal" style="color:#999999;text-decoration:none;">Gérer mon abonnement</a><br>
+          Trouve ton film parfait avec l'IA en 30 secondes.
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>`;
 }
