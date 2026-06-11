@@ -732,9 +732,10 @@ export const authUI = {
             <div style="padding:0.5rem 0;text-align:center;">
                 <div style="font-size:2.2rem;margin-bottom:0.6rem;">📩</div>
                 <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:0.35rem;">Entre ton code</h3>
-                <p style="font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:1.3rem;line-height:1.5;">
+                <p style="font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:0.5rem;line-height:1.5;">
                     On a envoyé ton code de confirmation à<br><strong style="color:#fff;">${email}</strong>
                 </p>
+                <p style="font-size:0.78rem;color:rgba(255,255,255,0.38);margin-bottom:1.2rem;">💡 Pas reçu ? Pense à vérifier tes spams.</p>
                 <input type="text" id="otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8"
                     placeholder="Ton code"
                     style="width:100%;padding:0.9rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.18);border-radius:12px;color:#fff;font-size:1.35rem;font-weight:700;letter-spacing:0.35rem;text-align:center;font-family:inherit;outline:none;margin-bottom:0.9rem;">
