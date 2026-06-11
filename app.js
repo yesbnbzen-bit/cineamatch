@@ -488,14 +488,10 @@ const App = {
 
     // ── Films populaires sur streaming (homepage) ──
     async _loadTrending() {
-        // ── Partenaire B (arrivé par le lien duo) : on NE charge PAS les tendances. ──
-        // B va directement au questionnaire sans passer par l'accueil. Lancer 2 requêtes
-        // TMDB + parser le JSON sur son téléphone monopolise le réseau/CPU et provoque un
-        // micro-freeze pile pendant le quiz (le délai ressenti après une question). Inutile
-        // pour lui → on coupe net.
-        if (store.duoMode && store.duoRole === 'B') return;
-        // Idem si l'URL contient un lien duo (sécurité, au cas où l'état n'est pas encore posé)
-        if (new URLSearchParams(location.search).get('duo_id') || new URLSearchParams(location.search).get('duo')) return;
+        // Note : on CHARGE les tendances même pour un visiteur arrivé par un lien duo, pour que
+        // le carrousel de l'accueil soit présent quand il y revient. Le RENDU reste différé
+        // (voir plus bas : on n'affiche les cartes que si l'accueil est visible), donc aucun
+        // coût pendant le questionnaire. Le freeze d'avant venait du fond flouté, pas d'ici.
 
         // En prod, le proxy gère la clé — on vérifie quand même en dev
         const key = store.apiKeys.tmdb;
@@ -3315,15 +3311,23 @@ const App = {
         // en-tête Duo) malgré tout. On force le haut à CHAQUE frame pendant ~0,8s après
         // l'affichage → impossible pour iOS de laisser la page descendue. Après le délai,
         // l'utilisateur retrouve le scroll normal.
+        // Le verrou s'ARRÊTE dès que l'utilisateur touche l'écran → il ne combat plus le doigt
+        // (avant : pendant 0,8s, toucher pour scroller "ramenait" brutalement en haut = le petit
+        //  bug tactile ressenti à l'arrivée des résultats duo).
+        let _userTouched = false;
+        const _cancelLock = () => { _userTouched = true; };
+        window.addEventListener('touchstart', _cancelLock, { once: true, passive: true });
+        window.addEventListener('wheel', _cancelLock, { once: true, passive: true });
         const _lockStart = Date.now();
         const _scrollLock = () => {
+            if (_userTouched) return;            // l'utilisateur a pris la main → on lâche
             _forceTop();
             if (Date.now() - _lockStart < 800) requestAnimationFrame(_scrollLock);
         };
         requestAnimationFrame(_scrollLock);
         // Filets supplémentaires au cas où le rendu arrive plus tard (Personne A en différé)
-        setTimeout(_forceTop, 1100);
-        setTimeout(_forceTop, 2000);
+        setTimeout(() => { if (!_userTouched) _forceTop(); }, 1100);
+        setTimeout(() => { if (!_userTouched) _forceTop(); }, 2000);
     },
 
     // ══════════════════════════════════════════
@@ -3390,8 +3394,8 @@ const App = {
         const _prefillRetry1 = setTimeout(() => { if (store.currentUser) _prefillName(store.currentUser); }, 500);
         const _prefillRetry2 = setTimeout(() => { if (store.currentUser) _prefillName(store.currentUser); }, 1500);
 
-        // Focus auto si pas encore rempli
-        setTimeout(() => { if (!nameInput?.value) nameInput?.focus(); }, 300);
+        // Pas d'auto-focus : iOS zoome sur un champ focalisé au chargement → on laisse
+        // l'utilisateur taper le champ lui-même (évite le zoom intempestif).
 
         // ── Si l'utilisateur se connecte / son auth se restaure pendant qu'il est sur cette page ──
         const _onLoginWhileOnDuoStart = (e) => {
@@ -3755,7 +3759,8 @@ const App = {
                 startBtn.onclick = launch;
                 nameInputB?.addEventListener('keydown', e => { if (e.key === 'Enter') launch(); });
             }
-            setTimeout(() => nameInputB?.focus(), 300);
+            // Pas d'auto-focus : sur iOS, focaliser le champ au chargement déclenche un ZOOM
+            // automatique (le proche devait dézoomer à chaque fois). Il tapera le champ lui-même.
         }, 50);
     },
 
@@ -4382,6 +4387,16 @@ const App = {
     },
 
     goHome() {
+        // Si on est arrivé par un lien duo (?duo_id=… / ?duo=…), un simple changement de vue
+        // garderait l'URL "sale" ET l'état duo, et le carrousel d'accueil resterait absent.
+        // On recharge donc proprement sur la racine → URL = cineamatch.com, état réinitialisé,
+        // carrousel chargé normalement. (Pour un visiteur normal, on garde le switch interne.)
+        const _p = new URLSearchParams(location.search);
+        if (_p.get('duo_id') || _p.get('duo')) {
+            window.location.href = '/';
+            return;
+        }
+
         // Retirer le fond Mode Duo s'il est actif
         this.removeDuoBg();
         store.duoMode   = false;
