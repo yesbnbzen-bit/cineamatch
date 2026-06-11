@@ -769,8 +769,11 @@ export const authUI = {
 
         const codeInput = document.getElementById('otp-code');
         codeInput?.focus();
-        // N'autoriser que des chiffres
-        codeInput?.addEventListener('input', () => { codeInput.value = codeInput.value.replace(/\D/g, ''); });
+        // N'autoriser que des chiffres + extraire le code même si on colle un lien/texte
+        // (ex: "tel:847562", "Code : 847562", "...847562...") → on garde les chiffres, max 8.
+        const _cleanCode = () => { codeInput.value = (codeInput.value.match(/\d/g) || []).join('').slice(0, 8); };
+        codeInput?.addEventListener('input', _cleanCode);
+        codeInput?.addEventListener('paste', () => setTimeout(_cleanCode, 0));
 
         const _verify = async () => {
             const code = codeInput?.value?.trim();
@@ -937,12 +940,20 @@ export const authUI = {
             btn.textContent = '⏳';
             try {
                 await authService.updatePassword(pwd);
-                if (msg) { msg.textContent = '✅ Mot de passe mis à jour ! Connexion en cours…'; msg.style.color = '#46d369'; msg.style.display = 'block'; }
-                btn.textContent = '✓';
+                // Écran de confirmation clair : « Mot de passe changé ✅ »
+                const wrapEl = document.getElementById('reset-form-wrap');
+                if (wrapEl) {
+                    wrapEl.innerHTML = `
+                        <div style="padding:2rem 0.5rem;text-align:center;">
+                            <div style="width:64px;height:64px;border-radius:50%;background:rgba(70,211,105,0.15);border:1px solid rgba(70,211,105,0.5);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.1rem;">✅</div>
+                            <h3 style="font-size:1.25rem;font-weight:800;color:#fff;margin-bottom:0.4rem;">Mot de passe changé&nbsp;!</h3>
+                            <p style="font-size:0.9rem;color:rgba(255,255,255,0.55);line-height:1.5;">C'est tout bon. On te connecte avec ton nouveau mot de passe…</p>
+                        </div>`;
+                }
                 // Nettoyer l'URL puis recharger : la session de récupération devient une
                 // session connectée normale → l'utilisateur arrive directement connecté.
                 window.history.replaceState({}, '', '/');
-                setTimeout(() => window.location.replace('/'), 1200);
+                setTimeout(() => window.location.replace('/'), 1900);
             } catch(err) {
                 btn.disabled = false;
                 btn.textContent = t('auth.reset.btn');
