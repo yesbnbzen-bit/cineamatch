@@ -65,6 +65,13 @@ export const authService = {
         if (error) throw error;
     },
 
+    // Vérifier le code à 6 chiffres de RÉINITIALISATION → ouvre une session de récupération
+    async verifyRecoveryOtp(email, token) {
+        const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'recovery' });
+        if (error) throw error;
+        return data;
+    },
+
     // Compléter le profil (nom / date de naissance) une fois l'utilisateur authentifié
     async upsertProfile(name, birthDate) {
         const { data: { user } } = await supabase.auth.getUser();

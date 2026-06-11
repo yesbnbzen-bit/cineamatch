@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=14';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=15';
 import { store } from '../state/store.js?v=44';
 import { t, applyTranslations } from '../config/i18n.js?v=351';
 
@@ -841,20 +841,40 @@ export const authUI = {
 
         const wrap = document.createElement('div');
         wrap.id = 'forgot-form-wrap';
+        const _inp = 'width:100%;padding:0.8rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:16px;font-family:inherit;outline:none;box-sizing:border-box;';
         wrap.innerHTML = `
             <div style="padding:0.5rem 0">
                 <button id="btn-back-signin" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:inherit;padding:0;margin-bottom:1.25rem;">${t('auth.forgot.back')}</button>
-                <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem">${t('auth.forgot.title')}</h3>
-                <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem">${t('auth.forgot.sub')}</p>
-                <input type="email" id="forgot-email" placeholder="Email" style="width:100%;padding:0.75rem 1rem;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.9rem;font-family:inherit;outline:none;margin-bottom:0.75rem">
-                <p id="forgot-msg" style="font-size:0.82rem;color:#46d369;display:none;margin-bottom:0.75rem"></p>
-                <button id="btn-forgot-send" class="btn-primary" style="width:100%">${t('auth.forgot.btn')}</button>
+
+                <div id="forgot-step1">
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem">Mot de passe oublié ?</h3>
+                    <p style="font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:1.25rem">Entre ton email, on t'envoie un code à 6 chiffres pour le réinitialiser.</p>
+                    <input type="email" id="forgot-email" placeholder="Email" style="${_inp}margin-bottom:0.75rem">
+                    <p id="forgot-err" style="font-size:0.82rem;color:#E50914;display:none;margin-bottom:0.75rem"></p>
+                    <button id="btn-forgot-send" class="btn-primary" style="width:100%">Envoyer le code →</button>
+                </div>
+
+                <div id="forgot-step2" style="display:none;text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">📩</div>
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:0.3rem">Entre ton code</h3>
+                    <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:0.4rem;line-height:1.5">Code envoyé à<br><strong id="forgot-email-disp" style="color:#fff;"></strong></p>
+                    <p style="font-size:0.76rem;color:rgba(255,255,255,0.38);margin-bottom:1rem;">💡 Pas reçu ? Vérifie tes spams.</p>
+                    <input type="text" id="forgot-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Ton code" style="${_inp}font-size:1.3rem;font-weight:700;letter-spacing:0.3rem;text-align:center;margin-bottom:0.7rem">
+                    <div style="position:relative;margin-bottom:0.6rem;">
+                        <input type="password" id="forgot-newpwd" placeholder="Nouveau mot de passe (6 car. min)" style="${_inp}padding-right:2.7rem;">
+                        <button type="button" id="forgot-eye" aria-label="Afficher" style="position:absolute;right:0.55rem;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.15rem;padding:0.3rem;line-height:1;">👁</button>
+                    </div>
+                    <p id="forgot-msg2" style="font-size:0.82rem;display:none;margin:0 0 0.7rem"></p>
+                    <button id="btn-forgot-reset" class="btn-primary" style="width:100%">Réinitialiser mon mot de passe</button>
+                    <button id="btn-forgot-resend" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:0.82rem;cursor:pointer;font-family:inherit;margin-top:0.9rem;padding:0;display:block;width:100%;">Je n'ai rien reçu — renvoyer le code</button>
+                </div>
             </div>
         `;
 
-        // Insérer dans la modale (.auth-modal)
         const container = modal.querySelector('.auth-modal') || modal;
         container.appendChild(wrap);
+
+        let _resetEmail = '';
 
         document.getElementById('btn-back-signin')?.addEventListener('click', () => {
             wrap.remove();
@@ -864,22 +884,62 @@ export const authUI = {
             document.getElementById('btn-google')?.style.removeProperty('display');
         });
 
+        // ── Étape 1 : envoyer le code ──
         document.getElementById('btn-forgot-send')?.addEventListener('click', async () => {
             const email = document.getElementById('forgot-email')?.value?.trim();
-            const msg = document.getElementById('forgot-msg');
+            const err = document.getElementById('forgot-err');
             const btn = document.getElementById('btn-forgot-send');
             if (!email) return;
-            btn.disabled = true;
-            btn.textContent = '⏳';
+            btn.disabled = true; btn.innerHTML = '<span class="btn-spinner"></span>';
             try {
                 await authService.resetPasswordEmail(email);
-                if (msg) { msg.textContent = t('auth.forgot.sent'); msg.style.display = 'block'; }
-                btn.style.display = 'none';
-            } catch(err) {
-                if (msg) { msg.textContent = err.message; msg.style.color = '#E50914'; msg.style.display = 'block'; }
-                btn.disabled = false;
-                btn.textContent = t('auth.forgot.btn');
+                _resetEmail = email;
+                document.getElementById('forgot-step1').style.display = 'none';
+                document.getElementById('forgot-step2').style.display = 'block';
+                document.getElementById('forgot-email-disp').textContent = email;
+                document.getElementById('forgot-code')?.focus();
+            } catch(e) {
+                if (err) { err.textContent = "Impossible d'envoyer le code. Vérifie l'adresse."; err.style.display = 'block'; }
+                btn.disabled = false; btn.textContent = 'Envoyer le code →';
             }
+        });
+
+        // ── Œil ──
+        document.getElementById('forgot-eye')?.addEventListener('click', () => {
+            const p = document.getElementById('forgot-newpwd'), e = document.getElementById('forgot-eye');
+            if (!p) return;
+            if (p.type === 'password') { p.type = 'text'; e.textContent = '🙈'; }
+            else { p.type = 'password'; e.textContent = '👁'; }
+        });
+        document.getElementById('forgot-code')?.addEventListener('input', (ev) => { ev.target.value = ev.target.value.replace(/\D/g, ''); });
+
+        // ── Étape 2 : valider le code + nouveau mot de passe ──
+        document.getElementById('btn-forgot-reset')?.addEventListener('click', async () => {
+            const code = document.getElementById('forgot-code')?.value?.trim();
+            const pwd  = document.getElementById('forgot-newpwd')?.value;
+            const msg  = document.getElementById('forgot-msg2');
+            const btn  = document.getElementById('btn-forgot-reset');
+            if (!code || code.length < 6) { if (msg) { msg.textContent = 'Entre le code reçu par email.'; msg.style.color = '#E50914'; msg.style.display = 'block'; } return; }
+            if (!pwd || pwd.length < 6)   { if (msg) { msg.textContent = 'Le mot de passe doit faire au moins 6 caractères.'; msg.style.color = '#E50914'; msg.style.display = 'block'; } return; }
+            btn.disabled = true; btn.innerHTML = '<span class="btn-spinner"></span>';
+            try {
+                await authService.verifyRecoveryOtp(_resetEmail, code);   // ouvre la session de récupération
+                await authService.updatePassword(pwd);                    // change le mot de passe
+                if (msg) { msg.textContent = '✅ Mot de passe mis à jour !'; msg.style.color = '#46d369'; msg.style.display = 'block'; }
+                setTimeout(() => { wrap.remove(); this.hideModal?.(); }, 800);
+            } catch(e) {
+                if (msg) { msg.textContent = 'Code incorrect ou expiré. Réessaie.'; msg.style.color = '#E50914'; msg.style.display = 'block'; }
+                btn.disabled = false; btn.textContent = 'Réinitialiser mon mot de passe';
+            }
+        });
+
+        // ── Renvoyer le code ──
+        document.getElementById('btn-forgot-resend')?.addEventListener('click', async () => {
+            const rbtn = document.getElementById('btn-forgot-resend'); const msg = document.getElementById('forgot-msg2');
+            rbtn.disabled = true; rbtn.textContent = 'Envoi…';
+            try { await authService.resetPasswordEmail(_resetEmail); if (msg) { msg.textContent = '📩 Nouveau code envoyé.'; msg.style.color = '#46d369'; msg.style.display = 'block'; } }
+            catch(e) { if (msg) { msg.textContent = 'Patiente un instant avant de redemander.'; msg.style.color = '#E50914'; msg.style.display = 'block'; } }
+            setTimeout(() => { rbtn.disabled = false; rbtn.textContent = "Je n'ai rien reçu — renvoyer le code"; }, 4000);
         });
     },
 
