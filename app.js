@@ -2,7 +2,7 @@ import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=69';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
-import { historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=17';
+import { authService, historyService, ratingsService, watchlistService, preferencesService } from './services/supabase.js?v=17';
 import { t, getLang, setLang, applyTranslations } from './config/i18n.js?v=352';
 
 // ── Met à jour le compteur de sélections d'une question multi ──
@@ -4322,6 +4322,41 @@ const App = {
         if (pwdBtn && !pwdBtn._wired) {
             pwdBtn._wired = true;
             pwdBtn.addEventListener('click', () => this._changePassword());
+        }
+
+        // Section abonnement : visible seulement pour les Premium + portail Stripe
+        const subSection = document.getElementById('profil-sub-section');
+        const portalBtn  = document.getElementById('profil-portal-btn');
+        const isPrem     = store.currentUser?.user_metadata?.is_premium === true;
+        if (subSection) subSection.style.display = isPrem ? 'block' : 'none';
+        if (portalBtn && !portalBtn._wired) {
+            portalBtn._wired = true;
+            portalBtn.addEventListener('click', () => this._openBillingPortal());
+        }
+    },
+
+    // ── Ouvrir le portail client Stripe (gérer / résilier l'abonnement) ──
+    async _openBillingPortal() {
+        const btn = document.getElementById('profil-portal-btn');
+        const msg = document.getElementById('profil-portal-msg');
+        const label = 'Gérer / résilier mon abonnement →';
+        const show = (text, color) => { if (msg) { msg.textContent = text; msg.style.color = color; msg.style.display = 'block'; } };
+        try {
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Ouverture…'; }
+            const session = await authService.getSession();
+            const token = session?.access_token;
+            if (!token) { show('Reconnecte-toi pour gérer ton abonnement.', '#E50914'); if (btn) { btn.disabled = false; btn.textContent = label; } return; }
+            const res = await fetch('/api/stripe-portal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok && data.url) { window.location.href = data.url; return; }
+            show(data.error || "Impossible d'ouvrir le portail pour le moment.", '#E50914');
+            if (btn) { btn.disabled = false; btn.textContent = label; }
+        } catch (e) {
+            show('Erreur réseau. Réessaie.', '#E50914');
+            if (btn) { btn.disabled = false; btn.textContent = label; }
         }
     },
 

@@ -881,6 +881,14 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Mon abonnement (visible Premium uniquement) -->
+                    <div class="profil-section" id="profil-sub-section" style="margin-top:1.5rem;display:none;">
+                        <div class="profil-section-title">Mon abonnement</div>
+                        <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);margin-bottom:0.8rem;line-height:1.5;">Change de carte, télécharge tes factures ou résilie ton abonnement à tout moment.</p>
+                        <button id="profil-portal-btn" class="btn-pwd-update" style="width:100%;">Gérer / résilier mon abonnement →</button>
+                        <p id="profil-portal-msg" style="font-size:0.8rem;margin-top:0.5rem;display:none;"></p>
+                    </div>
                 </div>
 
             </div><!-- /.prefs-body -->
@@ -1026,7 +1034,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=538"></script>
+    <script type="module" src="app.js?v=539"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=46';
         authUI.init();

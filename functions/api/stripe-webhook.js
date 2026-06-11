@@ -101,28 +101,31 @@ export async function onRequest(context) {
             }
 
             // ── Échec de paiement ──
+            // On NE coupe PAS le Premium ici : Stripe relance automatiquement le paiement
+            // pendant ~1 à 2 semaines (dunning). On prévient juste l'utilisateur par email
+            // avec un lien pour régler / mettre à jour sa carte. La coupure définitive se
+            // fait à l'annulation de l'abonnement (customer.subscription.deleted).
             case 'invoice.payment_failed': {
                 const invoice = event.data.object;
-                // Récupérer userId via la subscription si disponible
-                const subId = invoice.subscription;
+                const subId   = invoice.subscription;
+                let userId = null;
                 if (subId && env.STRIPE_SECRET_KEY) {
                     try {
                         const subRes = await fetch(`https://api.stripe.com/v1/subscriptions/${subId}`, {
                             headers: { 'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}` }
                         });
-                        const sub    = await subRes.json();
-                        const userId = sub.metadata?.userId;
-                        if (userId) {
-                            await setPremiumStatus(env, userId, false, null, {
-                                stripeCustomerId:    invoice.customer,
-                                stripeSubscriptionId: subId,
-                            });
-                            console.log(`⚠️ Premium révoqué (paiement échoué) — userId: ${userId}`);
-                        }
+                        const sub = await subRes.json();
+                        userId = sub.metadata?.userId || null;
                     } catch (err) {
                         console.error('Erreur récupération subscription:', err);
                     }
                 }
+                if (userId && env.BREVO_API_KEY) {
+                    const hintEmail = invoice.customer_email || null;
+                    const payUrl    = invoice.hosted_invoice_url || 'https://cineamatch.com';
+                    context.waitUntil(sendPaymentFailedEmail(env, userId, hintEmail, payUrl));
+                }
+                console.log(`⚠️ Paiement échoué (relances Stripe en cours) — userId: ${userId}`);
                 break;
             }
 
@@ -349,6 +352,83 @@ function premiumWelcomeHtml(prenom) {
       <tr><td style="padding:22px 32px 28px;border-top:1px solid #eeeeee;">
         <p style="margin:0;font-size:12px;line-height:1.7;color:#aaaaaa;text-align:center;">
           © 2026 CineaMatch · <a href="https://cineamatch.com" style="color:#999999;text-decoration:none;">cineamatch.com</a> · <a href="https://cineamatch.com/legal" style="color:#999999;text-decoration:none;">Gérer mon abonnement</a><br>
+          Trouve ton film parfait avec l'IA en 30 secondes.
+        </p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>`;
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Email « paiement échoué » (via API Brevo) — relances en cours
+// ─────────────────────────────────────────────────────────────────
+async function sendPaymentFailedEmail(env, userId, email, payUrl) {
+    try {
+        let name = '';
+        try {
+            const r = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
+                headers: {
+                    'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                    'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`
+                }
+            });
+            if (r.ok) {
+                const u = await r.json();
+                name  = u?.user_metadata?.name || '';
+                email = u?.email || email;
+            }
+        } catch (e) { /* best effort */ }
+
+        if (!email) { console.error('sendPaymentFailedEmail: aucun email'); return; }
+        const prenom = name ? ` ${name}` : '';
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'api-key': env.BREVO_API_KEY,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: { name: 'CineaMatch', email: 'noreply@cineamatch.com' },
+                to: [{ email, name: name || email }],
+                subject: 'Action requise : ton paiement CineaMatch a échoué',
+                htmlContent: paymentFailedHtml(prenom, payUrl)
+            })
+        });
+        if (!res.ok) console.error('Brevo payment failed email error:', await res.text());
+    } catch (err) {
+        console.error('sendPaymentFailedEmail error:', err);
+    }
+}
+
+function paymentFailedHtml(prenom, payUrl) {
+    return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eceef0;margin:0;padding:32px 12px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <tr><td align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.10);">
+      <tr><td style="background:#0a0a0b;background-image:linear-gradient(135deg,#2a0410 0%,#0a0a0b 60%);padding:38px 32px 32px;text-align:center;">
+        <span style="font-size:21px;font-weight:800;letter-spacing:-0.5px;color:#ffffff;">CINEA<span style="color:#E50914;">MATCH</span></span>
+        <div style="margin:20px auto 0;width:54px;height:54px;border-radius:50%;background:rgba(255,180,77,0.16);border:1px solid rgba(255,180,77,0.5);text-align:center;line-height:54px;font-size:25px;">⚠️</div>
+        <h1 style="margin:14px 0 4px;font-size:24px;font-weight:800;color:#ffffff;line-height:1.2;">Ton paiement n'a pas pu aboutir</h1>
+        <p style="margin:0;font-size:14px;color:rgba(255,255,255,0.6);">Rien de grave — ça se règle en 30 secondes.</p>
+      </td></tr>
+      <tr><td style="padding:34px 32px 8px;text-align:center;">
+        <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#444444;">
+          Bonjour${prenom}, ta dernière échéance CineaMatch Premium a été refusée (carte expirée, plafond, ou solde insuffisant). <strong style="color:#111;">Ton accès reste actif pour le moment</strong>, mais mets à jour ton paiement pour ne pas le perdre.
+        </p>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 18px;">
+          <tr><td style="border-radius:100px;background:#E50914;box-shadow:0 6px 20px rgba(229,9,20,0.4);">
+            <a href="${payUrl}" target="_blank" style="display:inline-block;padding:15px 42px;font-size:16px;font-weight:800;color:#ffffff;text-decoration:none;border-radius:100px;">Régulariser mon paiement →</a>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 8px;font-size:12.5px;line-height:1.6;color:#999999;">
+          On réessaiera automatiquement plusieurs fois dans les prochains jours. Tu peux aussi mettre à jour ta carte directement depuis ton espace.
+        </p>
+      </td></tr>
+      <tr><td style="padding:20px 32px 28px;border-top:1px solid #eeeeee;">
+        <p style="margin:0;font-size:12px;line-height:1.7;color:#aaaaaa;text-align:center;">
+          © 2026 CineaMatch · <a href="https://cineamatch.com" style="color:#999999;text-decoration:none;">cineamatch.com</a><br>
           Trouve ton film parfait avec l'IA en 30 secondes.
         </p>
       </td></tr>
