@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quel film regarder ce soir ? Nos idées par envie + l'IA qui décide | CineaMatch</title>
+  <meta name="description" content="Quel film regarder ce soir ? Notre sélection de films par envie (rire, frisson, en couple, émotion) et un outil IA gratuit qui te trouve le film parfait en 30 secondes.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://cineamatch.com/blog/quel-film-regarder-ce-soir">
+
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://cineamatch.com/blog/quel-film-regarder-ce-soir">
+  <meta property="og:title" content="Quel film regarder ce soir ? Nos idées + l'IA qui décide en 30 secondes">
+  <meta property="og:description" content="Plus besoin de scroller une heure. Notre sélection par envie + l'IA CineaMatch qui te trouve le film parfait pour ce soir.">
+  <meta property="og:image" content="https://cineamatch.com/og-image.png">
+  <meta property="og:site_name" content="CineaMatch">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="https://cineamatch.com/favicon-32.png">
+  <link rel="apple-touch-icon" href="https://cineamatch.com/favicon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&display=swap" rel="stylesheet">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Quel film regarder ce soir ?",
+    "description": "Sélection de films par envie et outil IA gratuit pour trouver le film parfait en 30 secondes.",
+    "author": { "@type": "Organization", "name": "CineaMatch" },
+    "publisher": { "@type": "Organization", "name": "CineaMatch", "logo": { "@type": "ImageObject", "url": "https://cineamatch.com/favicon-192.png" } },
+    "mainEntityOfPage": "https://cineamatch.com/blog/quel-film-regarder-ce-soir",
+    "image": "https://cineamatch.com/og-image.png"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Quel film regarder ce soir quand on ne sait pas quoi choisir ?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Pars de ton envie du moment (rire, frisson, émotion, action) plutôt que d'une liste infinie. CineaMatch te pose quelques questions et te propose 3 films parfaits en 30 secondes, gratuitement et sans inscription." } },
+      { "@type": "Question", "name": "Comment choisir un film rapidement ?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Fixe d'abord une envie et une durée, limite-toi à 3 options maximum, et décide en moins d'une minute. Un outil de recommandation comme CineaMatch fait ce tri pour toi." } }
+    ]
+  }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #E50914; --bg: #0b0b0c; --surface: #161616; --surface2: #1d1d1f;
+      --border: rgba(255,255,255,0.08); --text: rgba(255,255,255,0.84);
+      --muted: rgba(255,255,255,0.45); --radius: 14px;
+    }
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg);
+      color: var(--text); line-height: 1.75; min-height: 100vh;
+      background-image: radial-gradient(ellipse 60% 50% at 100% 0%, rgba(229,9,20,0.10) 0%, transparent 60%); }
+
+    header { display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border); position: sticky; top: 0;
+      background: rgba(11,11,12,0.92); backdrop-filter: blur(12px); z-index: 100; }
+    .logo { font-size: 1.2rem; font-weight: 900; color: #fff; text-decoration: none; letter-spacing: -0.5px; }
+    .logo span { color: var(--red); }
+    .cta-top { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; font-weight: 700;
+      color: #fff; text-decoration: none; background: var(--red); padding: 0.55rem 1.1rem; border-radius: 100px;
+      transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(229,9,20,0.35); }
+    .cta-top:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(229,9,20,0.5); }
+
+    main { max-width: 760px; margin: 0 auto; padding: 3rem 1.5rem 4rem; }
+    .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .breadcrumb a { color: var(--muted); text-decoration: none; }
+    .breadcrumb a:hover { color: #fff; }
+
+    h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 900; color: #fff; line-height: 1.15;
+      letter-spacing: -1px; margin-bottom: 1rem; }
+    .lead { font-size: 1.12rem; color: rgba(255,255,255,0.7); margin-bottom: 2rem; }
+    h2 { font-size: 1.5rem; font-weight: 800; color: #fff; margin: 2.6rem 0 0.9rem; letter-spacing: -0.4px; }
+    h3 { font-size: 1.12rem; font-weight: 700; color: #fff; margin: 1.6rem 0 0.5rem; }
+    p { margin-bottom: 1.1rem; }
+    ul { margin: 0 0 1.1rem 1.2rem; }
+    li { margin-bottom: 0.5rem; }
+    strong { color: #fff; }
+    a.inline { color: #ff6b73; text-decoration: underline; text-underline-offset: 2px; }
+
+    .film-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.1rem 1.3rem; margin-bottom: 0.8rem; }
+    .film-card b { color: #fff; }
+    .film-card span { color: var(--muted); font-size: 0.92rem; }
+
+    .cta-box { background: linear-gradient(135deg, rgba(229,9,20,0.16), rgba(120,15,35,0.10));
+      border: 1px solid rgba(229,9,20,0.35); border-radius: 18px; padding: 1.8rem; margin: 2.4rem 0;
+      text-align: center; }
+    .cta-box h3 { margin-top: 0; font-size: 1.3rem; }
+    .cta-box p { color: rgba(255,255,255,0.7); margin-bottom: 1.3rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--red); color: #fff;
+      font-weight: 800; font-size: 1rem; padding: 0.9rem 2rem; border-radius: 100px; text-decoration: none;
+      box-shadow: 0 6px 22px rgba(229,9,20,0.4); transition: transform 0.15s, box-shadow 0.15s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(229,9,20,0.55); }
+    .btn-mini { font-size: 0.85rem; color: rgba(255,255,255,0.55); display: block; margin-top: 0.7rem; }
+
+    .related { border-top: 1px solid var(--border); margin-top: 3rem; padding-top: 1.5rem; }
+    .related a { color: #ff6b73; text-decoration: none; font-weight: 600; }
+    .related a:hover { text-decoration: underline; }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center;
+      color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="/">CINEA<span>MATCH</span></a>
+    <a class="cta-top" href="/">🎬 Trouver mon film →</a>
+  </header>
+
+  <main>
+    <nav class="breadcrumb"><a href="/">Accueil</a> › <a href="/blog/">Guides</a> › Quel film regarder ce soir</nav>
+
+    <h1>Quel film regarder ce soir ?</h1>
+    <p class="lead">La réponse courte : pars de ton <strong>envie du moment</strong>, pas d'une liste infinie. Ci-dessous, nos meilleures idées de films classées par humeur — et si tu veux gagner du temps, l'IA de CineaMatch te propose <strong>3 films parfaits en 30 secondes</strong>, gratuitement et sans inscription.</p>
+
+    <div class="cta-box">
+      <h3>Laisse l'IA décider pour toi 🎬</h3>
+      <p>Réponds à quelques questions sur ton envie du soir, et reçois 3 films faits pour toi.</p>
+      <a class="btn" href="/">Trouver mon film en 30 secondes →</a>
+      <span class="btn-mini">Gratuit · sans inscription · sans carte bancaire</span>
+    </div>
+
+    <h2>Le vrai problème : trop de choix</h2>
+    <p>On passe en moyenne <strong>plus de temps à chercher un film qu'à le regarder</strong>. Netflix, Prime, Disney+, Canal+… des milliers de titres, et au final on relance une série déjà vue. La solution n'est pas une liste de plus : c'est de <strong>partir d'une envie précise</strong> et de se limiter à 2-3 options maximum.</p>
+
+    <h2>Quel film regarder ce soir… selon ton envie</h2>
+
+    <h3>😂 Envie de rire (comédie)</h3>
+    <div class="film-card"><b>The Grand Budapest Hotel</b> <span>— comédie élégante et loufoque, parfaite pour décompresser.</span></div>
+    <div class="film-card"><b>Intouchables</b> <span>— le feel-good français qui marche à tous les coups.</span></div>
+    <div class="film-card"><b>Game Night</b> <span>— comédie + suspense, idéale si vous êtes plusieurs.</span></div>
+
+    <h3>🕵️ Envie de frisson (thriller / suspense)</h3>
+    <div class="film-card"><b>Parasite</b> <span>— tension sociale magistrale, impossible à lâcher.</span></div>
+    <div class="film-card"><b>Gone Girl</b> <span>— thriller manipulateur, parfait pour une soirée prenante.</span></div>
+    <div class="film-card"><b>Knives Out</b> <span>— enquête maligne et fun, accessible à tous.</span></div>
+
+    <h3>💕 Envie d'émotion (drame / inspirant)</h3>
+    <div class="film-card"><b>Forrest Gump</b> <span>— une valeur sûre qui émeut à chaque fois.</span></div>
+    <div class="film-card"><b>La La Land</b> <span>— romantique et lumineux, idéal en couple.</span></div>
+    <div class="film-card"><b>Green Book</b> <span>— histoire vraie touchante, jamais lourde.</span></div>
+
+    <h3>⚡ Envie d'action / aventure</h3>
+    <div class="film-card"><b>Mad Max: Fury Road</b> <span>— spectacle non-stop, adrénaline garantie.</span></div>
+    <div class="film-card"><b>Top Gun: Maverick</b> <span>— grand divertissement, à voir sur grand écran.</span></div>
+    <div class="film-card"><b>Dune</b> <span>— SF épique et immersive pour une vraie soirée cinéma.</span></div>
+
+    <div class="cta-box">
+      <h3>Pas sûr de ton envie ? 🤔</h3>
+      <p>C'est exactement pour ça qu'on a créé CineaMatch. L'IA cerne ton humeur et te sort le bon film, sur tes plateformes.</p>
+      <a class="btn" href="/">Lancer ma recherche →</a>
+    </div>
+
+    <h2>Quel film regarder à deux ce soir ?</h2>
+    <p>Le casse-tête classique : l'un veut du frisson, l'autre de la légèreté. Avec le <strong>Mode Duo</strong> de CineaMatch, chacun répond de son côté et l'IA trouve le <strong>compromis parfait</strong> — un film que vous allez adorer tous les deux. Fini les négociations interminables sur le canapé.</p>
+
+    <h2>Notre méthode pour décider en moins d'une minute</h2>
+    <ul>
+      <li><strong>Choisis une envie</strong> (rire, frisson, émotion, action) avant même d'ouvrir une appli.</li>
+      <li><strong>Fixe une durée</strong> : tu te couches tôt ? Vise moins de 1h45.</li>
+      <li><strong>Limite-toi à 3 films</strong> et décide. Plus de choix = plus de paralysie.</li>
+      <li><strong>Laisse un outil trancher</strong> si tu hésites encore.</li>
+    </ul>
+    <p>On détaille cette méthode dans notre guide <a class="inline" href="/blog/choisir-un-film-en-30-secondes">Comment choisir un film en 30 secondes</a>.</p>
+
+    <div class="cta-box">
+      <h3>Ton film parfait t'attend 🍿</h3>
+      <p>Arrête de scroller. Réponds à quelques questions, regarde un bon film ce soir.</p>
+      <a class="btn" href="/">Trouver mon film maintenant →</a>
+      <span class="btn-mini">Gratuit · 30 secondes · recommandé par l'IA</span>
+    </div>
+
+    <div class="related">
+      <p>À lire aussi : <a href="/blog/choisir-un-film-en-30-secondes">Comment choisir un film en 30 secondes (et arrêter de scroller 1h)</a></p>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 CineaMatch IA · <a href="/">Accueil</a> · <a href="/blog/">Guides</a> · <a href="/legal">Mentions légales</a>
+  </footer>
+</body>
+</html>
