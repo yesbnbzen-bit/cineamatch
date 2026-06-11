@@ -661,6 +661,15 @@ export const authUI = {
                 btn.style.color = '#0a0a0a';
             }
         } catch (err) {
+            // Compte créé mais email jamais confirmé → on REPREND la vérification :
+            // on renvoie un code et on ré-affiche l'écran OTP (jamais coincé).
+            const _msg = (err.message || '') + ' ' + (err.code || '');
+            if (/not confirmed|email_not_confirmed|not_confirmed/i.test(_msg)) {
+                this.setLoading(btn, false);
+                try { await authService.resendSignupOtp(email); } catch (e) {}
+                this.showOtpVerification(email, null, null);
+                return;
+            }
             this.showError('signin-error', this.friendlyError(err.message));
             this.setLoading(btn, false); // reset uniquement en cas d'erreur
         }
