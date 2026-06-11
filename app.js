@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=68';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=69';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -2672,10 +2672,21 @@ const App = {
                     ${t('error.sub')}
                 </p>
                 ${msg ? `<p style="color:rgba(255,100,100,0.8);font-size:0.78rem;font-family:monospace;background:rgba(255,0,0,0.1);padding:8px 12px;border-radius:6px;margin-bottom:1.5rem;">🔍 ${msg}</p>` : ''}
-                <button onclick="App.startFlow()" class="btn-primary" style="width:100%;margin-bottom:0.75rem;">
+                <button id="error-retry-btn" type="button" class="btn-primary" style="width:100%;margin-bottom:0.75rem;position:relative;z-index:1;">
                     ${t('error.retry')}
                 </button>
             </div>`;
+        // Écouteur fiable (l'onclick en ligne pouvait ne pas répondre au toucher iOS).
+        // « Recommencer » = RÉESSAYER la même analyse (souvent un simple échec réseau 4G),
+        // sans repasser par les questions ni le paywall — les réponses sont déjà en mémoire.
+        const _retryBtn = document.getElementById('error-retry-btn');
+        if (_retryBtn) {
+            _retryBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.processResults();
+            });
+        }
     },
 
     // ── Rendu des cartes résultats ──

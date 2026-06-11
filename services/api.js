@@ -795,9 +795,6 @@ Réponds UNIQUEMENT par ce JSON strict (pas de markdown, pas de texte autour) :
     async getDeepRecommendations(likedMovies, preferences, candidates = [], isReroll = false, excludedIds = [], lang = 'fr') {
         if (!this._resolveKey()) return [];
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 30000);
-
         const user_dna = buildDNAArchetypes(likedMovies);
         const eraLabel = preferences.era === 'new' ? '2020 à aujourd\'hui'
             : preferences.era === 'modern' ? '2000-2020'
@@ -1206,56 +1203,68 @@ ${enrichedCandidates}
 
 Applique le scoring dynamique, garantis la diversité du top 3, et génère des match reasons percutantes.`;
 
-        try {
-            const resp = await fetch(OPENAI_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${this._resolveKey()}`
-                },
-                signal: controller.signal,
-                body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: userPrompt }
-                    ],
-                    temperature: 0.25,  // Légèrement plus haut pour varier les formulations des reasons
-                    response_format: { type: "json_object" },
-                    max_tokens: 4000   // Plus de tokens pour des reasons plus riches
-                })
-            });
-            clearTimeout(timeout);
+        // ── Réseau mobile instable (4G) : on réessaie automatiquement 1× sur échec réseau
+        //    ("Load failed") avant d'abandonner. Chaque tentative a son propre timeout de 30s.
+        //    Pas de retry sur AbortError (le timeout de 30s a déjà été atteint).
+        let lastErr;
+        for (let attempt = 1; attempt <= 2; attempt++) {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 30000);
+            try {
+                const resp = await fetch(OPENAI_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${this._resolveKey()}`
+                    },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: userPrompt }
+                        ],
+                        temperature: 0.25,  // Légèrement plus haut pour varier les formulations des reasons
+                        response_format: { type: "json_object" },
+                        max_tokens: 4000   // Plus de tokens pour des reasons plus riches
+                    })
+                });
+                clearTimeout(timeout);
 
-            if (!resp.ok) throw new Error(`OpenAI HTTP ${resp.status}`);
-            const data = await resp.json();
-            const parsed = JSON.parse(data.choices[0].message.content);
-            let recommendations = parsed.recommendations || [];
+                if (!resp.ok) throw new Error(`OpenAI HTTP ${resp.status}`);
+                const data = await resp.json();
+                const parsed = JSON.parse(data.choices[0].message.content);
+                let recommendations = parsed.recommendations || [];
 
-            // ── POST-PROCESSING : Garantie diversité top 3 côté client ──
-            const sorted = [...recommendations].sort((a, b) => b.match_score - a.match_score);
-            const diversified = this._applyDiversityFilter(sorted, candidates);
+                // ── POST-PROCESSING : Garantie diversité top 3 côté client ──
+                const sorted = [...recommendations].sort((a, b) => b.match_score - a.match_score);
+                const diversified = this._applyDiversityFilter(sorted, candidates);
 
-            // Log debug
-            console.log(`🎬 Scoring IA : ${recommendations.length} films scorés`);
-            console.log(`⚖️ ADN x${weights.dna}% | Mood x${weights.mood}% | Qualité x${weights.quality}% | Thème x${weights.theme}%`);
-            diversified.slice(0, 3).forEach((r, i) =>
-                console.log(`  ${i+1}. [${r.match_score}pts | ${r.diversity_tag || ''}] ID:${r.tmdb_id} — ${r.match_reason?.substring(0, 90)}...`)
-            );
+                // Log debug
+                console.log(`🎬 Scoring IA : ${recommendations.length} films scorés (essai ${attempt})`);
+                console.log(`⚖️ ADN x${weights.dna}% | Mood x${weights.mood}% | Qualité x${weights.quality}% | Thème x${weights.theme}%`);
+                diversified.slice(0, 3).forEach((r, i) =>
+                    console.log(`  ${i+1}. [${r.match_score}pts | ${r.diversity_tag || ''}] ID:${r.tmdb_id} — ${r.match_reason?.substring(0, 90)}...`)
+                );
 
-            return diversified;
-        } catch (error) {
-            clearTimeout(timeout);
-            // Point 8 : message spécifique si timeout (AbortError) vs autre erreur
-            if (error.name === 'AbortError') {
-                console.warn('⏱️ OpenAI timeout (30s) — scoring abandonné');
-                throw new Error(lang === 'en'
-                    ? 'AI took too long to respond — please try again'
-                    : "L'IA a mis trop de temps à répondre — réessaie dans un instant");
+                return diversified;
+            } catch (error) {
+                clearTimeout(timeout);
+                lastErr = error;
+                // Timeout (AbortError) : pas de retry (30s déjà écoulées) → message dédié.
+                if (error.name === 'AbortError') {
+                    console.warn('⏱️ OpenAI timeout (30s) — scoring abandonné');
+                    throw new Error(lang === 'en'
+                        ? 'AI took too long to respond — please try again'
+                        : "L'IA a mis trop de temps à répondre — réessaie dans un instant");
+                }
+                // Échec réseau ("Load failed" / TypeError) : on retente 1× après une courte pause.
+                console.warn(`OpenAI ranking échec réseau (essai ${attempt}/2) :`, error.message);
+                if (attempt < 2) { await new Promise(r => setTimeout(r, 800)); continue; }
             }
-            console.error("OpenAI Hybrid Ranking Error:", error);
-            throw new Error("Rank API failed: " + error.message);
         }
+        console.error("OpenAI Hybrid Ranking Error:", lastErr);
+        throw new Error("Rank API failed: " + (lastErr?.message || 'inconnue'));
     },
 
     // ─────────────────────────────────────────────────────────────
