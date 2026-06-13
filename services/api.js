@@ -402,7 +402,9 @@ export const tmdbService = {
         } else {
             // Seuil de votes adaptatif : les films RÉCENTS (2020+) ont mécaniquement moins de
             // votes → un seuil à 300 vide le pool « récent ». On l'abaisse pour cette époque.
-            const _minVotes = era === 'new' ? 80 : 300;
+            // _minVotes peut être relevé par l'appelant (ex: passe intersection Duo) pour
+            // écarter le trop-niche/arthouse et privilégier des films grand public.
+            const _minVotes = preferences._minVotes || (era === 'new' ? 80 : 300);
             url += `&sort_by=vote_average.desc&vote_count.gte=${_minVotes}`;
         }
 
@@ -936,6 +938,10 @@ Ces recommandations sont pour DEUX personnes avec des envies DIFFÉRENTES :
   → Personne B veut : ${preferences.duoMoodLabelB || '?'}${langConflictNote}${eraConflictNote}${duoPaceNote}${duoExclusionNote}
 
 CHAQUE film du top 3 DOIT être un vrai compromis qui satisfait les DEUX simultanément.
+
+🎯 TON & ACCESSIBILITÉ — calque-toi sur les FILMS DE RÉFÉRENCE cités, pas seulement sur le genre :
+  - Si les références sont GRAND PUBLIC et accessibles (ex. Get Out, Shutter Island, Gone Girl, Prisoners), reste sur des films grand public et acclamés. ÉVITE le cinéma d'auteur/festival pointu (Palmes d'Or austères, films contemplatifs, VOSTF exigeants) ET le contenu extrême/dérangeant (gore, body-horror type Titane, films-chocs) SAUF si les références vont déjà clairement dans ce sens.
+  - Critère ultime : un film que les DEUX lanceraient facilement ce soir, sans effort. Connu + accessible + bien noté > obscur + "intello". Tu n'es pas un jury de festival, tu proposes une bonne soirée.
 
 EXEMPLES DE COMPROMIS PARFAITS selon les combos de moods :
   • Suspense + Légèreté → Knives Out, Game Night, The Nice Guys, Murder Mystery, Clue, Palm Springs, Catch Me If You Can

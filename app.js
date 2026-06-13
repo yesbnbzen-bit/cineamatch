@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=70';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=71';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1797,7 +1797,8 @@ const App = {
                     // Pool additif prioritaire. Vide/ignoré en solo (duoIntersectionGenres = null).
                     duoIntersectionGenres
                         ? tmdbService.getAdvancedDiscovery(
-                            { ...store.answers, detectedLanguage, _userPlatforms: userPlatforms, _forceGenres: duoIntersectionGenres },
+                            // _minVotes élevé → films hybrides GRAND PUBLIC (écarte l'arthouse/festival)
+                            { ...store.answers, detectedLanguage, _userPlatforms: userPlatforms, _forceGenres: duoIntersectionGenres, _minVotes: 800 },
                             // Variété : page 1-2 au 1er essai, 2-5 sur reroll → évite de
                             // ressortir toujours les mêmes hybrides populaires.
                             {}, false, (isReroll ? Math.floor(Math.random() * 4) + 2 : Math.floor(Math.random() * 2) + 1), []
