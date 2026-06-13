@@ -1798,7 +1798,9 @@ const App = {
                     duoIntersectionGenres
                         ? tmdbService.getAdvancedDiscovery(
                             { ...store.answers, detectedLanguage, _userPlatforms: userPlatforms, _forceGenres: duoIntersectionGenres },
-                            {}, false, 1, []
+                            // Variété : page 1-2 au 1er essai, 2-5 sur reroll → évite de
+                            // ressortir toujours les mêmes hybrides populaires.
+                            {}, false, (isReroll ? Math.floor(Math.random() * 4) + 2 : Math.floor(Math.random() * 2) + 1), []
                           )
                         : Promise.resolve([])
                 ]),
