@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=71';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=72';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';

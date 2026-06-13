@@ -389,6 +389,11 @@ export const tmdbService = {
 
         // 7. Sort / Pivot Strategy
         const rerollVariant = preferences?.rerollVariant || '';
+        // COMÉDIE : on veut des comédies POPULAIRES et fun (The Hangover, Game Night, 21 Jump
+        // Street…), PAS des drames/biopics primés étiquetés "comédie" (Anora, The Apprentice…).
+        // → pour ce mood, on trie par POPULARITÉ avec un plancher de qualité, au lieu de
+        // "mieux notés" (qui remonte le prestige critique au détriment du fun).
+        const wantsComedy = String(preferences.mood || genreIds || '').includes('35');
         if (hasCastFilter) {
             url += `&sort_by=popularity.desc&vote_average.gte=4.5&vote_count.gte=10`;
         } else if (isReroll && rerollVariant === 'hidden_gem') {
@@ -397,6 +402,9 @@ export const tmdbService = {
         } else if (isReroll && rerollVariant === 'different_angle') {
             // Angle différent : ouvre le filtre de popularité, tri par date de sortie décroissante
             url += `&sort_by=primary_release_date.desc&vote_average.gte=6.8&vote_count.gte=300`;
+        } else if (wantsComedy) {
+            // Comédie (1er essai OU reroll) : popularité + bonne note → vraies comédies grand public
+            url += `&sort_by=popularity.desc&vote_average.gte=6.0&vote_count.gte=${preferences._minVotes || 500}`;
         } else if (isReroll) {
             url += `&sort_by=vote_average.desc&vote_count.lte=4000&vote_average.gte=7.0`;
         } else {
