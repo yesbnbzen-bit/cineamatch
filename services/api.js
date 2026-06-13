@@ -277,7 +277,13 @@ export const tmdbService = {
 
         // cleanGenres déclaré en dehors du if pour être accessible dans la section without_genres
         let cleanGenres = '';
-        if (genreIds) {
+        if (preferences._forceGenres) {
+            // MODE DUO — intersection EXACTE de genres (ex: "53,35" = Thriller ET Comédie).
+            // On bypasse volontairement le collapse comédie ci-dessous pour cibler les vrais
+            // films HYBRIDES (thriller-comédies, etc.), qui sont les meilleurs compromis duo.
+            cleanGenres = String(preferences._forceGenres).split(',').filter(id => !myExclusions.includes(Number(id))).join(',');
+            if (cleanGenres) url += `&with_genres=${cleanGenres}`;
+        } else if (genreIds) {
             const genreIdsStr = String(genreIds);
             // Pour le mood Comédie ("35,10751") : utiliser uniquement with_genres=35
             // "35,10751" en logique AND TMDB = Comedy ET Family simultanément → pool minuscule

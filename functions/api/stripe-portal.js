@@ -84,7 +84,13 @@ export async function onRequest(context) {
         const session = await pRes.json();
         if (!pRes.ok) {
             console.error('Stripe portal error:', session);
-            return json({ error: session.error?.message || 'Erreur portail Stripe' }, 500);
+            // Cas typique : customer test introuvable en live (compte hybride). On ne
+            // divulgue jamais l'ID technique au client → message générique.
+            const code = session.error?.code;
+            const friendly = (code === 'resource_missing')
+                ? "Aucun abonnement actif n'a été trouvé sur ce compte."
+                : "Impossible d'ouvrir le portail pour le moment. Réessaie plus tard.";
+            return json({ error: friendly }, 400);
         }
         return json({ url: session.url });
     } catch (err) {

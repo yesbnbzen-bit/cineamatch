@@ -853,34 +853,7 @@
                         </div>
                     </div>
 
-                    <!-- Changer le mot de passe -->
-                    <div class="profil-section" style="margin-top:1.5rem;">
-                        <div class="profil-section-title">Changer mon mot de passe</div>
-                        <div class="profil-pwd-form">
-                            <div class="password-wrap">
-                                <input type="password" id="profil-pwd-new" placeholder="Nouveau mot de passe (6 car. min)" autocomplete="new-password">
-                                <button type="button" class="toggle-password" onclick="
-                                    const i=document.getElementById('profil-pwd-new');
-                                    const shown=i.type==='text';
-                                    i.type=shown?'password':'text';
-                                    this.textContent=shown?'👁':'🙈';
-                                ">👁</button>
-                            </div>
-                            <div class="password-wrap" style="margin-top:0.6rem;">
-                                <input type="password" id="profil-pwd-confirm" placeholder="Confirmer le nouveau mot de passe" autocomplete="new-password">
-                                <button type="button" class="toggle-password" onclick="
-                                    const i=document.getElementById('profil-pwd-confirm');
-                                    const shown=i.type==='text';
-                                    i.type=shown?'password':'text';
-                                    this.textContent=shown?'👁':'🙈';
-                                ">👁</button>
-                            </div>
-                            <p id="profil-pwd-msg" style="font-size:0.8rem;margin-top:0.5rem;display:none;"></p>
-                            <button id="profil-pwd-btn" class="btn-pwd-update" style="margin-top:0.75rem;">
-                                Mettre à jour le mot de passe
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Bloc « Changer mon mot de passe » retiré temporairement (à remettre plus tard) -->
 
                     <!-- Mon abonnement (visible Premium uniquement) -->
                     <div class="profil-section" id="profil-sub-section" style="margin-top:1.5rem;display:none;">
@@ -1034,7 +1007,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=539"></script>
+    <script type="module" src="app.js?v=540"></script>
     <script type="module">
         import { authUI, getAgeProfile } from './modules/auth.js?v=46';
         authUI.init();

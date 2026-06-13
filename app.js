@@ -1,4 +1,4 @@
-import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=69';
+import { tmdbService, openaiService, tmdbUrl } from './services/api.js?v=70';
 import { store, getters } from './state/store.js?v=44';
 import { ui } from './modules/ui.js?v=44';
 import { QUESTIONS, QUESTIONS_EN } from './config/questions.js?v=48';
@@ -1678,6 +1678,21 @@ const App = {
             const blendedGenreIds = [...blendedGenres].join(genreSeparator);
             console.log(`🎭 Genre blend: ${store.answers.mood} → [${blendedGenreIds}] (sep: "${genreSeparator}"`);
 
+            // ── MODE DUO : intersection des genres (films HYBRIDES) ──
+            // Ex : A=Thriller(53) + B=Comédie(35) → "53,35" = thriller ET comédie (Knives Out…).
+            // On vise le vrai compromis qui plaît aux DEUX, au lieu de l'union (qui ramène des
+            // films à sens unique). Pool additif : si vide/rare, l'union ci-dessus prend le relais.
+            let duoIntersectionGenres = null;
+            if (store.duoMode && store.duoMerged && store.answers._duoMoodA && store.answers._duoMoodA !== store.answers.mood) {
+                const firstGenreId = (moodKey) => String(moodKey).split(/[^0-9]+/).filter(Boolean)[0] || null;
+                const gA = firstGenreId(store.answers._duoMoodA);
+                const gB = firstGenreId(store.answers.mood);
+                if (gA && gB && gA !== gB) {
+                    duoIntersectionGenres = `${gA},${gB}`;
+                    console.log(`👫 Duo intersection (hybrides) → with_genres=${duoIntersectionGenres}`);
+                }
+            }
+
             setStep(1, isEn ? '🎬 Analysing your profile...' : '🎬 Analyse du profil cinéphile...', '');
             startTips();
 
@@ -1753,7 +1768,7 @@ const App = {
             const hasProviderFilter = (store.preferredPlatforms || []).length > 0;
             const userPlatforms = store.preferredPlatforms || [];
 
-            const [metadata, [discovered, castDiscoveredRaw], tmdbRecsResult] = await Promise.all([
+            const [metadata, [discovered, castDiscoveredRaw, hybridDiscovered], tmdbRecsResult] = await Promise.all([
                 // ── Branche A : OpenAI extractMetadata ──
                 openaiService.extractMetadata(
                     { ...store.answers, contextLabel, moodLabel, durationLabel, excludeLabels, detectedLanguage, blendedGenreIds },
@@ -1777,7 +1792,15 @@ const App = {
                                 { ...store.answers, detectedLanguage, blendedGenreIds, _userPlatforms: [] },
                                 {}, false, 1, adnCastIds
                               )
-                            : Promise.resolve([])
+                            : Promise.resolve([]),
+                    // ── MODE DUO : passe "intersection" → films HYBRIDES (compromis des 2) ──
+                    // Pool additif prioritaire. Vide/ignoré en solo (duoIntersectionGenres = null).
+                    duoIntersectionGenres
+                        ? tmdbService.getAdvancedDiscovery(
+                            { ...store.answers, detectedLanguage, _userPlatforms: userPlatforms, _forceGenres: duoIntersectionGenres },
+                            {}, false, 1, []
+                          )
+                        : Promise.resolve([])
                 ]),
                 // ── Branche C : TMDB Source 1 (recs depuis films de référence) ──
                 (!hasProviderFilter && store.answers.lastLovedMovies?.length > 0)
@@ -1798,6 +1821,12 @@ const App = {
             };
 
             // Fusionner les résultats des 3 branches
+            // MODE DUO : les films HYBRIDES (intersection des 2 genres) passent EN PREMIER
+            // → l'IA les voit en priorité et le top 3 privilégie les vrais compromis.
+            if (hybridDiscovered && hybridDiscovered.length > 0) {
+                addUnique(hybridDiscovered);
+                console.log(`👫 ${hybridDiscovered.length} candidats HYBRIDES (intersection duo) — prioritaires`);
+            }
             if (tmdbRecsResult.length > 0) {
                 addUnique(tmdbRecsResult);
                 console.log(`🎯 ${tmdbRecsResult.length} candidats via ADN TMDb`);
