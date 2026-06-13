@@ -62,7 +62,10 @@ function getQuestions() {
 //  Score de match décroissant selon le nombre de rerolls
 // ─────────────────────────────────────────────────────────────────
 const MAX_LOVED_MOVIES      = 3;   // films de référence max ("que tu as aimé")
-const REROLL_MAX_SCORES     = [95, 87, 79, 71, 64, 58, 54, 50, 47, 45, 43];
+// Courbe lissée : le #1 reste impressionnant (95) et les rerolls descendent en DOUCEUR
+// sans jamais s'effondrer (plancher ~78%) → un reroll garde une sensation premium au lieu
+// de paraître « dégradé ». (Ancienne courbe trop punitive : 95→…→43.)
+const REROLL_MAX_SCORES     = [95, 91, 88, 85, 82, 80, 79, 78, 78, 78, 78];
 const REROLL_FREE_LIMIT     = 0;   // sans compte : 0 reroll (1er clic → inscription)
 const REROLL_LOGGED_LIMIT   = 2;   // compte gratuit : 2 rerolls (3 batches total)
 const REROLL_PREMIUM_LIMIT  = 5;   // premium : 5 rerolls (au-delà → surcharge de choix / fatigue décisionnelle)
