@@ -292,7 +292,7 @@
                             ⚡ Passer Premium
                         </button>
                         <button class="btn-signout-drop"
-                            onclick="import('./modules/auth.js?v=46').then(m => m.authUI.handleSignOut())">
+                            onclick="import('./modules/auth.js?v=47').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>
                         </button>
                     </div>
@@ -1007,9 +1007,9 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=544"></script>
+    <script type="module" src="app.js?v=545"></script>
     <script type="module">
-        import { authUI, getAgeProfile } from './modules/auth.js?v=46';
+        import { authUI, getAgeProfile } from './modules/auth.js?v=47';
         authUI.init();
         // Exposer getAgeProfile globalement pour app.js (modules isolés)
         window.getAgeProfile = getAgeProfile;

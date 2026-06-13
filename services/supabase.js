@@ -8,7 +8,20 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL  = 'https://wyikiuwcygaemjzwbltk.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_z2dX34NgOMVj4spzMWF1-w_fQOWQb0x';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        // ── Contourne le DEADLOCK du verrou navigator.locks de supabase-js ──
+        // Symptôme : la connexion "tourne à l'infini" (surtout en navigation privée ou
+        // avec plusieurs onglets ouverts), car un verrou auth resté bloqué n'est jamais
+        // libéré. On remplace le verrou par un passe-plat qui exécute l'opération
+        // directement. (On perd la coordination multi-onglets du refresh token — sans
+        // impact réel ici, et bien moins grave qu'une connexion gelée.)
+        lock: (_name, _acquireTimeout, fn) => fn(),
+    }
+});
 
 // ─────────────────────────────────────────────────────────────────
 //  AUTH

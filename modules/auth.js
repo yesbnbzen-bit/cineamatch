@@ -3,7 +3,7 @@
 //  Gère l'affichage de la modale et l'état de connexion
 // ─────────────────────────────────────────────────────────────────
 
-import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=17';
+import { authService, watchlistService, historyService, ratingsService, preferencesService } from '../services/supabase.js?v=18';
 import { store } from '../state/store.js?v=44';
 import { t, applyTranslations } from '../config/i18n.js?v=352';
 
