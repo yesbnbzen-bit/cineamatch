@@ -28,8 +28,7 @@ export const TRANSLATIONS = {
         'hero.duo':          '👥 Mode Duo',
         'hero.feat1':        'Rapide',
         'hero.feat2':        '100% personnalisé',
-        'hero.feat3':        'Recommandé par l\'IA',
-        'hero.socialproof':  '🎬 L\'IA a déjà passé au crible <strong style="color:#fff;font-weight:700;">+1 000 000 de films</strong> pour trouver le tien.',
+        'hero.feat3':        '+1 000 000 de films',
 
         // Trending
         'trending.title':    'Top Match du moment',
@@ -340,8 +339,7 @@ export const TRANSLATIONS = {
         'hero.duo':          '👥 Duo Mode',
         'hero.feat1':        'Fast',
         'hero.feat2':        '100% personalised',
-        'hero.feat3':        'AI-powered',
-        'hero.socialproof':  '🎬 The AI has already scanned <strong style="color:#fff;font-weight:700;">1,000,000+ films</strong> to find yours.',
+        'hero.feat3':        '1,000,000+ films',
 
         // Trending
         'trending.title':    'Top Match right now',
