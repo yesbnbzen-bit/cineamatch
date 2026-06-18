@@ -292,7 +292,7 @@
                             ⚡ Passer Premium
                         </button>
                         <button class="btn-signout-drop"
-                            onclick="import('./modules/auth.js?v=47').then(m => m.authUI.handleSignOut())">
+                            onclick="import('./modules/auth.js?v=48').then(m => m.authUI.handleSignOut())">
                             <span data-i18n="nav.signout">↩ Se déconnecter</span>
                         </button>
                     </div>
@@ -403,6 +403,9 @@
                         </div>
                         <button id="duo-btn" class="btn-duo-subtle" data-i18n="hero.duo">👥 Mode Duo</button>
                     </div>
+
+                    <!-- Preuve sociale -->
+                    <p class="hero-socialproof" data-i18n-html data-i18n="hero.socialproof" style="margin:1.1rem 0 0;font-size:0.93rem;color:rgba(255,255,255,0.55);line-height:1.5;">🎬 L'IA a déjà passé au crible <strong style="color:#fff;font-weight:700;">+1 000 000 de films</strong> pour trouver le tien.</p>
 
                     <!-- Feature badges -->
                     <div class="hero-features">
@@ -1007,9 +1010,9 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script type="module" src="app.js?v=545"></script>
+    <script type="module" src="app.js?v=546"></script>
     <script type="module">
-        import { authUI, getAgeProfile } from './modules/auth.js?v=47';
+        import { authUI, getAgeProfile } from './modules/auth.js?v=48';
         authUI.init();
         // Exposer getAgeProfile globalement pour app.js (modules isolés)
         window.getAgeProfile = getAgeProfile;
