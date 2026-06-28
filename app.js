@@ -105,10 +105,9 @@ function showBnbzenWelcome() {
     if (document.getElementById('bnbzen-overlay')) return;
     const ov = document.createElement('div');
     ov.id = 'bnbzen-overlay';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse 75% 55% at 50% 12%, rgba(229,9,20,0.22), transparent 62%), rgba(6,6,8,0.95);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse 80% 60% at 50% 16%, rgba(229,9,20,0.15), transparent 60%), rgba(6,6,8,0.95);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;';
     ov.innerHTML = `
-      <div style="position:relative;background:linear-gradient(180deg,#1b1216 0%,#141417 44%);border:1px solid rgba(229,9,20,0.20);border-radius:24px;max-width:482px;width:100%;padding:32px 26px 28px;text-align:center;box-shadow:0 0 70px rgba(229,9,20,0.18),0 24px 70px rgba(0,0,0,0.62);overflow:hidden;">
-        <div style="position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:260px;height:130px;background:radial-gradient(ellipse at center, rgba(229,9,20,0.40), transparent 70%);pointer-events:none;"></div>
+      <div style="position:relative;background:#161619;border:1px solid rgba(255,255,255,0.08);border-radius:24px;max-width:482px;width:100%;padding:32px 26px 28px;text-align:center;box-shadow:0 0 55px rgba(229,9,20,0.13),0 24px 70px rgba(0,0,0,0.6);">
         <div style="position:relative;">
           <div style="width:64px;height:64px;margin:0 auto 15px;border-radius:50%;background:rgba(229,9,20,0.15);border:1px solid rgba(229,9,20,0.45);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 34px rgba(229,9,20,0.4);">🎁</div>
           <div style="display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:1.8px;color:#ff5a62;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.4);padding:5px 13px;border-radius:100px;margin-bottom:13px;">OFFERT PAR BNBZEN</div>
