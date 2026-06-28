@@ -3522,10 +3522,10 @@ const App = {
 
         // Lancer le questionnaire au clic ou à l'appui sur Entrée
         const launch = () => {
-            const isPremium = store.currentUser?.user_metadata?.is_premium === true;
+            const isPremium = store.currentUser?.user_metadata?.is_premium === true || bnbzenActive();
             const isLoggedIn = !!store.currentUser;
 
-            // ── Gate : Mode Duo réservé au Premium → directement la grille de prix ──
+            // ── Gate : Mode Duo réservé au Premium (ou invité Bnbzen) → sinon grille de prix ──
             // (couvre anonyme + compte gratuit : dans les deux cas isPremium = false ;
             //  "Choisir" lance le checkout et demande l'inscription si besoin.)
             if (!isPremium) {
