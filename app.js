@@ -105,33 +105,36 @@ function showBnbzenWelcome() {
     if (document.getElementById('bnbzen-overlay')) return;
     const ov = document.createElement('div');
     ov.id = 'bnbzen-overlay';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(5,5,7,0.93);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse 75% 55% at 50% 12%, rgba(229,9,20,0.22), transparent 62%), rgba(6,6,8,0.95);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;';
     ov.innerHTML = `
-      <div style="background:#161619;border:1px solid rgba(255,255,255,0.08);border-radius:22px;max-width:470px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.55);">
-        <div style="font-size:32px;margin-bottom:4px;">🎁</div>
-        <div style="display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:1.5px;color:#ff5a62;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.35);padding:5px 12px;border-radius:100px;margin-bottom:12px;">OFFERT PAR BNBZEN</div>
-        <h2 style="color:#fff;font-size:21px;font-weight:800;margin:0 0 8px;line-height:1.2;">Votre soirée ciné, offerte 🍿</h2>
-        <p style="color:rgba(255,255,255,0.6);font-size:13.5px;line-height:1.55;margin:0 0 18px;">Premium + Mode Duo débloqués <strong style="color:#fff;">48h</strong>. Pour des films parfaits, dis-nous sur quelles plateformes vous pouvez regarder :</p>
-        <div id="bnbzen-platforms" style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:20px;">
-          ${BNBZEN_PLATFORMS.map(p => `
-            <div data-pid="${p.id}" class="bnbz-chip" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 3px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;transition:border-color .12s,background .12s;">
-              <span style="width:38px;height:38px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-                <img src="https://www.google.com/s2/favicons?sz=128&domain=${p.domain}" alt="${p.name}" style="width:26px;height:26px;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                <span style="display:none;width:100%;height:100%;background:${p.bg};color:#fff;align-items:center;justify-content:center;font-size:11px;font-weight:800;">${p.code}</span>
-              </span>
-              <span style="color:rgba(255,255,255,0.72);font-size:10px;line-height:1.1;">${p.name}</span>
-            </div>`).join('')}
+      <div style="position:relative;background:linear-gradient(180deg,#1b1216 0%,#141417 44%);border:1px solid rgba(229,9,20,0.20);border-radius:24px;max-width:482px;width:100%;padding:32px 26px 28px;text-align:center;box-shadow:0 0 70px rgba(229,9,20,0.18),0 24px 70px rgba(0,0,0,0.62);overflow:hidden;">
+        <div style="position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:260px;height:130px;background:radial-gradient(ellipse at center, rgba(229,9,20,0.40), transparent 70%);pointer-events:none;"></div>
+        <div style="position:relative;">
+          <div style="width:64px;height:64px;margin:0 auto 15px;border-radius:50%;background:rgba(229,9,20,0.15);border:1px solid rgba(229,9,20,0.45);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 34px rgba(229,9,20,0.4);">🎁</div>
+          <div style="display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:1.8px;color:#ff5a62;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.4);padding:5px 13px;border-radius:100px;margin-bottom:13px;">OFFERT PAR BNBZEN</div>
+          <h2 style="color:#fff;font-size:22px;font-weight:800;margin:0 0 9px;line-height:1.18;letter-spacing:-0.3px;">Votre soirée ciné, offerte 🍿</h2>
+          <p style="color:rgba(255,255,255,0.58);font-size:13.5px;line-height:1.55;margin:0 0 20px;">Premium + Mode Duo débloqués <strong style="color:#fff;font-weight:700;">48h</strong>.<br>Sur quelles plateformes pouvez-vous regarder ?</p>
+          <div id="bnbzen-platforms" style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px;">
+            ${BNBZEN_PLATFORMS.map(p => `
+              <div data-pid="${p.id}" class="bnbz-chip" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;padding:11px 3px;border:1px solid rgba(255,255,255,0.10);border-radius:14px;background:rgba(255,255,255,0.02);transition:border-color .15s,background .15s,box-shadow .15s,transform .15s;">
+                <span style="width:40px;height:40px;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+                  <img src="https://www.google.com/s2/favicons?sz=128&domain=${p.domain}" alt="${p.name}" style="width:27px;height:27px;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                  <span style="display:none;width:100%;height:100%;background:${p.bg};color:#fff;align-items:center;justify-content:center;font-size:11px;font-weight:800;">${p.code}</span>
+                </span>
+                <span style="color:rgba(255,255,255,0.7);font-size:10px;line-height:1.1;">${p.name}</span>
+              </div>`).join('')}
+          </div>
+          <button id="bnbzen-go" style="width:100%;border:none;border-radius:100px;padding:16px;font-family:inherit;font-size:15.5px;font-weight:800;color:#fff;background:linear-gradient(90deg,#E50914,#c0118a);cursor:pointer;box-shadow:0 8px 30px rgba(229,9,20,0.45);">C'est parti →</button>
+          <button id="bnbzen-skip" style="background:none;border:none;color:rgba(255,255,255,0.38);font-size:12px;cursor:pointer;margin-top:13px;font-family:inherit;">Voir toutes les plateformes</button>
         </div>
-        <button id="bnbzen-go" style="width:100%;border:none;border-radius:100px;padding:15px;font-family:inherit;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(90deg,#E50914,#b30a83);cursor:pointer;">C'est parti →</button>
-        <button id="bnbzen-skip" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;margin-top:11px;font-family:inherit;">Voir toutes les plateformes</button>
       </div>`;
     document.body.appendChild(ov);
     const selected = new Set();
     ov.querySelectorAll('.bnbz-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             const pid = chip.dataset.pid;
-            if (selected.has(pid)) { selected.delete(pid); chip.style.borderColor = 'rgba(255,255,255,0.12)'; chip.style.background = 'transparent'; }
-            else { selected.add(pid); chip.style.borderColor = '#E50914'; chip.style.background = 'rgba(229,9,20,0.12)'; }
+            if (selected.has(pid)) { selected.delete(pid); chip.style.borderColor = 'rgba(255,255,255,0.10)'; chip.style.background = 'rgba(255,255,255,0.02)'; chip.style.boxShadow = 'none'; chip.style.transform = 'none'; }
+            else { selected.add(pid); chip.style.borderColor = '#E50914'; chip.style.background = 'rgba(229,9,20,0.14)'; chip.style.boxShadow = '0 0 0 1px rgba(229,9,20,0.5), 0 6px 18px rgba(229,9,20,0.28)'; chip.style.transform = 'translateY(-2px)'; }
         });
     });
     const apply = (plats) => {
