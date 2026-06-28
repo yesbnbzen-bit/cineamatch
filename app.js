@@ -92,14 +92,14 @@ function activateBnbzen() {
     localStorage.setItem('cm_bnbzen_until', String(Date.now() + BNBZEN_DURATION_MS));
 }
 const BNBZEN_PLATFORMS = [
-    { id: '8',    name: 'Netflix',     bg: '#E50914', code: 'N'   },
-    { id: '119',  name: 'Prime Video', bg: '#00A8E1', code: 'P'   },
-    { id: '381',  name: 'Canal+',      bg: '#111',    code: 'C+'  },
-    { id: '337',  name: 'Disney+',     bg: '#113CCF', code: 'D+'  },
-    { id: '350',  name: 'Apple TV+',   bg: '#2b2b2e', code: 'TV+' },
-    { id: '1899', name: 'Max',         bg: '#002BE7', code: 'max' },
-    { id: '531',  name: 'Paramount+',  bg: '#0064FF', code: 'P+'  },
-    { id: '283',  name: 'Crunchyroll', bg: '#F47521', code: 'CR'  },
+    { id: '8',    name: 'Netflix',     bg: '#E50914', code: 'N',   domain: 'netflix.com' },
+    { id: '119',  name: 'Prime Video', bg: '#00A8E1', code: 'P',   domain: 'primevideo.com' },
+    { id: '381',  name: 'Canal+',      bg: '#111',    code: 'C+',  domain: 'canalplus.com' },
+    { id: '337',  name: 'Disney+',     bg: '#113CCF', code: 'D+',  domain: 'disneyplus.com' },
+    { id: '350',  name: 'Apple TV+',   bg: '#2b2b2e', code: 'TV+', domain: 'tv.apple.com' },
+    { id: '1899', name: 'Max',         bg: '#002BE7', code: 'max', domain: 'max.com' },
+    { id: '531',  name: 'Paramount+',  bg: '#0064FF', code: 'P+',  domain: 'paramountplus.com' },
+    { id: '283',  name: 'Crunchyroll', bg: '#F47521', code: 'CR',  domain: 'crunchyroll.com' },
 ];
 function showBnbzenWelcome() {
     if (document.getElementById('bnbzen-overlay')) return;
@@ -115,7 +115,10 @@ function showBnbzenWelcome() {
         <div id="bnbzen-platforms" style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:20px;">
           ${BNBZEN_PLATFORMS.map(p => `
             <div data-pid="${p.id}" class="bnbz-chip" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 3px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;transition:border-color .12s,background .12s;">
-              <span style="width:32px;height:32px;border-radius:9px;background:${p.bg};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">${p.code}</span>
+              <span style="width:38px;height:38px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                <img src="https://www.google.com/s2/favicons?sz=128&domain=${p.domain}" alt="${p.name}" style="width:26px;height:26px;object-fit:contain;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <span style="display:none;width:100%;height:100%;background:${p.bg};color:#fff;align-items:center;justify-content:center;font-size:11px;font-weight:800;">${p.code}</span>
+              </span>
               <span style="color:rgba(255,255,255,0.72);font-size:10px;line-height:1.1;">${p.name}</span>
             </div>`).join('')}
         </div>
