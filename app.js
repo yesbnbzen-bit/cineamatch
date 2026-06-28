@@ -105,7 +105,13 @@ function showBnbzenWelcome() {
     if (document.getElementById('bnbzen-overlay')) return;
     const ov = document.createElement('div');
     ov.id = 'bnbzen-overlay';
-    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:radial-gradient(ellipse 80% 60% at 50% 16%, rgba(229,9,20,0.15), transparent 60%), rgba(6,6,8,0.95);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:' +
+        'radial-gradient(ellipse 55% 55% at 0% 0%, rgba(229,9,20,0.26), transparent 55%),' +
+        'radial-gradient(ellipse 55% 55% at 100% 0%, rgba(229,9,20,0.26), transparent 55%),' +
+        'radial-gradient(ellipse 55% 55% at 0% 100%, rgba(229,9,20,0.22), transparent 55%),' +
+        'radial-gradient(ellipse 55% 55% at 100% 100%, rgba(229,9,20,0.22), transparent 55%),' +
+        'rgba(6,6,8,0.96);' +
+        'backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;';
     ov.innerHTML = `
       <div style="position:relative;background:#161619;border:1px solid rgba(255,255,255,0.08);border-radius:24px;max-width:482px;width:100%;padding:32px 26px 28px;text-align:center;box-shadow:0 0 55px rgba(229,9,20,0.13),0 24px 70px rgba(0,0,0,0.6);">
         <div style="position:relative;">
