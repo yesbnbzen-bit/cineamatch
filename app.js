@@ -78,6 +78,68 @@ function getNextScore(rerollCount) {
     return REROLL_MAX_SCORES[Math.min(rerollCount + 1, REROLL_MAX_SCORES.length - 1)];
 }
 
+// ─────────────────────────────────────────────────────────────────
+//  Accès promo BNBZEN — lien spécial (cineamatch.com/?bnbzen=1)
+//  → débloque Premium + Mode Duo pendant 48h, sans compte.
+//  Pensé pour les clients des suites Bnbzen (couples) : écran cadeau
+//  + choix des plateformes de streaming → recos filtrées sur celles-ci.
+// ─────────────────────────────────────────────────────────────────
+const BNBZEN_DURATION_MS = 48 * 60 * 60 * 1000;
+function bnbzenActive() {
+    return Number(localStorage.getItem('cm_bnbzen_until') || 0) > Date.now();
+}
+function activateBnbzen() {
+    localStorage.setItem('cm_bnbzen_until', String(Date.now() + BNBZEN_DURATION_MS));
+}
+const BNBZEN_PLATFORMS = [
+    { id: '8',    name: 'Netflix',     bg: '#E50914', code: 'N'   },
+    { id: '119',  name: 'Prime Video', bg: '#00A8E1', code: 'P'   },
+    { id: '381',  name: 'Canal+',      bg: '#111',    code: 'C+'  },
+    { id: '337',  name: 'Disney+',     bg: '#113CCF', code: 'D+'  },
+    { id: '350',  name: 'Apple TV+',   bg: '#2b2b2e', code: 'TV+' },
+    { id: '1899', name: 'Max',         bg: '#002BE7', code: 'max' },
+    { id: '531',  name: 'Paramount+',  bg: '#0064FF', code: 'P+'  },
+    { id: '283',  name: 'Crunchyroll', bg: '#F47521', code: 'CR'  },
+];
+function showBnbzenWelcome() {
+    if (document.getElementById('bnbzen-overlay')) return;
+    const ov = document.createElement('div');
+    ov.id = 'bnbzen-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(5,5,7,0.93);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto;';
+    ov.innerHTML = `
+      <div style="background:#161619;border:1px solid rgba(255,255,255,0.08);border-radius:22px;max-width:470px;width:100%;padding:28px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.55);">
+        <div style="font-size:32px;margin-bottom:4px;">🎁</div>
+        <div style="display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:1.5px;color:#ff5a62;background:rgba(229,9,20,0.12);border:1px solid rgba(229,9,20,0.35);padding:5px 12px;border-radius:100px;margin-bottom:12px;">OFFERT PAR BNBZEN</div>
+        <h2 style="color:#fff;font-size:21px;font-weight:800;margin:0 0 8px;line-height:1.2;">Votre soirée ciné, offerte 🍿</h2>
+        <p style="color:rgba(255,255,255,0.6);font-size:13.5px;line-height:1.55;margin:0 0 18px;">Premium + Mode Duo débloqués <strong style="color:#fff;">48h</strong>. Pour des films parfaits, dis-nous sur quelles plateformes vous pouvez regarder :</p>
+        <div id="bnbzen-platforms" style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:20px;">
+          ${BNBZEN_PLATFORMS.map(p => `
+            <div data-pid="${p.id}" class="bnbz-chip" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 3px;border:1px solid rgba(255,255,255,0.12);border-radius:12px;transition:border-color .12s,background .12s;">
+              <span style="width:32px;height:32px;border-radius:9px;background:${p.bg};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;">${p.code}</span>
+              <span style="color:rgba(255,255,255,0.72);font-size:10px;line-height:1.1;">${p.name}</span>
+            </div>`).join('')}
+        </div>
+        <button id="bnbzen-go" style="width:100%;border:none;border-radius:100px;padding:15px;font-family:inherit;font-size:15px;font-weight:800;color:#fff;background:linear-gradient(90deg,#E50914,#b30a83);cursor:pointer;">C'est parti →</button>
+        <button id="bnbzen-skip" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;margin-top:11px;font-family:inherit;">Voir toutes les plateformes</button>
+      </div>`;
+    document.body.appendChild(ov);
+    const selected = new Set();
+    ov.querySelectorAll('.bnbz-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const pid = chip.dataset.pid;
+            if (selected.has(pid)) { selected.delete(pid); chip.style.borderColor = 'rgba(255,255,255,0.12)'; chip.style.background = 'transparent'; }
+            else { selected.add(pid); chip.style.borderColor = '#E50914'; chip.style.background = 'rgba(229,9,20,0.12)'; }
+        });
+    });
+    const apply = (plats) => {
+        store.preferredPlatforms = plats;
+        try { localStorage.setItem('preferred_platforms', JSON.stringify(plats)); } catch (e) {}
+        ov.remove();
+    };
+    ov.querySelector('#bnbzen-go').addEventListener('click', () => apply([...selected]));
+    ov.querySelector('#bnbzen-skip').addEventListener('click', () => apply([]));
+}
+
 // « Américain » = origine USA réelle. origin_country est le signal fiable ;
 // production_countries est pollué par Netflix US (co-liste "US" sur des films
 // nigérians/indiens). On exclut explicitement Nollywood/Bollywood (NG/IN).
@@ -310,6 +372,13 @@ const App = {
                     this.startDuoFlow();
                 }
             });
+        }
+
+        // ── Accès promo Bnbzen (lien spécial : cineamatch.com/?bnbzen=1) ──
+        if (new URLSearchParams(location.search).get('bnbzen')) {
+            activateBnbzen();
+            history.replaceState({}, '', '/');
+            showBnbzenWelcome();
         }
 
         // ── Retour depuis Stripe Checkout ──
@@ -785,7 +854,7 @@ const App = {
     // ── Démarrage du questionnaire ──
     startFlow(keepDuoState = false) {
         // ── Gate anonyme : 1 essai gratuit À VIE → 1 recherche bonus si partage → abonnement ──
-        if (!keepDuoState && !store.currentUser) {
+        if (!keepDuoState && !store.currentUser && !bnbzenActive()) {
             const trialUsed   = localStorage.getItem('anon_trial_used') === '1';
             const shareUnlock = localStorage.getItem('anon_share_unlocked') === '1';
             const bonusUsed   = localStorage.getItem('anon_bonus_used') === '1';
@@ -809,7 +878,7 @@ const App = {
         // (ferme la faille : sans ça, créer un compte gratuit redonnait des recherches
         //  illimitées. Ex. quelqu'un qui s'inscrit pour payer puis abandonne Stripe.)
         if (!keepDuoState && store.currentUser) {
-            const isPremium = store.currentUser?.user_metadata?.is_premium === true;
+            const isPremium = store.currentUser?.user_metadata?.is_premium === true || bnbzenActive();
             if (!isPremium) {
                 this.showPricingModal('trial_ended');
                 return;
@@ -3237,7 +3306,7 @@ const App = {
 
         // ── Bouton reroll avec % décroissant + limite free ──
         const nextPct      = getNextScore(store.rerollCount);
-        const isPremium    = store.currentUser?.user_metadata?.is_premium === true;
+        const isPremium    = store.currentUser?.user_metadata?.is_premium === true || bnbzenActive();
         const isLoggedIn   = !!store.currentUser;
         // Limites par palier : sans compte → 0, gratuit → 2, premium → 8
         const activeLimit  = isPremium ? REROLL_PREMIUM_LIMIT : (isLoggedIn ? REROLL_LOGGED_LIMIT : REROLL_FREE_LIMIT);
